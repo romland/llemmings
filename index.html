@@ -28,98 +28,117 @@ Specifics are:
 Instead of giving me the implementation to everything right away, generate prompts I can give to you in 
 portions to eventually get a full implemention. We have to do it this way because of the context window size. 
 After each time you replied to a prompt, you should tell me what I should ask from you next. Also tell me what code I would need to include, if any, to get an answer.
+
+
+---------------------
+Like the game Lemmings, I want to procedurally generate a random map of platforms which the lemmings walk on.
+The platforms are made of dirt, background color is black, here and there there should be water.
+Also come up with a solution to efficiently do collision detection between lemmings and the map.
+
+The map should be drawn on a canvas using plain javascript. Give me only code, no explanation other than comments in the code.
+
+
 */
+// Set up canvas and tile size
+const canvas = document.getElementById("canvas");
+const blockWidth = 40;
+const blockHeight = 40;
+canvas.width = 800;
+canvas.height = 600;
 
-const canvas = document.getElementById('canvas');
+// Generate random platform tiles
 const ctx = canvas.getContext('2d');
-
-//set up the canvas
-canvas.width = 960;
-canvas.height = 960;
-document.body.appendChild(canvas);
-
-let octaves = 2; // Number of layers of noise (higher this value, more details in terrain)
-let scale = 0.02; // Determines how much zoomed in our noise is turned out to be, same as below
-let persistence = 0.99; // Determines how much each layer contributes to final image, same as below
-
-let mapArray = [];
-
-// Fill map array with Perlin noise values using octave method
-// Fill map array with Perlin noise values using octave method
-function generateMap(xOffset, yOffset) {
-  const terrainTypes = [
-    { threshold: 0,   terrain: 'water' },
-    { threshold: 0.4, terrain: 'grass' },
-    { threshold: 0.7, terrain: 'dirt' },
-    { threshold: 1,   terrain: 'mountain' }
-  ];
-  
-  for (let x = 0; x < canvas.width; x++) {
-    mapArray[x] = [];
-    for (let y = 0; y < canvas.height; y++) {
-      let noiseVal = 0;
-      
-      for (let i = 0; i < octaves; i++) { 
-        let frequency = Math.pow(2, i);
-        let amplitude = Math.pow(persistence, i);
-        const val = noise((x + xOffset) * scale * frequency, (y + yOffset) * scale * frequency);
-        noiseVal += val * amplitude; 
-      }
-      
-      let terrainType = 'water';
-      for (let t = 0; t < terrainTypes.length; ++t) {
-        const { threshold, terrain } = terrainTypes[t];
-        if (noiseVal > threshold) {
-          terrainType = terrain;
-        } else {
-          break;
+ctx.fillStyle = "gray";
+for (let y = 0; y < canvas.height; y += blockHeight) {
+    for (let x = 0; x < canvas.width; x += blockWidth) {
+        const isSolid = Math.random() > 0.5;
+        if (isSolid) {
+            ctx.fillRect(x, y, blockWidth, blockHeight);
         }
-      }
-      mapArray[x][y] = terrainType;
     }
-  }
 }
 
+// Collision detection function
+function checkCollision(lemmingX, lemmingY) {
+    const tileX = Math.floor(lemmingX / blockWidth);
+    const tileY = Math.floor(lemmingY / blockHeight);
+    
+    // Check adjacent tiles for collision
+    const leftTile = (tileX - 1 >= 0) ? ctx.getImageData((tileX - 1) * blockWidth, tileY * blockHeight, blockWidth, blockHeight).data : null;
+    const rightTile = (tileX + 1 < canvas.width / blockWidth) ? ctx.getImageData((tileX + 1) * blockWidth, tileY * blockHeight, blockWidth, blockHeight).data : null;
+    const topTile = (tileY - 1 >= 0) ? ctx.getImageData(tileX * blockWidth, (tileY - 1) * blockHeight, blockWidth, blockHeight).data : null;
+    const bottomTile = (tileY + 1 < canvas.height / blockHeight) ? ctx.getImageData(tileX * blockWidth, (tileY + 1) * blockHeight, blockWidth, blockHeight).data : null;
 
-// Function for generating a noise value based on x and y positions using Perlin noise algorithm 
-function noise(x, y) {
-    let n = Math.sin(x + y * 57) * 43758.5453123;
-    return n - Math.floor(n);
-}
-
-generateMap(0, 0);
-console.log(mapArray);
-const TILE_SIZE = 16; // Change this to adjust the size of each tile
-
-function drawMap(map) {
-  for (let y = 0; y < map.length; y++) {
-    for (let x = 0; x < map[y].length; x++) {
-      const tileX = x * TILE_SIZE;
-      const tileY = y * TILE_SIZE;
-
-      switch (map[y][x]) {
-        case 'grass':
-          ctx.fillStyle = '#8bc34a'; // green
-          break;
-        case 'dirt':
-          ctx.fillStyle = '#795548'; // brown
-          break;
-        case 'water':
-          ctx.fillStyle = '#0000ff'; // blue
-          break;
-        case 'mountain':
-          ctx.fillStyle = '#888888'; // gray
-          break;
-        // add cases for other terrain types as needed
-      }
-
-      ctx.fillRect(tileX, tileY, TILE_SIZE, TILE_SIZE);
+    // Determine collision direction
+    const collision = {left: false, right: false, top: false, bottom: false};
+    if (leftTile && leftTile[3] === 255) {
+        collision.left = true;
     }
-  }
+    if (rightTile && rightTile[3] === 255) {
+        collision.right = true;
+    }
+    if (topTile && topTile[3] === 255) {
+        collision.top = true;
+    }
+    if (bottomTile && bottomTile[3] === 255) {
+        collision.bottom = true;
+    }
+    return collision;
 }
 
-drawMap(mapArray);
+// Example usage of collision detection function
+let lemmingX = 50;
+let lemmingY = 50;
+const velocityX = 5;
+const velocityY = 0;
 
+function update() {
+    // Move lemming based on velocity
+    lemmingX += velocityX;
+    lemmingY += velocityY;
+    
+    // Check for collision and adjust position accordingly
+    const collision = checkCollision(lemmingX, lemmingY);
+    if (collision.left) {
+        lemmingX += Math.ceil(Math.abs(lemmingX % blockWidth));
+        velocityX *= -1;
+    }
+    if (collision.right) {
+        lemmingX -= Math.ceil(Math.abs((lemmingX + blockWidth) % blockWidth));
+        velocityX *= -1;
+    }
+    if (collision.top) {
+        lemmingY += Math.ceil(Math.abs(lemmingY % blockHeight));
+        velocityY *= -1;
+    }
+    if (collision.bottom) {
+        lemmingY -= Math.ceil(Math.abs((lemmingY + blockHeight) % blockHeight));
+        velocityY *= -1;
+    }
+
+    // Draw lemming on canvas
+    // ctx.fillStyle = "green";
+    // ctx.fillRect(lemmingX, lemm 
+  // Update lemmings
+  // ...
+
+  // Check collisions with platforms
+  // ...
+}
+
+function render() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  drawPlatforms();
+  // Draw lemmings
+  // ...
+}
+
+function gameLoop() {
+  update();
+  render();
+
+  requestAnimationFrame 
 
 </script>
 
