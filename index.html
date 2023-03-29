@@ -28,155 +28,58 @@ Specifics are:
 Instead of giving me the implementation to everything right away, generate prompts I can give to you in 
 portions to eventually get a full implemention. We have to do it this way because of the context window size. 
 After each time you replied to a prompt, you should tell me what I should ask from you next. Also tell me what code I would need to include, if any, to get an answer.
-
-
 */
 
 const canvas = document.getElementById('canvas');
 const ctx = canvas.getContext('2d');
-
-const noise = new Noise(Math.random());
-
-// Generate a smooth noise texture
-for (let x = 0; x < canvas.width; x++) {
-  for (let y = 0; y < canvas.height; y++) {
-    const colorValue = Math.floor((noise.perlin2(x / 100, y / 100) + 1) * 128);
-    ctx.fillStyle = `rgb(${colorValue}, ${colorValue}, ${colorValue})`;
-    ctx.fillRect(x, y, 1, 1);
-  }
-}
 
 //set up the canvas
 canvas.width = 960;
 canvas.height = 960;
 document.body.appendChild(canvas);
 
-//generate the texture using Perlin noise
-const imgData = ctx.createImageData(960, 960);
-for (let y = 0; y < 960; y++) {
-  for (let x = 0; x < 960; x++) {
-    const value = perlinNoise(x / 100, y / 100, 0);
-    const index = (x + y * 960) * 4;
-    imgData.data[index] = value * 255;
-    imgData.data[index + 1] = value * 255;
-    imgData.data[index + 2] = value * 255;
-    imgData.data[index + 3] = 255;
-  }
-}
-ctx.putImageData(imgData, 0, 0);
-
-//Perlin Noise Algorithm 
-function perlinNoise(x, y, z) {
-  const permut =  new Array(512)
-  const gradP = new Array(512)
-  fillArrays()
-  
-  var xi = Math.floor(x) & 255                        
-  var yi = Math.floor(y) & 255                        
-  var zi = Math.floor(z) & 255                         
-  var xf = x - Math.floor(x)                              
-  var yf = y - Math.floor(y)                              
-  var zf = z - Math.floor(z)                              
-  var u = fade(xf)                                        
-  var v = fade(yf)                                         
-  var w = fade(zf)                                          
-  var aaa, aba, aab, abb, baa, bba, bab, bbb;
-  aaa = gradP[perm[perm[perm[ xi ]+ yi ]+ zi ]];          
-  aba = gradP[perm[perm[perm[ xi ]+ inc( yi )]+ zi ]];     
-  aab = gradP[perm[perm[perm[ xi ]+ yi ]+ inc( zi )]];     
-  abb = gradP[perm[perm[perm[ xi ]+ inc( yi )]+ inc( zi )]]; 
-  baa = gradP[perm[perm[perm[ inc( xi )+ yi ]+ zi ]]];      
-  bba = gradP[perm[perm[perm[ inc( xi )+ inc( yi )]+ zi ]]];  
-  bab = gradP[perm[perm[perm[ inc( xi )+ yi ]+ inc( zi )]]];  
-  bbb = gradP[perm[perm[perm[ inc( xi )+ inc( yi )]+ inc( zi )]]];
-  var x1, x2, y1, y2;
-  x1 = lerp(grad(aaa, xf, yf  , zf ),    	
-          grad(baa, xf-1, yf  , zf ),    
-          u);                  			
-  x2 = lerp(grad(aba, xf, yf-1, zf ),     	
-            grad(bba, xf-1, yf-1, zf ),  	
-            u);                     		
-  y1 = lerp(x1, x2, v);               
-  x1 = lerp(grad(aab, xf, yf  , zf-1 ),    
-            grad(bab, xf-1, yf  , zf-1 ),  
-            u);                    
-  x2 = lerp(grad(abb, xf, yf-1, zf-1 ),
-            grad(bbb, xf-1, yf-1, zf-1 ),
-            u);
-  y2 = lerp (x1, x2, v);
-  return (lerp(y1, y2, w)+1)/2;
-} 
-
-function fade(t) { return t * t * t * (t * (t * 6 - 15) + 10); }
-function inc(t) { return t + 1; }
-function lerp(a, b, t) { return (1-t)*a + t*b; }
-function grad(hash, x, y, z) {
-    var h = hash & 15;                     
-    var u = h<8 ? x : y,                 
-        v = h<4 ? y : h==12||h==14 ? x : z;
-    return ((h&1) === 0 ? u : -u) + ((h&2) === 0 ? v : -v); 
-} 
-
-let perlin = new Noise(Math.random());
-
-let canvasWidth = 960;
-let canvasHeight = 960;
-
-function drawPerlinNoise(ctx) {
-  let imageData = ctx.createImageData(canvasWidth, canvasHeight);
-  
-  let data = imageData.data;
-  let len = imageData.width * imageData.height * 4;
-
-  for (let i = 0; i < len; i += 4) {
-    let x = Math.floor(i / 4) % imageData.width;
-    let y = Math.floor(i / 4 / imageData.width);
-
-    let val = perlin.perlin2(x / 100, y / 100);
-    val = Math.floor((val + 1) / 2 * 255); // scale to 0-255
-
-    data[i] = data[i + 1] = data[i + 2] = val;
-    data[i + 3] = 255;
-  }
-
-  ctx.putImageData(imageData, 0, 0);
-}
-
-
-drawPerlinNoise(ctx);
-
-// let canvas = document.createElement('canvas');
-canvas.width = 960;
-canvas.height = 960;
-
-// let ctx = canvas.getContext('2d');
+let octaves = 2; // Number of layers of noise (higher this value, more details in terrain)
+let scale = 0.02; // Determines how much zoomed in our noise is turned out to be, same as below
+let persistence = 0.99; // Determines how much each layer contributes to final image, same as below
 
 let mapArray = [];
 
 // Fill map array with Perlin noise values using octave method
+// Fill map array with Perlin noise values using octave method
 function generateMap(xOffset, yOffset) {
-  let octaves = 4; // Number of layers of noise (higher this value, more details in terrain)
-  let scale = 0.02; // Determines how much zoomed in our noise is turned out to be, same as below
-  let persistence = 0.5; // Determines how much each layer contributes to final image, same as below
-
+  const terrainTypes = [
+    { threshold: 0,   terrain: 'water' },
+    { threshold: 0.4, terrain: 'grass' },
+    { threshold: 0.7, terrain: 'dirt' },
+    { threshold: 1,   terrain: 'mountain' }
+  ];
+  
   for (let x = 0; x < canvas.width; x++) {
     mapArray[x] = [];
     for (let y = 0; y < canvas.height; y++) {
       let noiseVal = 0;
       
-      for (let i = 0; i < octaves; i++) { // Creating multiple Octave for generating more texture 
-        let frequency = Math.pow(2, i);  // Increasing frequency
-        let amplitude = Math.pow(persistence, i); // Decreasing amplitude to simplify the terrain and create fine details 
-        noiseVal += (noise((x + xOffset) * scale * frequency, (y + yOffset) * scale * frequency) * 0.5 + 0.5) * amplitude; // fill map cells with perlin noise generated numbers ranging between 0 to 1.
+      for (let i = 0; i < octaves; i++) { 
+        let frequency = Math.pow(2, i);
+        let amplitude = Math.pow(persistence, i);
+        const val = noise((x + xOffset) * scale * frequency, (y + yOffset) * scale * frequency);
+        noiseVal += val * amplitude; 
       }
-      if(noiseVal >= 0.5){ // if value greater than 0.5 means it contains obstacle or we could say there is ground here.
-          mapArray[x][y] = 1;
-      } else {
-          mapArray[x][y] = 0;
+      
+      let terrainType = 'water';
+      for (let t = 0; t < terrainTypes.length; ++t) {
+        const { threshold, terrain } = terrainTypes[t];
+        if (noiseVal > threshold) {
+          terrainType = terrain;
+        } else {
+          break;
+        }
       }
+      mapArray[x][y] = terrainType;
     }
   }
 }
+
 
 // Function for generating a noise value based on x and y positions using Perlin noise algorithm 
 function noise(x, y) {
@@ -185,8 +88,7 @@ function noise(x, y) {
 }
 
 generateMap(0, 0);
-
-
+console.log(mapArray);
 const TILE_SIZE = 16; // Change this to adjust the size of each tile
 
 function drawMap(map) {
@@ -202,6 +104,12 @@ function drawMap(map) {
         case 'dirt':
           ctx.fillStyle = '#795548'; // brown
           break;
+        case 'water':
+          ctx.fillStyle = '#0000ff'; // blue
+          break;
+        case 'mountain':
+          ctx.fillStyle = '#888888'; // gray
+          break;
         // add cases for other terrain types as needed
       }
 
@@ -210,6 +118,7 @@ function drawMap(map) {
   }
 }
 
+drawMap(mapArray);
 
 
 </script>
