@@ -103,6 +103,7 @@ Preferably only one prompt per commit. But I failed in the beginning.
 
 _You can check the commit history and you'll get the gist._
 
+_I foresee merging nightmares._
 
 ## 🏃‍♀️ Compiling, installing, running
 Just open `index.html` in your favorite web-browser.
