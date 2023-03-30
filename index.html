@@ -594,57 +594,20 @@ function getPixelColor(imageData, x, y) {
   return [r, g, b, a];
 }
 
-
-/*
->>>> NEW Prompt:
-Rewrite this function so that I can pass in multiple colors in the color argument, note how 'color' is already an array.
-So, valid arguments would be:
-[ 0xff, 0xff, 0xff ] or [[ 0xff, 0xff, 0xff ], [0xee, 0xee, 0xee]], ...
-
-Use getPixelColor(imageData, x, y) to get the color of the pixel in the data.
-
 function pixelIsColor(imageData, x, y, color, debug) {
     x = Math.round(x);
     y = Math.round(y);
   
   const [r, g, b, alpha] = getPixelColor(imageData, x, y);
 
-  // if(r === undefined) {
-  //   console.warn("Should not happen:", "lemming:", debug, "len:", lemmings.length, "image:", imageData, r, g, b, alpha, "x:"+x, "y:"+y, "comparing:"+color, "index:"+Math.floor((y * width + x) * 4));
-  //   debug.draw();
-  //   throw "This should not happen"
-  // }
+  if(r === undefined) {
+    console.warn("Should not happen:", "lemming:", debug, "len:", lemmings.length, "image:", imageData, r, g, b, alpha, "x:"+x, "y:"+y, "comparing:"+color, "index:"+Math.floor((y * width + x) * 4));
+    debug.draw();
+    throw "This should not happen"
+  }
 
   return r === color[0] && g === color[1] && b === color[2];
 }
-
->>>>> HUMAN CHEAT: Arrrgh. After 5-6 attempts, I give up. I rewrote the function myself! It kept omitting, e.g.: if(!Array.isArray(color[0])) { color = [ color ]; }
-*/
-function pixelIsColor(imageData, x, y, color, debug) {
-  x = Math.round(x);
-  y = Math.round(y);
-  
-  const [r, g, b, alpha] = getPixelColor(imageData, x, y);
-
-  if(r === undefined) {
-    console.warn("Should not happen:", "lemming:", debug, "len:", lemmings.length, "image:", imageData, r, g, b, alpha, "x:"+x, "y:"+y, "comparing:"+color, "index:"+Math.floor((y * width + x) * 4));
-    throw "This should not happen";
-  }
-
-  if(!Array.isArray(color[0])) {
-    color = [ color ];
-  }
-
-  for(let i = 0; i < color.length; i++) {
-    if(r === color[i][0] && g === color[i][1] && b === color[i][2]) {
-      return true;
-    }
-  }
-
-  return false;  
-}
-
-
 
 /*
 >>> prompt
@@ -781,6 +744,11 @@ I don't need explanation of the code, I need you to fix the code.
 
 */
 
+
+
+
+
+
 function isColorOneOf(needle, haystack) {
   for (let i = 0; i < haystack.length; i++) {
     const color = haystack[i];
@@ -795,6 +763,12 @@ function isColorOneOf(needle, haystack) {
   return false;
 }
 
+const terrainColorBytes = [
+  [102, 102, 102], // rock color 
+  [150, 75, 0] // dirt color
+];
+
+
 const blueBox = [0x00, 0x00, 0xff];
 const greenBox = [0x00, 0xff, 0x00];
 const GRAVITY = 0.03; // Adjust this until falling looks good
@@ -803,8 +777,6 @@ const lemmings = [];
 const waterColorBytes = [0x00, 0x77, 0xbe]; // [0, 119, 190];
 const rockColorBytes  = [0x88, 0x88, 0x88]; // [136, 136, 136];
 const dirtColorBytes  = [0x4a, 0x2e, 0x00]; // [74, 46, 0];
-
-const terrainColorBytes = [ rockColorBytes, dirtColorBytes ];
 
 
 let lastLemmingId = 0;
@@ -839,56 +811,24 @@ pixels either.
 
   // Check if ground is under us or not
   let isGroundUnderneath =
-    pixelIsColor(oldImgData, this.x + this.width / 2, this.y + this.height + 1, dirtColorBytes) ||
-    pixelIsColor(oldImgData, this.x + this.width / 2, this.y + this.height + 1, rockColorBytes);
+    pixelIsColor(
+      oldImgData,
+      this.x + this.width / 2,
+      this.y + this.height + 1,
+      dirtColorBytes
+    ) ||
+    pixelIsColor(
+      oldImgData,
+      this.x + this.width / 2,
+      this.y + this.height + 1,
+      rockColorBytes
+    );
 
   let heightAdjustment = 0;
-  let canClimb = false;
-  
-  if (this.action === "Climber") {
-    // Determine if there is a climbable surface to our left and/or right
-    const climbLeft = pixelIsColor(oldImgData, this.x - 1, this.y, terrainColorBytes);
-    const climbRight = pixelIsColor(oldImgData, this.x + this.width + 1, this.y, terrainColorBytes);
 
-    // If we can climb either way, we choose the steeper slope
-    if (climbLeft || climbRight) {
-      let ascentLength = 0;
-      let maxAscentLength = 0;
-      let stepInDirection;
-
-      console.log("climber");
-
-      if (climbLeft) {
-        stepInDirection = -1; // moving left
-      } else if (climbRight) {
-        stepInDirection = 1; // moving right
-      }
-
-      while (
-        pixelIsColor(
-          oldImgData,
-          this.x + (this.width/2) + (ascentLength * stepInDirection),
-          this.y - (ascentLength + 1),
-          terrainColorBytes
-        )
-      ) {
-        ascentLength++;
-      }
-
-      maxAscentLength = (this.height / 2) + 1; // don't climb higher than half of the sprite's height
-      
-      if (ascentLength <= maxAscentLength) {
-        canClimb = true;
-        
-        // Adjust height and x position accordingly
-        heightAdjustment = ascentLength + 0.1;
-        this.x += stepInDirection * 3;
-      }
-    }    
-  }
-
-  if (!canClimb && isGroundUnderneath) {
+  if (isGroundUnderneath) {
     let distanceToGround = -(this.height / 4);
+
     while (
       this.y + distanceToGround + 1 >= 0 &&
       this.y + distanceToGround + 1 < canvas.height &&
@@ -911,17 +851,96 @@ pixels either.
     if (distanceToGround !== 0) {
       heightAdjustment = this.height - distanceToGround + 0.1; // subtract half the sprite's height
     }
-  }
+  } else if (this.action === "Climber") { // climber checks for climbable terrain
+    const pixelDataLeft = ctx.getImageData(this.x - 1, this.y, 1, this.height).data;
+    const pixelDataRight = ctx.getImageData(this.x + this.width + 1, this.y, 1, this.height).data;
+    let climbableTerrainY = null;
+
+    for (let i = 0; i < this.height; i++) {
+      if (!climbableTerrainY) {
+        const leftPixelIndex = i * 4;
+        const rightPixelIndex = this.width * 4 + i * 4;
+        const pixelColorLeft = [pixelDataLeft[leftPixelIndex], pixelDataLeft[leftPixelIndex + 1], pixelDataLeft[leftPixelIndex + 2]];
+        const pixelColorRight = [pixelDataRight[rightPixelIndex], pixelDataRight[rightPixelIndex + 1], pixelDataRight[rightPixelIndex + 2]];
+
+        // check if the climber can climb on the left or right side of terrain
+        if (pixelIsColor(oldImgData, this.x - 1, this.y + i, rockColorBytes)
+          && !pixelIsColor(oldImgData, this.x - 1, this.y + i - 1, rockColorBytes)
+          && isColorOneOf(pixelColorLeft, terrainColorBytes)) {
+          climbableTerrainY = this.y + i;
+          console.log("climbable 1");
+        } else if (pixelIsColor(oldImgData, this.x + this.width + 1, this.y + i, rockColorBytes)
+          && !pixelIsColor(oldImgData, this.x + this.width + 1, this.y + i - 1, rockColorBytes)
+          && isColorOneOf(pixelColorRight, terrainColorBytes)) {
+          climbableTerrainY = this.y + i;
+          console.log("climbable 2");
+        } else {
+          // DEBUG
+          if(this.y > 20) {
+            // console.log(pixelColorLeft, pixelColorRight);
+            // console.log("Could not climb",
+            //   "First IF: ",
+            //   pixelIsColor(oldImgData, this.x - 1, this.y + i, rockColorBytes),
+            //   !pixelIsColor(oldImgData, this.x - 1, this.y + i - 1, rockColorBytes),
+            //   isSameColor(pixelColorLeft, terrainColorBytes),
+            //   "Second IF: ",
+            //   pixelIsColor(oldImgData, this.x + this.width + 1, this.y + i, rockColorBytes),
+            //   !pixelIsColor(oldImgData, this.x + this.width + 1, this.y + i - 1, rockColorBytes),
+            //   isSameColor(pixelColorRight, terrainColorBytes)
+            // );
+          }
+        }
+      } else { // move lemming upwards along the climbable terrain until it reaches top of terrain or it's not climbable anymore
+        const pixelIndex = (this.x + this.width/2 - 1) * 4 + i * canvas.width*4;
+        const pixelColor = [oldImgData.data[pixelIndex], oldImgData.data[pixelIndex+1], oldImgData.data[pixelIndex+2]];
+
+        if (!isColorOneOf(pixelColor, terrainColorBytes)) {
+          console.log("breaking out of climber")
+          break;
+        }
+
+        climbableTerrainY--;
+      }
+    }
+
+    if (climbableTerrainY) { // move the lemming upwards along the pixels it is climbing on
+      console.log("Will climb!");
+      const climbHeight = this.y - climbableTerrainY + 0.1;
+
+      if (climbHeight > 0) { // if there's still climbing to do
+        heightAdjustment = climbHeight;
+      } else { // we are done climbing
+        this.onGround = true;
+        return;
+      }
+    }
+  } // /climber
 
   // Check if we hit a wall on the x axis
-  const hitWallOnLeft = pixelIsColor(oldImgData, this.x - 1, this.y + this.height / 2, dirtColorBytes) ||
-                        pixelIsColor(oldImgData, this.x - 1, this.y + this.height / 2, rockColorBytes);
+  const hitWallOnLeft =
+    pixelIsColor(oldImgData, this.x - 1, this.y + this.height / 2, dirtColorBytes) ||
+    pixelIsColor(oldImgData, this.x - 1, this.y + this.height / 2, rockColorBytes);
   const hitWallOnRight =
-    pixelIsColor(oldImgData, this.x + this.width + 1, this.y + this.height / 2, dirtColorBytes) ||
-    pixelIsColor(oldImgData, this.x + this.width + 1, this.y + this.height / 2, rockColorBytes);
+    pixelIsColor(
+      oldImgData,
+      this.x + this.width + 1,
+      this.y + this.height / 2,
+      dirtColorBytes
+    ) ||
+    pixelIsColor(
+      oldImgData,
+      this.x + this.width + 1,
+      this.y + this.height / 2,
+      rockColorBytes
+    );
 
   // Check if we've fallen in water
-  const isWaterBelow = pixelIsColor(oldImgData, this.x + this.width / 2, this.y + this.height + 1, waterColorBytes);
+  const isWaterBelow = pixelIsColor(
+    oldImgData,
+    this.x + this.width / 2,
+    this.y + this.height + 1,
+    waterColorBytes
+  );
 
   // Update velocity according to the collision rules
   if (!this.onGround) {
@@ -931,21 +950,7 @@ pixels either.
       this.velY += GRAVITY;
     }
 
-    if (canClimb) {
-      this.y -= heightAdjustment; // move sprite up
-
-      // Don't fall off the edge of the climbable surface
-      if (
-        !pixelIsColor(
-          oldImgData,
-          this.x + (this.width/2),
-          this.y + this.height + 1,
-          terrainColorBytes
-        )
-      ) {
-        canClimb = false;
-      }
-    } else if (isGroundUnderneath) {
+    if (isGroundUnderneath) {
       // console.log(this.velY);
       if (this.velY > this.deadlyVelY) {
         // splat
@@ -992,7 +997,7 @@ pixels either.
   }
 
   // Apply height adjustment
-  if (heightAdjustment !== 0 && !canClimb) {
+  if (heightAdjustment !== 0) {
     if (this.y - heightAdjustment >= 0) {
       this.y -= heightAdjustment; // move sprite up
     } else {
@@ -1006,9 +1011,6 @@ pixels either.
   this.y += this.velY;
   this.age++;
 },
-
-
-
 
   draw: function() {
     // Draw the new lemming position
@@ -1539,9 +1541,6 @@ can also ascend steeper obstacles.
 When it is climbing these steep obstacles, move it upwards along Y axis, but make sure the lemming move
 along the pixels it is climbing on (that is, on either side of the lemming).
 
-If a climber is climbing, you should probably not do the heightAdjustment as that only applies if the lemming
-is walking on the ground.
-
 As a hint, since you are struggling, you want to put the functionality for this inside if(this.action === "Climber") { ... },
 in the appropriate place in the update function.
 
@@ -1581,9 +1580,6 @@ const terrainColorBytes = [
   [150, 75, 0] // dirt color
 ];
 
-Don't use pixelIsColor to check if pixels are climbable surfaces. Use isColorOneOf(needle, haystack) instead, where
-needle is the pixel's color, and haystack is an array of several colors (e.g. the ones in terrainColorBytes).
-
 const canvas = document.getElementById("canvas");
 const ctx = canvas.getContext("2d");
 
@@ -1610,8 +1606,18 @@ const Lemming = {
 
   // Check if ground is under us or not
   let isGroundUnderneath =
-    pixelIsColor(oldImgData, this.x + this.width / 2, this.y + this.height + 1, dirtColorBytes) ||
-    pixelIsColor(oldImgData, this.x + this.width / 2, this.y + this.height + 1, rockColorBytes);
+    pixelIsColor(
+      oldImgData,
+      this.x + this.width / 2,
+      this.y + this.height + 1,
+      dirtColorBytes
+    ) ||
+    pixelIsColor(
+      oldImgData,
+      this.x + this.width / 2,
+      this.y + this.height + 1,
+      rockColorBytes
+    );
 
   let heightAdjustment = 0;
 
@@ -1637,20 +1643,36 @@ const Lemming = {
       distanceToGround++;
     }
 
-    if (distanceToGround !== 0) {
-      heightAdjustment = this.height - distanceToGround + 0.1; // subtract half the sprite's height
-    }
+    if (distanceToGround !== 0)
+      heightAdjustment =
+        this.height - distanceToGround + 0.1; // subtract half the sprite's height
   }
 
   // Check if we hit a wall on the x axis
-  const hitWallOnLeft = pixelIsColor(oldImgData, this.x - 1, this.y + this.height / 2, dirtColorBytes) ||
-                        pixelIsColor(oldImgData, this.x - 1, this.y + this.height / 2, rockColorBytes);
+  const hitWallOnLeft =
+    pixelIsColor(oldImgData, this.x - 1, this.y + this.height / 2, dirtColorBytes) ||
+    pixelIsColor(oldImgData, this.x - 1, this.y + this.height / 2, rockColorBytes);
   const hitWallOnRight =
-    pixelIsColor(oldImgData, this.x + this.width + 1, this.y + this.height / 2, dirtColorBytes) ||
-    pixelIsColor(oldImgData, this.x + this.width + 1, this.y + this.height / 2, rockColorBytes);
+    pixelIsColor(
+      oldImgData,
+      this.x + this.width + 1,
+      this.y + this.height / 2,
+      dirtColorBytes
+    ) ||
+    pixelIsColor(
+      oldImgData,
+      this.x + this.width + 1,
+      this.y + this.height / 2,
+      rockColorBytes
+    );
 
   // Check if we've fallen in water
-  const isWaterBelow = pixelIsColor(oldImgData, this.x + this.width / 2, this.y + this.height + 1, waterColorBytes);
+  const isWaterBelow = pixelIsColor(
+    oldImgData,
+    this.x + this.width / 2,
+    this.y + this.height + 1,
+    waterColorBytes
+  );
 
   // Update velocity according to the collision rules
   if (!this.onGround) {
