@@ -115,11 +115,18 @@ Just open `index.html` in your favorite web-browser.
 ## TODO
 There is a lot. It would be nice if there was a list somewhere. There isn't. Just do what you want to do.
 
-Some thoughts: make it pretty, animations (maybe their green hair should move in the wind, maybe they have legs!),
-shaders, sound, speach bubbles (Oh no!), add the missing types of green-blue blocks (the builder looks particularly nasty on paper),
-the goal of the game, score, better maps, levels. ...
-
-README TODO: Maybe add a screenshot(s) or video? 
+Some thoughts:
+- make it pretty,
+- animations (maybe their green hair should move in the wind, maybe they have legs!),
+- shaders,
+- sound,
+- speach bubbles (Oh no!),
+- add the missing types of green-blue blocks (the builder looks particularly nasty on paper),
+- the goal of the game,
+- score,
+- better maps,
+- levels,
+- ... yeah ...
 
 
 ## ✍️ An example
