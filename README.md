@@ -2,7 +2,7 @@
 Llemmings is a game written by Large Language Models (LLM), like ChatGPT and GPT-4. The
 intention is that it is _only_ written by LLMs.
 
-Your job, as a human, is to copy and paste code.
+**Your job, as a human, is to copy and paste code.**
 
 There are a few exceptions, such as removing redeclared variables and similar small things.
 But other than that, the code should be written by the LLM.
