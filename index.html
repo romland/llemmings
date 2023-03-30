@@ -66,11 +66,11 @@ function RNG(seed) {
     }
 }
 
-// const currentSeed = Date.now();   // "random"
+const currentSeed = Date.now();   // "random"
 // const currentSeed = 1680052412448;
 // const currentSeed = 1680052705344;
 // const currentSeed = 1680055455055;
-const currentSeed = 1680090362081; // Cliffy!
+// const currentSeed = 1680197028534; // Cliffy!
 
 console.log("Current seed: ", currentSeed);
 Math.random = RNG(currentSeed);
