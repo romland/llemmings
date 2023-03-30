@@ -414,6 +414,7 @@ const Lemming = {
   isSelected: false,
   onGround: false,
   isDead: false,
+  action: null,
   update: function() {
     if(this.y >= (canvas.height - (this.height+this.velY+1))) {
         this.isDead = true;
@@ -445,7 +446,7 @@ const Lemming = {
     const hitWallOnRight =
         pixelIsColor(oldImgData, this.x + this.width + 1, this.y + this.height / 2, dirtColorBytes) ||
         pixelIsColor(oldImgData, this.x + this.width + 1, this.y + this.height / 2, rockColorBytes); 
-    
+
     // Check if we've fallen in water
     const isWaterBelow =
         pixelIsColor(oldImgData, this.x + this.width / 2, this.y + this.height + 1, waterColorBytes);
@@ -468,7 +469,25 @@ const Lemming = {
       // Start falling if there's no ground
       this.onGround = false;
     }
-    
+
+    // Check if there are other lemmings that are blockers
+    for (let i = 0; i < lemmings.length; i++) {
+      const otherLemming = lemmings[i];
+
+      if (
+        otherLemming !== this &&
+        !otherLemming.isDead &&
+        otherLemming.action === "Blocker" &&
+        this.x + this.width > otherLemming.x &&
+        this.x < otherLemming.x + otherLemming.width &&
+        this.y + this.height > otherLemming.y &&
+        this.y < otherLemming.y + otherLemming.height
+      ) {
+        console.log("Ran into a blocker?", this.x, this.y)
+        this.velX *= -1;
+      }
+    }
+
     if (hitWallOnLeft || hitWallOnRight || this.x <= this.width || this.x >= canvas.width-this.width) {
       this.velX *= -1;
     }
@@ -512,7 +531,7 @@ const Lemming = {
 function spawnLemming() {
   if(isPaused)
     return;
-  if(lemmings.length > 0) {
+  if(lemmings.length > 5) {
     return;
   }
 
@@ -840,7 +859,276 @@ canvas.addEventListener('click', (event) => {
   });
 });
 
+/*
+>>>> Let's use ChatGPT to describe our actions first:
+What type of lemmings were there in the game Lemmings?
+
+>>>> we want actions
+Great. Using our newly selected lemming, we now want some actions we can apply to that lemming.
+Perhaps buttons for these actions should be in plain HTML instead of on the canvas.
+
+The following existing code might be useful:
+
+const Lemming = {
+  id: -49152,
+  age: 0,
+  x: 0,
+  y: 0,
+  width: 10,
+  height: 20,
+  velX: 0,
+  velY: 0,
+  maxVelX: 0.2,
+  deadlyVelY: 3,
+  isSelected: false,
+  onGround: false,
+  isDead: false,
+  update: function() {
+    if(this.y >= (canvas.height - (this.height+this.velY+1))) {
+        this.isDead = true;
+        return;
+    }
+
+    // Check if ground is under us or not
+    let isGroundUnderneath = pixelIsColor(oldImgData, this.x + this.width / 2, this.y + this.height + 1, dirtColorBytes) || 
+                            pixelIsColor(oldImgData, this.x + this.width / 2, this.y + this.height + 1, rockColorBytes);
+
+    let heightAdjustment = 0;
+
+    if (isGroundUnderneath) {
+        let distanceToGround = -(this.height/4);
+
+        // TODO need safety guards for canvas boundary and probably a sanity check to not iterate more than N pixels (N = height?)
+        while (!pixelIsColor(oldImgData, this.x + this.width / 2, this.y + distanceToGround + 1, dirtColorBytes)
+            && !pixelIsColor(oldImgData, this.x + this.width / 2, this.y + distanceToGround + 1, rockColorBytes)) {
+            distanceToGround++;
+        }
+        if(distanceToGround !== 0)
+          heightAdjustment = (this.height) - distanceToGround + 0.1; // subtract half the sprite's height
+    }
+
+    // Check if we hit a wall on the x axis
+    const hitWallOnLeft =
+        pixelIsColor(oldImgData, this.x - 1, this.y + this.height / 2, dirtColorBytes) ||
+        pixelIsColor(oldImgData, this.x - 1, this.y + this.height / 2, rockColorBytes);
+    const hitWallOnRight =
+        pixelIsColor(oldImgData, this.x + this.width + 1, this.y + this.height / 2, dirtColorBytes) ||
+        pixelIsColor(oldImgData, this.x + this.width + 1, this.y + this.height / 2, rockColorBytes); 
+    
+    // Check if we've fallen in water
+    const isWaterBelow =
+        pixelIsColor(oldImgData, this.x + this.width / 2, this.y + this.height + 1, waterColorBytes);
+    
+    // Update velocity according to the collision rules
+    if (!this.onGround) {
+      this.velY += GRAVITY;
+      
+      if (isGroundUnderneath) {
+        // console.log(this.velY);
+        if(this.velY > this.deadlyVelY) {
+          // splat
+          this.isDead = true;
+          return;
+        }
+        this.onGround = true;
+        this.velY = 0;
+      }
+    } else if (this.onGround && !isGroundUnderneath) {
+      // Start falling if there's no ground
+      this.onGround = false;
+    }
+    
+    if (hitWallOnLeft || hitWallOnRight || this.x <= this.width || this.x >= canvas.width-this.width) {
+      this.velX *= -1;
+    }
+    
+    if (isWaterBelow || this.y >= canvas.height-this.height) {
+      this.isDead = true;
+    }
+
+    // Apply height adjustment
+    if (heightAdjustment !== 0) {
+        this.y -= heightAdjustment; // move sprite up
+    }
+    
+    // Move the lemming
+    this.x += this.velX;
+    this.y += this.velY;
+    this.age++;
+  },
+  draw: function() {
+    // Draw the new lemming position
+    ctx.fillStyle = 'rgb(' + blueBox.join(',') + ')';
+    ctx.fillRect(this.x, this.y, this.width, this.height);
+
+    ctx.fillStyle = 'rgb(' + greenBox.join(',') + ')';
+    ctx.fillRect(this.x, this.y, (this.width/3) - 1, (this.height/4) - 1);
+    ctx.fillRect(this.x + this.width - (this.width/3), this.y, (this.width/3) - 1, (this.height/4) - 1);
+
+    // add this to the draw method of the Lemming object
+    if (this.isSelected) {
+      ctx.strokeStyle = 'red';
+      ctx.strokeRect(this.x, this.y, this.width, this.height);
+    }
+
+    // Debug
+    ctx.strokeStyle = "white";
+    ctx.strokeText(this.id, this.x + 1, this.y + 13)
+  }
+};
+
+Add actions for:
+Climber: This lemming can climb vertical surfaces such as walls and cliffs.
+
+Floater: This lemming can use a parachute-like device to float harmlessly down from high places.
+
+Bomber: This lemming self-destructs after a short time delay, creating a hole in the ground that other lemmings may enter.
+
+Blocker: This lemming stops moving and turns into an immovable wall, preventing other lemmings from passing through.
+
+Builder: This lemming can create a diagonal or horizontal bridge over gaps, making it possible for other lemmings to cross.
+
+Basher: This lemming tunnels horizontally through soft terrain such as dirt or snow, allowing others to pass.
+
+Miner: This lemming creates a downward-sloping tunnel, making it possible for other lemmings to descend steep inclines.
+
+Digger: This lemming digs straight down into the ground, creating a vertical pit that other lemmings may use to jump down or climb up.
+*/
+
+function applyAction(action) {
+  // Find the selected lemming
+  const selectedLemming = lemmings.find((lemming) => lemming.isSelected);
+
+  // Note: I had to add this myself
+  if(!selectedLemming) {
+    console.log("no selected lemming");
+    return;
+  }
+
+  // Note: I had to add this myself
+  if(selectedLemming.action) {
+    console.log("lemming already had an action");
+
+  }
+  // Apply the action to the selected lemming
+  switch (action) {
+    case 'Climber':
+      break;
+    case 'Floater':
+      //add floating behavior here
+      break;
+    case 'Bomber':
+      //add bombing behavior here
+      break;
+    case 'Blocker':
+      //add blocking behavior here
+      /*
+      >>> Prompt
+      Can you give me the code for how the blocker should work?
+      Remember that the other lemmings should not be able to walk past it, other lemmings should now treat the Blocker like an impenetrable wall -- remember to check whether the lemming is on the same Y as the blocker too -- you should probably check the entire collision box of the lemming instead of a single pixel.
+      The Blocker itself should stop moving on the X axis.
+      Only one action can be applied to a lemming.
+      Deselect the lemming once an action is applied.
+      Tell me what I need to add to the lemming.update() method too.
+
+      >>>> Update to the result of the above:
+      Update the code, which sits in Lemming.update(), instead of checking only a single pixel on x, it should check for two boxes colliding (lemmings),
+      width, height, x, y, velX, velY are already defined in the object.
+      // force other lemmings to turn around if they hit the blocker
+      lemmings.forEach(otherLemming => {
+        if (otherLemming !== this && !otherLemming.isDead && otherLemming.action === "Blocker") {
+          if ((otherLemming.x > this.x && otherLemming.velX > 0) || 
+              (otherLemming.x < this.x && otherLemming.velX < 0)) {
+            otherLemming.velX *= -1;
+            console.log("Ran into a blocker?", this.x, this.y)
+          }
+        }
+      });
+      Instead of forEach, use a for(...) loop. Only update the code above.
+
+      >>> And more ...
+      When the Blocker action is applied on one lemming, there might be other lemmings overlapping it, move the overlapping other lemmings to a random side of the Blocker when the action is applied. Just give me the new code.
+
+      >>> Ugh, it got confused, let's try another prompt...
+      I think I'd just rather call moveOverlappingLemmingsToRandomSideOfBlocker() Tell me how that function should look
+
+      */
+      selectedLemming.action = "Blocker";
+      selectedLemming.velX = 0;
+      moveOverlappingLemmingsToRandomSideOfBlocker(selectedLemming);
+      selectedLemming.isSelected = false;
+      break;
+    case 'Builder':
+      //add building behavior here
+      break;
+    case 'Basher':
+      //add bashing behavior here
+      break;
+    case 'Miner':
+      //add mining behavior here
+      break;
+    case 'Digger':
+      //add digging behavior here
+      break;
+    default:
+      console.log(`Invalid action: ${action}`);
+      break;
+  }
+}
+
+// TODO: This is untested...
+function moveOverlappingLemmingsToRandomSideOfBlocker(blocker) {
+  lemmings.forEach((lemming) => {
+    if (lemming === blocker || !isColliding(lemming, blocker)) {
+      return;
+    }
+
+    // determine which side of the blocker the other lemming should be on
+    const side = Math.random() < 0.5 ? -1 : 1; // -1 for left side, 1 for right side
+
+    // move the other lemming away from the blocker
+    lemming.x += blocker.width / 2 * side;
+  });
+}
+// helper function to check for collisions between two objects
+function isColliding(obj1, obj2) {
+  return obj1.x + obj1.width > obj2.x &&
+         obj1.x < obj2.x + obj2.width &&
+         obj1.y + obj1.height > obj2.y &&
+         obj1.y < obj2.y + obj2.height;
+}
+
+
+function stopAction() {
+  const selectedLemming = lemmings.find((lemming) => lemming.isSelected);
+  if (selectedLemming) {
+    selectedLemming.action = null;
+    selectedLemming.isSelected = false;
+  }
+}
 </script>
+
+<!-- haha, this made me smile
+>>> Can you give me some emoji's I can use for the action buttons climber, floater, etc ... it looks so dull with text
+Climber: 🧗
+Floater: 🪂
+Bomber: 💣
+Blocker: 🚫
+Builder: 🏗️
+Basher: 🤜💥🤛
+Miner: ⛏️
+Digger: 🕳️
+-->
+<div id="lemming-actions">
+  <button onclick="applyAction('Climber')">🧗<!-- Climber --></button>
+  <button onclick="applyAction('Floater')">🪂<!-- Floater--></button>
+  <button onclick="applyAction('Bomber')">💣<!-- Bomber--></button>
+  <button onclick="applyAction('Blocker')">🚫<!-- Blocker--></button>
+  <button onclick="applyAction('Builder')">🏗️<!-- Builder--></button>
+  <button onclick="applyAction('Basher')">🤜💥🤛<!-- Basher--></button>
+  <button onclick="applyAction('Miner')">⛏️<!-- Miner--></button>
+  <button onclick="applyAction('Digger')">🕳️<!-- Digger--></button>
+</div>
 
 </body>
 </html>
