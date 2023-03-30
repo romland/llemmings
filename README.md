@@ -150,5 +150,6 @@ The age of average (text).
 How clever/dumb/neither these LLMs are.  
 How it still feels like programming. But is it.  
 It is still creating. Which is what we like. Right.  
+This project is education.  
 
 Oh, woe is us.
