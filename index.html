@@ -6,11 +6,50 @@
         canvas {
             border: 1px solid black;
         }
+        button {
+          font-size: 40px;
+        }
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #F0F0F0;
+            margin: 0;
+            padding: 0;
+        }
+
+        header {
+            background-color: black;
+            color: #F0F0F0;
+            padding: 10px;
+            text-align: center;
+        }
+
+        p {
+            font-size: 16px;
+            margin-top: 0;
+        }
+
+        a {
+            color: #F0F0F0;
+            text-decoration: none;
+        }
+
+        a:hover {
+            color: grey;
+        }
     </style>
 
 
 </head>
 <body>
+
+<!--
+  >>> Prompt for CSS above, and the HTML below:
+  Give me a fancy header for an HTML page that links to github and github readme
+-->
+<header>
+    <p>What is this? <a href="https://github.com/romland/llemmings">See Github</a>.</p>
+</header>
+
 
     <canvas id="canvas" width="800" height="600"></canvas>
 
@@ -1964,12 +2003,6 @@ Digger: 🕳️
   <button onclick="applyAction('Miner')">⛏️<!-- Miner--></button>
   <button onclick="applyAction('Digger')">🕳️<!-- Digger--></button>
 </div>
-
-<style>
-  button {
-    font-size: 40px;
-  }
-</style>
 
 </body>
 </html>
