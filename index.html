@@ -279,9 +279,9 @@ drawMap();
 >>>>>> Next attempt at prompt:
 Update the map generation below to not only give me platforms, but add steep cliff
 walls here and there, these walls should only be placed on top of platforms and should have
-a bit of randomly generated jagged edges. The cliff walls can be quite tall and take up quite
-a bit of the full map (make this configurable).
-The cliff walls should be blue (0000ff), for now.
+a bit of randomly generated jagged edges. The cliff walls can be quite tall (a few platforms high at most)
+and take up quite a bit of width (make this configurable). The cliff walls can be symmetrical, but they
+don't have to be. The cliff walls should be blue (0000ff), for now.
 
 You can picture the cliff walls like this:
 
@@ -299,10 +299,21 @@ or
  /  \
 /    \
 
+or
+ |\
+ | \
+ |  \
+ /   \
+
 etc. 
+
 They should look a bit jagged and randomly placed but the base of the walls must always be on top of a platform.
 
 The code for generating the platforms is below, finish the drawCliffs method to add these cliff walls.
+
+Just give me the new code, no need to explain anything, I just want to paste in the whole thing
+with the cliff-wall solution in it.
+
 
 // Set canvas dimensions and context
 const canvas = document.querySelector('canvas');
@@ -448,54 +459,52 @@ function drawMap() {
     ctx.fill();
   }
 }
-
 function drawCliffs() {
-  platforms.forEach((platform) => {
-    const minWallWidth = platform.halfWidth * 0.2; //Minimum width of the Wall
-    const maxWallWidth = platform.halfWidth * 1.5; //Maximum width of the Wall
-    const wallHeight = Math.random() * platformHeight; //Randomize Height of the Wall
-    
-    // Generate Random Points to Create Jagged Edges on Each Platform
-    let points = [];
-    let x = platform.x - platform.halfWidth;
-    while (x < platform.x + platform.halfWidth) {
-      let y = platform.y - (Math.random() * platformHeight / 3 + wallHeight);
-      points.push({x: x, y: y});
-      x += Math.random() * maxWallWidth;
-    }
-    
-    // Create Steep Cliff Walls That Drops Downwards from the Left and Right Edge of Each Point to the Coast 
-    ctx.fillStyle = '#0000ff';
-    ctx.beginPath();
-    ctx.moveTo(points[0].x, points[0].y);
-    for(let i=1; i<points.length; i++) 
-    {
-        bezierCurve(ctx, points[i-1], points[i]); //Jagged Edge between Random Points
-    }
-
-    //Add Ending Edge from Last Point to End of the Canvas
-    ctx.lineTo(canvas.width, canvas.height - platformHeight);
-    ctx.lineTo(0, canvas.height - platformHeight);
-    ctx.closePath();
-    ctx.fill();
-  });
+  const wallWidth = 150; // Set the width of the wall
   
-  //Helper Function to Draw Beziers for the JaggedEdges
-  function bezierCurve(ctx, startPoint, endPoint) {
-        var diffX = Math.abs(startPoint.x - endPoint.x);
-        var diffY = Math.abs(startPoint.y - endPoint.y);
-        var startExtraX = diffX * 0.1;
-        var startExtraY = diffY * 0.3;
-        var controlExtraX = diffX * 0.2;
-        var controlExtraY = diffY * 0.05;
-        let cx1 = startPoint.x + startExtraX;
-        let cy1 = startPoint.y - startExtraY;
-        let cx2 = endPoint.x - controlExtraX;
-        let cy2 = endPoint.y + controlExtraY;
-        let x2 = endPoint.x;
-        let y2 = endPoint.y;
-        ctx.bezierCurveTo(cx1, cy1, cx2, cy2, x2, y2);
-  }
+  // Loop through all platforms to add cliff walls
+  platforms.forEach((platform) => {
+    const x = platform.x;
+    const y = platform.y;
+    
+    // Determine whether to add cliff walls or not
+    if (Math.random() < 0.5) {
+      ctx.fillStyle = rockColor;//"#0000ff";
+      
+      // Add left cliff wall
+      const leftX = x - platform.halfWidth - wallWidth;
+      const wallHeight = platformHeight * 1.5;
+      ctx.beginPath();
+      ctx.moveTo(leftX, y);
+      let currentX = leftX;
+      let nextX = leftX + Math.random() * (wallWidth / 2) + (wallWidth / 2);
+      let nextY = y - Math.random() * (wallHeight / 2) - (wallHeight / 2);
+      while (currentX < x - platform.halfWidth) {
+        ctx.lineTo(nextX, nextY);
+        currentX = nextX;
+        nextX = currentX + Math.random() * (wallWidth / 2) + (wallWidth / 4);
+        nextY = y - Math.random() * (wallHeight / 2) - (wallHeight / 4);
+      }
+      ctx.lineTo(x - platform.halfWidth, y);
+      ctx.fill();
+
+      // Add right cliff wall
+      const rightX = x + platform.halfWidth;
+      ctx.beginPath();
+      ctx.moveTo(rightX, y);
+      currentX = rightX;
+      nextX = rightX - Math.random() * (wallWidth / 2) - (wallWidth / 2);
+      nextY = y - Math.random() * (wallHeight / 2) - (wallHeight / 2);
+      while (currentX > x + platform.halfWidth) {
+        ctx.lineTo(nextX, nextY);
+        currentX = nextX;
+        nextX = currentX - Math.random() * (wallWidth / 2) - (wallWidth / 4);
+        nextY = y - Math.random() * (wallHeight / 2) - (wallHeight / 4);
+      }
+      ctx.lineTo(x + platform.halfWidth, y);
+      ctx.fill();
+    }
+  });
 }
 
 
