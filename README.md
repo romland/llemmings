@@ -66,6 +66,7 @@ TODO: Need to figure out how to best connect prompts to a commit and yet have pr
       available for easy copy/pasting. It could be that I need to write something for
       this.
 TODO: At the end of the day, once figured out, there should be notes here about how you organize your prompts!
+TODO: Having prompts in the source code is getting too painful now.
 
 
 ## Code and quality
@@ -74,7 +75,7 @@ Up til now, quality has not been a big concern. It's one giant steamy pile of sp
 It's been handy to have everything in one file for prompting.
 
 At some point down the line, probably soon, refactoring needs to be done. The `update` function in the `Lemming`
-object is especially unwieldy. To the point where I grin a little every time I see it.
+object is especially unwieldy. To the point where I grin every time I see it.
 
 
 ### Cheating
