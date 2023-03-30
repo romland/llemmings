@@ -391,17 +391,6 @@ const lemming = {
     const isWaterBelow =
         pixelIsColor(oldImgData, this.x + this.width / 2, this.y + this.height + 1, waterColor);
     
-// console.log(this.id, getPixelColor(oldImgData, this.x, this.y), this.x, this.y, this.width, this.height);
-// this.draw();
-// throw "f";
-    
-    // console.log(
-    //     isGroundUnderneath,
-    //     hitWallOnLeft,
-    //     hitWallOnRight,
-    //     isWaterBelow
-    // );
-
     // Update velocity according to the collision rules
     if (!this.onGround) {
       this.velY += GRAVITY;
@@ -484,6 +473,7 @@ const lemming = {
   velY: 0,
   onGround: false,
   isDead: false,
+  update: function () {  Do NOT change this function  }
   draw: function() {
     // Draw the blue box and green hair
     ctx.fillStyle = 'rgb(' + blueBox.join(',') + ')';
@@ -519,55 +509,46 @@ These variables are already declared, use them.
 const canvas = document.getElementById("canvas");
 const ctx = canvas.getContext("2d");
 
-I want to remind you that I don't think calling save() and restore() on the context will save 
-and restore any pixel data. You need to figure out how to do that.
+Do not use ctx.save() and ctx.restore().
 
 It is important that you use the declared things I mentioned above and just give me the code with
 minor comments -- be brief, don't explain anything in plain text.
 */
 
-// Initialize dirtyRegions with a single rect covering the entire canvas
-// Now, why would you do that ... let dirtyRegions = [ {x: 0, y: 0, width: canvas.width, height: canvas.height} ];
-let dirtyRegions = [  ];
+// Keep track of the previous background with a buffer
+const backgroundBuffer = document.createElement('canvas');
+backgroundBuffer.width = canvas.width;
+backgroundBuffer.height = canvas.height;
 
 function update() {
-  // Clear each dirty region
-  dirtyRegions.forEach((region) => {
-    ctx.clearRect(region.x, region.y, region.width, region.height);
-  });
-  
-  // Reset dirtyRegions
-  dirtyRegions = [];
-  
   // Update and draw each lemming
   lemmings.forEach((lemming) => {
-    const previousCoords = { x: lemming.x, y: lemming.y };
-    lemming.update();
-    
-    // Calculate the dirty region (the union of the previous and new rectangles)
-    const dirtyX = Math.min(previousCoords.x, lemming.x);
-    const dirtyY = Math.min(previousCoords.y, lemming.y);
-    const dirtyWidth = Math.max(previousCoords.x + lemming.width, lemming.x + lemming.width) - dirtyX;
-    const dirtyHeight = Math.max(previousCoords.y + lemming.height, lemming.y + lemming.height) - dirtyY;
+    // Save previous background
+    const x = lemming.x - lemming.velX;
+    const y = lemming.y - lemming.velY;
+    const width = lemming.width + Math.abs(lemming.velX);
+    const height = lemming.height + Math.abs(lemming.velY);
+    const prevBackground = ctx.getImageData(x, y, width, height);
 
-    // I thought it should remove a few pixels around it since it leaves a trail... But it seems that was not the case!
-    // const dirtyRegion = { x: dirtyX - 2, y: dirtyY - 2, width: dirtyWidth + 4, height: dirtyHeight + 4 };
-    const dirtyRegion = { x: dirtyX, y: dirtyY, width: dirtyWidth, height: dirtyHeight };
-    
-    // Add the dirty region to the array
-    dirtyRegions.push(dirtyRegion);
-    
-    // Redraw the lemming
+    // Clear previous lemming location
+    ctx.putImageData(backgroundBuffer.getContext('2d')
+      .getImageData(x, y, width, height), x, y);
+
+    lemming.update();
     lemming.draw();
-    
+
     if (lemming.isDead) {
       // Remove dead lemmings from the array as optimization
       const index = lemmings.indexOf(lemming);
       lemmings.splice(index, 1);
       console.log("removing dead lemming");
+    } else {
+      // Restore previous background
+      ctx.putImageData(prevBackground, x, y);
+      backgroundBuffer.getContext('2d').putImageData(prevBackground, x, y);
     }
   });
-  
+
   // Schedule the next frame
   requestAnimationFrame(update);
 }
