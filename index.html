@@ -411,6 +411,7 @@ const Lemming = {
   velY: 0,
   maxVelX: 0.2,
   deadlyVelY: 3,
+  isSelected: false,
   onGround: false,
   isDead: false,
   update: function() {
@@ -494,6 +495,12 @@ const Lemming = {
     ctx.fillStyle = 'rgb(' + greenBox.join(',') + ')';
     ctx.fillRect(this.x, this.y, (this.width/3) - 1, (this.height/4) - 1);
     ctx.fillRect(this.x + this.width - (this.width/3), this.y, (this.width/3) - 1, (this.height/4) - 1);
+
+    // add this to the draw method of the Lemming object
+    if (this.isSelected) {
+      ctx.strokeStyle = 'red';
+      ctx.strokeRect(this.x, this.y, this.width, this.height);
+    }
 
     // Debug
     ctx.strokeStyle = "white";
@@ -625,6 +632,7 @@ update() code went here
 let background; // global variable to store canvas image data
 let isPaused = false;
 
+/*
 canvas.addEventListener('click', () => {
   isPaused = !isPaused;
 
@@ -635,7 +643,7 @@ canvas.addEventListener('click', () => {
     );
   });
 });
-
+*/
 function getBackground() {
   background = ctx.getImageData(0, 0, canvas.width, canvas.height);
 }
@@ -777,7 +785,60 @@ Particle.prototype.draw = function() {
   ctx.fillRect(this.x, this.y, 2, 2);
 };
 
+/*
+>>>> I want lemmings selectable so I can apply actions to them...
 
+We're making a game. I need to add something.
+
+Given lemmings that looks like this
+const Lemming = {
+  id: -49152,
+  age: 0,
+  x: 0,
+  y: 0,
+  width: 10,
+  height: 20,
+  velX: 0,
+  velY: 0,
+  maxVelX: 0.2,
+  deadlyVelY: 3.5,
+  onGround: false,
+  isDead: false,
+  update: function() { ... }
+  draw: function() { ... }
+}
+
+Additionally, the following is already declared in the game:
+const canvas = document.getElementById("canvas");
+const ctx = canvas.getContext("2d");
+
+
+The lemmings are drawn on the canvas, I want to be able to select them to eventually apply an action
+to them, for instance "stop walking". You can add that action, but know that I will add more actions
+later. Indicate with a square around the lemming that is currently selected.
+
+It is important that you use the declared things I mentioned above and just give me the code with
+minor comments -- be brief, don't explain anything in plain text.
+*/
+// add this after declaring canvas and ctx
+canvas.addEventListener('click', (event) => {
+  const rect = canvas.getBoundingClientRect();
+  const mouseX = event.clientX - rect.left;
+  const mouseY = event.clientY - rect.top;
+
+  lemmings.forEach((lemming) => {
+    if (
+      mouseX >= lemming.x &&
+      mouseX <= lemming.x + lemming.width &&
+      mouseY >= lemming.y &&
+      mouseY <= lemming.y + lemming.height
+    ) {
+      lemming.isSelected = true;
+    } else {
+      lemming.isSelected = false;
+    }
+  });
+});
 
 </script>
 
