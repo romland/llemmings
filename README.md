@@ -54,7 +54,6 @@ It will hurt to debug a snippet of code to figure out how you should change your
 Sometimes you surprise yourself and just one-shot a prompt. It all just works on first try.
 One such example was the death explosion. It was a happy moment.
 
-
 ### 🗃️ Organizing prompts
 The prompts are in the code now. This is not going to hold much longer. So I need to figure out how to
 best connect prompts to a code to have them available for easy copy/pasting. It could be that I need
@@ -106,7 +105,8 @@ Preferably only one prompt per commit. But I failed in the beginning.
 
 _You can check the commit history and you'll get the gist._
 
-_I foresee merging nightmares._
+Maybe the commit history will be the most interesting part of this project.
+
 
 ## 🏃‍♀️ Compiling, installing, running
 Just open `index.html` in your favorite web-browser.
