@@ -303,7 +303,7 @@ as that looks a bit silly and artificial. Make them look organic (procedural, ra
 should also only extend upwards, never downwards as the cliff base should be the platform they are placed on.
 The cliff walls should be blue (0000ff), for now.
 
-You can picture the cliff walls like this:
+You can picture the cliff walls like this (illustration as ASCII art):
 
    ./\   /\
    |  \./  \
@@ -416,7 +416,6 @@ function drawCliffs() {
 drawMap();
 drawCliffs();
 */
-
 // Set canvas dimensions and context
 const canvas = document.querySelector('canvas');
 canvas.width = 800;
@@ -476,6 +475,8 @@ function drawMap() {
       } else {
         ctx.fillStyle = dirtColor;
       }
+      platform.color = ctx.fillStyle;
+
       ctx.lineTo(x, height);
     }
     ctx.lineTo(platform.x + platform.halfWidth, platform.y);
@@ -485,49 +486,40 @@ function drawMap() {
 }
 
 function drawCliffs() {
+  console.log(platforms);
   platforms.forEach((platform) => {      
-    if (platform.y + platformHeight < canvas.height - 50) { // don't add cliffs at top of canvas
-      
-      // Set cliff dimensions
-      const cliffHeight = canvas.height * (Math.random() * 0.25 + 0.15);       // random wall heights between 15% and 40% of canvas height
-      const cliffWidth = platform.halfWidth * (Math.random() * 0.5 + 0.3);     // random widths between 30% and 80% of platform width
-    
-      let lastX = platform.x - platform.halfWidth;
-      let lastY = platform.y - platformHeight/1.5;
-    
-      ctx.fillStyle = "#0000ff";  // make the cliff blue for now
-      ctx.beginPath();
-      ctx.moveTo(lastX, lastY);
-      
-      while (lastX < platform.x + platform.halfWidth) {
-        // add jaggedness to the cliff by randomly moving up or down as we move across it
-        lastX += Math.random() * cliffWidth/8;                            
-        lastY -= Math.random() * cliffHeight/4;
-        
-        if (lastX > platform.x + platform.halfWidth) {
-          break;
-        }
-        
-        ctx.lineTo(lastX, lastY);
-              
-        lastX += Math.random() * cliffWidth/8;                           
-        lastY += Math.random() * cliffHeight/4;
-
-        ctx.lineTo(lastX, lastY);
-      }
+    const wallWidth = platform.halfWidth * Math.random() * 2.5;
+    const cliffHeight = Math.random() * platformHeight * 2;
+    const cliffTopX = platform.x - wallWidth / 2;
+    const cliffBottomX = platform.x + wallWidth / 2;
+    let posX = cliffTopX;
   
-      // connect the last point in the line to the edge of the platform
-      ctx.lineTo(platform.x + platform.halfWidth, platform.y - cliffHeight);
-      ctx.lineTo(platform.x - platform.halfWidth, platform.y - cliffHeight);
+    while (posX <= cliffBottomX) {
+      let segmentWidth = Math.random() * 10;
+      let segmentHeight = Math.random() * 25;
+    
+      ctx.beginPath();
+      ctx.moveTo(posX, platform.y - cliffHeight);
+      while (segmentWidth > 0 && posX <= cliffBottomX) {
+        posX += segmentWidth;
+        ctx.lineTo(posX, platform.y - cliffHeight - segmentHeight);
+        segmentWidth = Math.random() * 10;
+        segmentHeight = Math.random() * 25;
+      }
       
+      if (posX > cliffBottomX) {
+        const overshootX = posX - cliffBottomX;
+        const overshootY = overshootX / 2;
+        ctx.lineTo(cliffBottomX, platform.y - cliffHeight - overshootY);
+      }
+    
+      ctx.lineTo(posX, platform.y);
       ctx.closePath();
+      ctx.fillStyle = platform.color;//dirtColor;//"#0000ff";
       ctx.fill();
     }
   });
 }
-
-
-
 
 // call drawMap function to generate map
 drawMap();
