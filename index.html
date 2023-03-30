@@ -273,25 +273,73 @@ const rockProbability = 0.3; // adjust this to change the chance of generating r
 const waterColor = '#0077be';
 const rockColor = '#888888';
 const dirtColor = '#4a2e00';
-const cliffWallColor = '#0000ff'; // Add constant for cliff wall color
+const cliffWallColor = '#0000ff'
+const wallJaggedness = 20
 
-// Set constants for cliff wall generation
-const cliffWallJaggedness = 20; // adjust this to change the jaggedness of cliff walls
-const minHeightDifferenceForCliff = platformHeight * 2; // adjust this to change the minimum difference in height for generating a cliff wall
-const maxHeightDifferenceForCliff = platformHeight * 3; // adjust this to change the maximum difference in height for generating a cliff wall
-const minWidthForCliff = 40; // adjust this to change the minimum width for a cliff wall
-const maxWidthForCliff = 100; // adjust this to change the maximum width for a cliff wall
-const minAngleForCliff = 70; // adjust this to change the minimum steepness of a cliff wall
-const maxAngleForCliff = 110; // adjust this to change the maximum steepness of a cliff wall
-const cliffDistanceFromPeak = platformHeight * 0.25; // adjust this to change the distance the cliff walls start from the peak of the platform
-
-// Generate list of platforms
+// Generate list of platforms with left and right edges
 const platforms = [];
 for (let i = 0; i < numPlatforms; i++) {
   const halfWidth = (Math.random() * (maxPlatformWidth - minPlatformWidth) + minPlatformWidth) / 2;
   const x = Math.random() * (canvas.width - halfWidth * 2) + halfWidth;
   const y = (i * platformHeight + platformHeight / 2) + platformHeight;     // add platformHeight so we don't have one at the very top
-  platforms.push({x, y, halfWidth});
+  platforms.push({x, y, halfWidth, leftX: x - halfWidth, rightX: x + halfWidth});
+}
+
+// Helper function to generate a jagged line
+function generateJaggedLine(startX, startY, endX, endY, jaggedness) {
+  const points = [{x: startX, y: startY}];
+  let distanceX = Math.abs(endX - startX);
+  let distanceY = Math.abs(endY - startY);
+  let currentX = startX;
+  let currentY = startY;
+  let slope = distanceY / distanceX;
+  let incrementX = endX > startX ? 1 : -1;
+  let incrementY = endY > startY ? slope : -slope;
+
+  while (currentX !== endX || currentY !== endY) {
+    if (Math.random() < jaggedness / 100) {
+      const sign = Math.random() < 0.5 ? -1 : 1;
+      currentX += sign;
+    } else {
+      currentX += incrementX;
+      currentY += incrementY;
+    }
+    points.push({x: currentX, y: currentY});
+  }
+  
+  return points;
+}
+
+// Helper function to draw cliff wall at specified coordinates and height
+function drawCliffWall(x, y, height) {
+  ctx.beginPath();
+  ctx.moveTo(x, y);
+  
+  // Randomly add jaggedness to the wall
+  let previousPoint = {x, y};
+  for (let i = x; i <= x + height; i += Math.floor(Math.random() * (wallJaggedness + 1))) {
+    const nextPoint = {x: i, y: y - Math.floor(Math.random() * platformHeight)};
+    const controlPoint1 = {x: previousPoint.x + wallJaggedness, y: previousPoint.y - Math.floor(Math.random() * platformHeight)};
+    const controlPoint2 = {x: nextPoint.x - wallJaggedness, y: nextPoint.y + Math.floor(Math.random() * platformHeight)};
+    ctx.bezierCurveTo(controlPoint1.x, controlPoint1.y, controlPoint2.x, controlPoint2.y, nextPoint.x, nextPoint.y);
+    previousPoint = nextPoint;
+  }
+  
+  ctx.lineTo(x + height, y - (platformHeight * 3));
+  
+  // Randomly add jaggedness to the wall
+  previousPoint = {x: x + height, y: y - (platformHeight * 3)};
+  for (let i = x + height; i >= x; i -= Math.floor(Math.random() * (wallJaggedness + 1))) {
+    const nextPoint = {x: i, y: y - platformHeight - Math.floor(Math.random() * platformHeight)};
+    const controlPoint1 = {x: previousPoint.x - wallJaggedness, y: previousPoint.y + Math.floor(Math.random() * platformHeight)};
+    const controlPoint2 = {x: nextPoint.x + wallJaggedness, y: nextPoint.y - Math.floor(Math.random() * platformHeight)};
+    ctx.bezierCurveTo(controlPoint1.x, controlPoint1.y, controlPoint2.x, controlPoint2.y, nextPoint.x, nextPoint.y);
+    previousPoint = nextPoint;
+  }
+  
+  ctx.closePath();
+  ctx.fillStyle = cliffWallColor;
+  ctx.fill();
 }
 
 function drawMap() {
@@ -306,66 +354,31 @@ function drawMap() {
   ctx.fillStyle = waterColor;
   ctx.fillRect(0, canvas.height - platformHeight, canvas.width, platformHeight);
   
-  let previousHeight = null;    // ChatGPT bug: This was inside the loop... so it would always be null
   // Generate map using Perlin noise
   for (let i = platforms.length - 1; i >= 0; i--) {
     const platform = platforms[i];
-
+    
     // Generate noise values for each pixel on the platform
     ctx.beginPath();
-    ctx.moveTo(platform.x - platform.halfWidth, platform.y);
-    for (let x = platform.x - platform.halfWidth; x <= platform.x + platform.halfWidth; x++) {
+    ctx.moveTo(platform.leftX, platform.y);
+    for (let x = platform.leftX; x <= platform.rightX; x++) {
       const noiseValue = noiseGenerator.noise(x * noiseScale * frequency, 0, 0) * 0.5 + 0.5;
       const height = platform.y - noiseValue * platformHeight / 1.5;    // platform height divisor
-console.log("do we do this 1?")
-      // Determine whether to draw dirt, rock, or a cliff wall based on probability and height difference
-      if (previousHeight !== null 
-          && Math.abs(height - previousHeight) >= minHeightDifferenceForCliff 
-          && Math.random() > rockProbability
-          ) {
-        console.log("do we do this 2?");
-        const width = Math.floor(Math.random() * (maxWidthForCliff - minWidthForCliff + 1)) + minWidthForCliff;
-        const startingX = x - width / 2;
-        const endingX = x + width / 2;
-        const angle = -(Math.floor(Math.random() * (maxAngleForCliff - minAngleForCliff + 1)) + minAngleForCliff) * (Math.PI / 180); // Convert degrees to radians
-        let currentY = height - cliffDistanceFromPeak;
-
-        // Generate jagged points along edge of cliff
-        const jaggedPoints = [startingX, currentY];
-        while (jaggedPoints[jaggedPoints.length - 2] < endingX) {
-          const nextX = Math.min(jaggedPoints[jaggedPoints.length - 2] + cliffWallJaggedness + Math.floor(Math.random() * cliffWallJaggedness), endingX);
-          const nextY = Math.max(currentY - Math.floor(Math.random() * cliffWallJaggedness*2), height - platformHeight*3);
-          jaggedPoints.push(nextX, nextY);
-          currentY = nextY;
-        }
-        jaggedPoints.push(endingX, height - cliffDistanceFromPeak);
-
-        // Draw cliff wall
-        ctx.fillStyle = cliffWallColor;
-        ctx.beginPath();
-        ctx.moveTo(jaggedPoints[0], platform.y);
-        for (let j = 0; j < jaggedPoints.length-2; j+=2) {
-          ctx.lineTo(jaggedPoints[j], jaggedPoints[j+1]);
-        }
-        const lastTwoPointsIndex = jaggedPoints.length - 2;
-        ctx.lineTo(jaggedPoints[lastTwoPointsIndex], platform.y);
-        ctx.closePath();
-        ctx.fill();
-
-        x = jaggedPoints[lastTwoPointsIndex-1];
+      
+      // Determine whether to draw dirt, rock, or cliff based on probability and position
+      if (Math.random() < rockProbability && Math.abs(x - platform.x) < platform.halfWidth / 2) {
+        ctx.fillStyle = rockColor;
+      } else if (x + 100 < platform.rightX && Math.random() < 0.1) {
+        const wallHeight = Math.floor(Math.random() * (3 * platformHeight)) + platformHeight * 2;
+        drawCliffWall(x, height, wallHeight);
+        x += wallHeight - 50;
+        continue;
       } else {
-        // Determine whether to draw dirt or rock based on probability
-        if (Math.random() < rockProbability) {
-          ctx.fillStyle = rockColor;
-        } else {
-          ctx.fillStyle = dirtColor;
-        }
-        
-        previousHeight = height;
-        ctx.lineTo(x, height);
+        ctx.fillStyle = dirtColor;
       }
+      ctx.lineTo(x, height);
     }
-    ctx.lineTo(platform.x + platform.halfWidth, platform.y);
+    ctx.lineTo(platform.rightX, platform.y);
     ctx.closePath();
     ctx.fill();
   }
@@ -373,6 +386,7 @@ console.log("do we do this 1?")
 
 // call drawMap function to generate map
 drawMap();
+
 
 
 // =============== texture
