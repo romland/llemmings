@@ -123,7 +123,20 @@ Note that a prompt like this grew over time (likely hours), it's not like it was
 down and in one shot came good code fit-for-purose. It's all an iterative process. And it feels
 very much like ... programming.  
 
-README TODO
+```
+Do pixel perfect collision detection for a sprite that looks like a blue lemming with green hair
+(a blue box and a green box, basically), give it its own structure with position, velocity, etc.
+It should move around on a 2d canvas which has gravity (that is, when there is no ground under it,
+it should fall down). If it runs in to an obstacle on the x axis it should turn around and walk
+the other way. If it falls into something on the y axis it should stop moving on the Y axis and
+start walking on the x axis. If it falls into the water, the lemming is dead. Updates should be
+done every frame. There will eventually be many lemmings, so do note that they are not controlled
+by keys, they move by themselves and is constrained by the collision rules outlined above.
+
+It is important that you use the declared things I mentioned above and just give me the code with
+minor comments, no need to explain anything in plain text.
+```
+This was a very ambitious one. And it largely let me down -- but we got there in the end.
 
 
 ## License
