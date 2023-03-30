@@ -17,6 +17,24 @@
   
 
 <script type="text/javascript">
+// Human cheat, I needed a seedable RNG:
+function RNG(seed) {
+    var m = 2**35 - 31
+    var a = 185852
+    var s = seed % m
+    return function () {
+        return (s = s * a % m) / m
+    }
+}
+
+const currentSeed = Date.now();   // "random"
+// const currentSeed = 1680052412448; //Date.now();     // <-- to set seed for a level
+// const currentSeed = 1680052705344;
+// const currentSeed = 1680055455055;
+
+console.log("Current seed: ", currentSeed);
+Math.random = RNG(currentSeed);
+
 /*
 Thought: I keep trying to feed errors back in, such as this:
 
@@ -486,19 +504,24 @@ function drawCliffs() {
     while (prevX < wallStartX + wallWidth && prevX <= platform.x + platform.halfWidth) {
       // Jitter Y coordinate up or down by 20% of platform height.
       const nextY = prevY + platformHeight * (Math.random() * 0.4 - 0.2);
+
       // Jitter X coordinate to achieve jaggedness.
-      const nextX = prevX + (wallWidth / 10) + Math.random() * ((wallWidth / 10) * -2);
+      const nextX = prevX + (wallWidth / 40) + Math.random() * ((wallWidth / 10) * -2);
 
       if (nextY >= wallTopY - wallHeight) {        // Stop printing when reach top of screen
         ctx.lineTo(nextX, nextY);
         prevX = nextX;
         prevY = nextY;
       } else {
+        // ctx.strokeStyle = "#FFFF00";
+        // ctx.strokeRect(prevX, prevY, 2, 2);
         break;
       }
+
+
     }
 
-    ctx.fillStyle = rockColor; //'#0000ff';                      // Wall should be blue
+    ctx.fillStyle = dirtColor; //'#0000ff';                      // Wall should be blue
     ctx.fill();                                     // Fill the wall
 
   });
