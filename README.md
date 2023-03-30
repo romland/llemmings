@@ -7,8 +7,8 @@ Your job, as a human, is to copy and paste code.
 There are a few exceptions, such as removing redeclared variables and similar small things.
 But other than that, the code should be written by the LLM.
 
+Most recent version:
 ## README TODOS
-TODO: Need emojis in this file. It's all the rage!  
 TODO: Screenshot(s), video? and well  
 TOOD: a link to current implementation    
 https://romland.github.io/llemmings  
@@ -20,20 +20,17 @@ It is (probably) not yet a game. But ...
 Llemmings is based on a game with a similar name by DMA Design. 
 
 In short: green and blue blocks (will be) dropping out of a hatch and the goal is to bring
-them safely home. These green and blue blocks are pretty dumb. Your job as a human is to 
+them safely home. These green and blue blocks are pretty dumb. Your job, as a human, is to 
 assist them by giving them instructions. For instance, stop them from going in some direction.
 
-It must be said that the implementeation so far is all from memory. Some things are very likely
-to be wrong.
-
-The aim is not to make a perfect clone of its namesake, but if it is about the same, it's of
-course fun.
+The implementation so far is all from memory. Some things are very likely to be wrong. The aim
+is not to make a perfect clone of its namesake, but if it is about the same, it's of course fun.
 
 
 ## 🖥️ The real game
 It's the journey!
 
-Your job as a human is to assist the LLM by giving it instructions.
+Your job, as a human, is to assist the LLM by giving it instructions.
 
 
 ### 📝 Prompts
@@ -94,19 +91,39 @@ Any pull requests are welcome, just make sure you
 ...say which prompt(s) you used
 ...say which LLM was used (if you want to be fancy, you can disclose temperature, etc)
 
-Just make sure that if you cheated, flag the line with a "HUMAN: ..." comment in the code.
+Make sure that if you cheated, flag the line with a "HUMAN: ..." comment in the code.
+
+_Tip: You can check commit history to see what a normal commit look like._
 
 
 ## 🏃‍♀️ Compiling, installing, running
 Just double click `index.html`.
 
 
+## TODO
+There is a lot. It would be nice if there was a list somewhere. There isn't. Just do what you want to do.
+
+Some thoughts: make it pretty, animations (maybe their green hair should move in the wind, maybe they have legs!),
+shaders, sound, speach bubbles (Oh no!), add the missing types of green-blue blocks (the builder looks particularly nasty on paper),
+the goal of the game, score, better maps, levels. ...
+
 ## ✍️ An example
-Note that this prompt grew over time, it's not like I just wrote it down in one shot and
-out came good code. It's all an iterative process. It's a process that feels very much
-like ... programming.  
+Note that a prompt like this grew over time (likely hours), it's not like it was just written
+down and in one shot came good code fit-for-purose. It's all an iterative process. And it feels
+very much like ... programming.  
 
 TODO
 
 ## License
 MIT.
+
+## Random thoughts
+Brave new world.  
+The age of average (text).  
+All about the specifiprompts.  
+How dumb these LLMs are.  
+How clever these LLMs are.  
+How they are neither.  
+How it still feels like programming. But is it.  
+
+Oh, woe is me.
