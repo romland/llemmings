@@ -1,3 +1,7 @@
+<p align="center" width="100%">
+    <img width="15%" src="./llemming360.png">
+</p>
+
 # 💚💙 Llemmings 💙💚
 Llemmings is a game being written by Large Language Models (LLM), like ChatGPT and GPT-4. The
 intention is that it is _only_ written by LLMs.
