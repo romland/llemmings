@@ -313,8 +313,7 @@ They should look a bit jagged and randomly placed but the base of the walls must
 
 The code for generating the platforms is below, finish the drawCliffs method to add these cliff walls.
 
-Just give me the new code, no need to explain anything, I just want to paste in the whole thing
-with the cliff-wall solution in it.
+Just give me the new code, no need to explain anything, I just want to paste your new version of drawCliffs in.
 
 
 // Set canvas dimensions and context
@@ -395,6 +394,7 @@ function drawCliffs() {
 drawMap();
 drawCliffs();
 */
+
 // Set canvas dimensions and context
 const canvas = document.querySelector('canvas');
 canvas.width = 800;
@@ -462,39 +462,49 @@ function drawMap() {
   }
 }
 
+
 function drawCliffs() {
-  const wallColor = rockColor; //'#0000ff';
-  const maxWallWidth = canvas.width * 0.25; // adjust this to change maximum wall width
-  const minWallWidth = canvas.width * 0.05; // adjust this to change minimum wall width
-  const cliffProbability = 0.4; // adjust this to change the chance of generating a cliff wall
-  
-  platforms.forEach((platform) => {      
-    if (Math.random() < cliffProbability) {
-      ctx.fillStyle = wallColor;
-      ctx.beginPath();
-      
-      // Determine base position of cliff
-      const baseX = Math.random() * (platform.halfWidth * 2 - maxWallWidth) + (platform.x - platform.halfWidth);
-      const baseY = platform.y;
-      
-      // Generate random jagged edges for cliff
-      let x = baseX;
-      let y = baseY;
-      ctx.moveTo(x, y);
-      while (x <= baseX + maxWallWidth) {
-        x += Math.random() * (maxWallWidth / 8) + (maxWallWidth / 10); // randomly step right
-        y += (Math.random() * maxWallWidth) - (maxWallWidth / 2); // randomly step up or down
-        ctx.lineTo(x, y);
+  platforms.forEach((platform) => {
+    // Choose random starting position for cliff wall on platform.
+    const wallStartX = Math.random() * platform.halfWidth * 2 + platform.x - platform.halfWidth;
+    const wallTopY = platform.y - Math.random() * platformHeight / 2.5;  
+    // Wall width will be between 10% and 20% of the total platform width.
+
+    // ChatGPT note: I (human) changed the 0.1 here to 0.8 because I wanted chance for larger cliffs
+    // Original: const wallWidth = Math.random() * platform.halfWidth * 0.1 + platform.halfWidth * 0.1;
+    const wallWidth = Math.random() * platform.halfWidth * 0.8 + platform.halfWidth * 0.1;
+
+    // Wall height is some multiple of platform height and ends at top of canvas
+    const wallHeight = (Math.floor(Math.random() * 3) + 2) * platformHeight;
+
+    // Create path for wall with jagged edges
+    ctx.beginPath();
+    ctx.moveTo(wallStartX, wallTopY);
+    let prevX = wallStartX;
+    let prevY = wallTopY;
+
+    while (prevX < wallStartX + wallWidth && prevX <= platform.x + platform.halfWidth) {
+      // Jitter Y coordinate up or down by 20% of platform height.
+      const nextY = prevY + platformHeight * (Math.random() * 0.4 - 0.2);
+      // Jitter X coordinate to achieve jaggedness.
+      const nextX = prevX + (wallWidth / 10) + Math.random() * ((wallWidth / 10) * -2);
+
+      if (nextY >= wallTopY - wallHeight) {        // Stop printing when reach top of screen
+        ctx.lineTo(nextX, nextY);
+        prevX = nextX;
+        prevY = nextY;
+      } else {
+        break;
       }
-      
-      // Finish cliff path and fill it in
-      ctx.lineTo(baseX + maxWallWidth, baseY);
-      ctx.lineTo(baseX, baseY);
-      ctx.closePath();
-      ctx.fill();
     }
+
+    ctx.fillStyle = rockColor; //'#0000ff';                      // Wall should be blue
+    ctx.fill();                                     // Fill the wall
+
   });
 }
+
+
 
 
 // call drawMap function to generate map
