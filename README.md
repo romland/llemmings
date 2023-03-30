@@ -81,13 +81,13 @@ This is essentially cheating. But we are humans, we cheat.
 ## 🚃 Contributing and pull requests
 You can contribute. Don't be afraid. Blame the LLM.
 
-Any pull requests are welcome, just make sure you
-...say which prompt(s) you used
-...say which LLM was used (if you want to be fancy, you can disclose temperature, etc)
+Any pull requests are welcome, just make sure you  
+...say which prompt(s) you used  
+...say which LLM was used (if you want to be fancy, you can disclose temperature, etc)  
 
-Make sure that if you cheated, flag the line with a "HUMAN: ..." comment in the code.
+If you cheated, flag the line with a "HUMAN: ..." comment in the code.
 
-_Tip: You can check commit history to see what a normal commit look like._
+_Tip: You can check commit history and you'll get the gist._
 
 
 ## 🏃‍♀️ Compiling, installing, running
