@@ -89,6 +89,18 @@ If you cheated, flag the line with a "HUMAN: ..." comment in the code.
 
 _Tip: You can check commit history and you'll get the gist._
 
+Currently I have settled for commit messages like this:
+```
+Commit title
+ChatGPT: subtitle
+
+>>> Prompt 1:
+... a prompt that contributed code
+>>> Prompt 2:
+... a prompt that contributed code
+...
+```
+Preferably only one prompt per commit. But I failed in the beginning.
 
 ## 🏃‍♀️ Compiling, installing, running
 Just double click `index.html`.
