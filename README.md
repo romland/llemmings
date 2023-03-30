@@ -63,7 +63,8 @@ README TODO: Having prompts in the source code is getting too painful now.
 ## 🔥 Code and quality
 Up til now, quality has not been a big concern. It's one giant steamy pile of spaghetti (llemming code?).
 
-It's been handy to have everything in one file for prompting.
+It's been handy to have everything in one file for prompting. The instructions to the LLMs (prompts)
+will sadly have to be separated from the code in the near future, it's getting too much.
 
 At some point down the line, probably soon, refactoring needs to be done by the LLM (😱). The `update` function in the `Lemming`
 object is especially unwieldy. To the point where I grin every time I see it.
