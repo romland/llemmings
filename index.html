@@ -405,14 +405,14 @@ const Lemming = {
   age: 0,
   x: 0,
   y: 0,
-  width: 20,
+  width: 10,
   height: 20,
   velX: 0,
   velY: 0,
   maxVelX: 0.2,
+  deadlyVelY: 3,
   onGround: false,
   isDead: false,
-  background: { },
   update: function() {
     if(this.y >= (canvas.height - (this.height+this.velY+1))) {
         this.isDead = true;
@@ -426,7 +426,7 @@ const Lemming = {
     let heightAdjustment = 0;
 
     if (isGroundUnderneath) {
-        let distanceToGround = -(this.height/2);
+        let distanceToGround = -(this.height/4);
 
         // TODO need safety guards for canvas boundary and probably a sanity check to not iterate more than N pixels (N = height?)
         while (!pixelIsColor(oldImgData, this.x + this.width / 2, this.y + distanceToGround + 1, dirtColorBytes)
@@ -454,6 +454,12 @@ const Lemming = {
       this.velY += GRAVITY;
       
       if (isGroundUnderneath) {
+        // console.log(this.velY);
+        if(this.velY > this.deadlyVelY) {
+          // splat
+          this.isDead = true;
+          return;
+        }
         this.onGround = true;
         this.velY = 0;
       }
@@ -479,22 +485,20 @@ const Lemming = {
     this.x += this.velX;
     this.y += this.velY;
     this.age++;
-},
-
-  
+  },
   draw: function() {
     // Draw the new lemming position
     ctx.fillStyle = 'rgb(' + blueBox.join(',') + ')';
     ctx.fillRect(this.x, this.y, this.width, this.height);
+
     ctx.fillStyle = 'rgb(' + greenBox.join(',') + ')';
-    ctx.fillRect(this.x, this.y, 5 - 1, 5 - 1);
-    ctx.fillRect(this.x + 15, this.y, 5 - 1, 5 - 1);
+    ctx.fillRect(this.x, this.y, (this.width/3) - 1, (this.height/4) - 1);
+    ctx.fillRect(this.x + this.width - (this.width/3), this.y, (this.width/3) - 1, (this.height/4) - 1);
 
     // Debug
     ctx.strokeStyle = "white";
     ctx.strokeText(this.id, this.x + 1, this.y + 13)
   }
-
 };
 
 // Create a new lemming and add it to the array of lemmings
@@ -517,7 +521,7 @@ function spawnLemming() {
 
 // Spawn a new lemming every second
 // throw "arrr stop -- fix save/restore background"
-setInterval(spawnLemming, 1000);
+setInterval(spawnLemming, 100);
 
 /*
 >>> New prompt to fix: We don't want to clear entire context, just draw and restore what was changed (the lemming)
@@ -635,6 +639,57 @@ canvas.addEventListener('click', () => {
 function getBackground() {
   background = ctx.getImageData(0, 0, canvas.width, canvas.height);
 }
+let particles = [];
+
+function update() {
+  if (isPaused) {
+    requestAnimationFrame(update);
+    return;
+  }
+  // Restore the background
+  ctx.putImageData(background, 0, 0);
+
+  // Update and draw each lemming
+  lemmings.forEach((lemming) => {
+    lemming.update();
+    lemming.draw();
+    
+    if (lemming.isDead) {
+      // Remove dead lemmings from the array as optimization
+      const index = lemmings.indexOf(lemming);
+      lemmings.splice(index, 1);
+      console.log("removing dead lemming");
+      for(let i = 0; i < 50; i++) {
+        particles.push(new Particle(lemming.x + Math.random() * 20 - 10, lemming.y + Math.random() * 20 - 10));
+      }
+
+    }
+  });
+  particles.forEach((particle) => {
+      particle.update();
+      particle.draw();
+
+      // Remove dead particles from the array
+      if (particle.life <= 0) {
+        const index = particles.indexOf(particle);
+        particles.splice(index, 1);
+      }
+    });
+
+  // Schedule the next frame
+  requestAnimationFrame(update);
+}
+
+getBackground();
+
+// Start the update loop
+update();
+
+
+/*
+>>>> add an explosion when the lemming dies
+
+We're making a game. Given the following update loop:
 
 function update() {
   if (isPaused) {
@@ -661,10 +716,68 @@ function update() {
   requestAnimationFrame(update);
 }
 
-getBackground();
+And a Lemming that looks like this:
 
-// Start the update loop
-update();
+const Lemming = {
+  id: -49152,
+  age: 0,
+  x: 0,
+  y: 0,
+  width: 10,
+  height: 20,
+  velX: 0,
+  velY: 0,
+  maxVelX: 0.2,
+  deadlyVelY: 3.5,
+  onGround: false,
+  isDead: false,
+  update: function() { ... }
+  draw: function() { ... }
+}
+
+Additionally, the following is already declared in the game:
+const canvas = document.getElementById("canvas");
+const ctx = canvas.getContext("2d");
+
+When the lemming dies, there should be a small explosion of like 50 pixels flying up like fireworks
+in the location it died. Make sure that the explosion is completely disconnected from the lemming
+since it should be removed from the array when it dies. Essentially, we want some kind of particle
+management.
+*/
+
+function Particle(x, y) {
+  this.x = x;
+  this.y = y;
+  this.velX = (Math.random() - 0.5) * 4; // Random horizontal velocity
+  this.velY = -Math.random() * 6; // Random upward velocity
+  this.life = 60; // Number of frames this particle should exist for
+  this.color = "#FFA500"; // Orange color
+}
+
+Particle.prototype.update = function() {
+  // Update position based on velocity
+  this.x += this.velX;
+  this.y += this.velY;
+
+  // Apply gravity
+  this.velY += 0.15;
+
+  // Decrease life counter
+  this.life--;
+
+  // Fade out as life approaches zero
+  if (this.life <= 0) {
+    this.color = "#00000000"; // Transparent color
+  }
+};
+
+Particle.prototype.draw = function() {
+  // Draw a small rectangle at the particle's location
+  ctx.fillStyle = this.color;
+  ctx.fillRect(this.x, this.y, 2, 2);
+};
+
+
 
 </script>
 
