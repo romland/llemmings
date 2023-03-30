@@ -105,7 +105,7 @@ _You can check the commit history and you'll get the gist._
 
 
 ## 🏃‍♀️ Compiling, installing, running
-Just double click `index.html`.
+Just open `index.html` in your favorite web-browser.
 
 
 ## TODO
