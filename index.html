@@ -389,6 +389,11 @@ const lemming = {
   isDead: false,
   background: { },
   update: function() {
+    if(this.y >= (canvas.height - (this.height+this.velY))) {
+        this.isDead = true;
+        return;
+    }
+
     // Check if ground is under us or not
     const isGroundUnderneath =
         pixelIsColor(oldImgData, this.x + this.width / 2, this.y + this.height, dirtColor, this) || 
@@ -435,10 +440,12 @@ const lemming = {
   },
   
   draw: function() {
+    // TODO: This will fail if we have multiple moving objects, we need a full copy of background
+    //       to restore back from, and it needs to be in a pass before we draw any lemmings.
     if (this.background.data) {
         // Restore the background pixels before drawing the new position
         // TODO: This is failing, look into after collisions are fixed
-        // ctx.putImageData(this.background.data, this.background.x, this.background.y);
+        ctx.putImageData(this.background.data, this.background.x, this.background.y);
     }
 
     // Save the background pixels
@@ -457,7 +464,7 @@ const lemming = {
 
     // Debug
     ctx.strokeStyle = "white";
-    ctx.strokeText(this.id, this.x + 5, this.y + 13)
+    ctx.strokeText(this.id, this.x + 1, this.y + 13)
   }
 
 };
@@ -467,7 +474,8 @@ function spawnLemming() {
   const newLemming = Object.create(lemming);
   newLemming.id = ++lastLemmingId;
   newLemming.x = Math.random() * canvas.width; // Start at a random x location
-  newLemming.y = Math.random() * canvas.height / 4;
+  newLemming.y = 0;
+//   newLemming.y = Math.random() * canvas.height / 4;
   newLemming.velX = 1.5; // Walk to the right by default
   lemmings.push(newLemming);
 }
@@ -535,8 +543,9 @@ const ctx = canvas.getContext("2d");
 
 Do not use ctx.save() and ctx.restore() (you don't understand what they do). In essence, what you 
 want to do is save the pixel data before you draw a lemming. Next frame you want to restore that, 
-then draw the lemming at its new position. You probably only need to change the lemming.draw() 
-method. You may NOT change the lemming.update() method. 
+then draw the lemming at its new position. You probably should do all saving/restoring for all lemmings 
+in one pass, then draw all lemmings. To avoid getting lemmings that move part of the background.
+You may NOT change the lemming.update() method. 
 
 It is important that you use the declared things I mentioned above and just give me the code with
 minor comments -- be brief, don't explain anything in plain text.
@@ -554,7 +563,7 @@ function update() {
       // Remove dead lemmings from the array as optimization
       const index = lemmings.indexOf(lemming);
       lemmings.splice(index, 1);
-      console.log("removing dead lemming", "index", index, lemming, getPixelColor(oldImgData, lemming.x, lemming.y));
+    //   console.log("removing dead lemming", "index", index, lemming, getPixelColor(oldImgData, lemming.x, lemming.y));
     }
   });
   
