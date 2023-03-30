@@ -77,7 +77,7 @@ At some point down the line, probably soon, refactoring needs to be done. The `u
 object is especially unwieldy. To the point where I grin a little every time I see it.
 
 
-## Cheating
+### Cheating
 If you add/change code that you did not get by the LLM, make sure that it's marked 
 with something like:
 
@@ -87,13 +87,17 @@ This is essentially cheating. But we are humans, we cheat.
 
 
 ## Contributing and pull requests
-Anyone can contribute. Don't be afraid. Blame the LLM.
+You can contribute. Don't be afraid. Blame the LLM.
 
 Any pull requests are welcome, just make sure you
 ...say which prompt(s) you used
 ...say which LLM was used (if you want to be fancy, you can disclose temperature, etc)
 
 Just make sure that if you cheated, flag the line with a "HUMAN: ..." comment in the code.
+
+
+## Compiling, installing, running
+Just double click `index.html`.
 
 
 ## An example
