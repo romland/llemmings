@@ -311,6 +311,8 @@ ctx.putImageData(imgData, 0, 0);
 
 // ============== lemming sprite
 /*
+We are making a game like Lemmings, there is existing code. The relevant bits are:
+
 The following is already declared in the program:
 const canvas = document.getElementById("canvas");
 const ctx = canvas.getContext("2d");
@@ -324,7 +326,7 @@ rockColor = '#888888';
 dirtColor = '#4a2e00';
 
 The pixelIsColor() and getPixelColor() take an array of the four color components as the color argument. Figure it out.
-Declare constants for the colors like this: for e.g. waterColor; const waterColorBytes = [0x00, 0x77, 0xbe] ...
+Declare NEW constants for the colors as bytes like this: for e.g. waterColor; const waterColorBytes = [0x00, 0x77, 0xbe] ...
 
 Using the above:
 Do collision detection for a sprite that looks a little like a blue lemming with green hair, give it
@@ -332,113 +334,73 @@ its own structure with position, velocity, etc. It should move around on a 2d ca
 gravity (that is, when there is no ground under it, it should fall down). If it runs in to an 
 obstacle on the x axis it should turn around and walk the other way. If it falls into something 
 on the y axis it should stop moving on the Y axis and start walking on the x axis. If it falls 
-into the water, the lemming is dead. Animations should be updated every frame. There will eventually
-be many lemmings, so do note that they are not controlled by keys, it moves by itself and is 
-constrained by the rules outlined above.
+into the water, the lemming is dead. Updates should be done every frame. There will eventually
+be many lemmings, so do note that they are not controlled by keys, they move by themselves and is 
+constrained by the collision rules outlined above.
+
+Just give me the code with minor comments, no need to explain anything in plain text.
 */
-const canvas = document.getElementById("canvas");
-const ctx = canvas.getContext("2d");
+// const canvas = document.getElementById("canvas");
+// const ctx = canvas.getContext("2d");
 
-// Define color constants as arrays with RGBA values, instead of hex codes
-const waterColor = [0x00, 0x77, 0xbe, 0xff];
-const rockColor = [0x88, 0x88, 0x88, 0xff];
-const dirtColor = [0x4a, 0x2e, 0x00, 0xff];
+// Declare constants for colors as bytes 
+const waterColorBytes = [0x00, 0x77, 0xbe];
+const rockColorBytes = [0x88, 0x88, 0x88];
+const dirtColorBytes = [0x4a, 0x2e, 0x00];
 
-// Lemming object with position and velocity vectors
-const lemming = {
-  x: 50,
-  y: 50,
-  vx: 1,
-  vy: 0
+// let oldImgData = ctx.getImageData();
+
+// Sprite structure for the blue lemming with green hair with initial position and velocity.
+let sprite = {
+  x: 0,
+  y: 0,
+  vx: 0,
+  vy: 0,
+  width: 20,
+  height: 30,
+  color: [0x00, 0xff, 0xff] // blue lemming
 };
 
-// Check if the given pixel in imageData is of the specified color
-function pixelIsColor(imageData, x, y, color) {
-  const index = (x + y * imageData.width) * 4;
-  return (
-    imageData.data[index] === color[0] &&
-    imageData.data[index + 1] === color[1] &&
-    imageData.data[index + 2] === color[2] &&
-    imageData.data[index + 3] === color[3]
-  );
-}
+// Gravity constant for Y axis movement
+const gravity = 0.5;
 
-// Get the color of a specific pixel in imageData
-function getPixelColor(imageData, x, y) {
-  const index = (x + y * imageData.width) * 4;
-  return [
-    imageData.data[index],
-    imageData.data[index + 1],
-    imageData.data[index + 2],
-    imageData.data[index + 3]
-  ];
-}
-
-// Update the position and velocity of the lemming
 function update() {
-  // Apply gravity to the lemming
-  lemming.vy += 0.1;
+  // Update sprite position based on velocity.
+  sprite.x += sprite.vx;
+  sprite.y += sprite.vy;
 
-  // Calculate new position based on velocity
-  let newX = lemming.x + lemming.vx;
-  let newY = lemming.y + lemming.vy;
-
-  // Check for collision in the x-axis
-  if (
-    pixelIsColor(oldImgData, newX, lemming.y, rockColor) ||
-    pixelIsColor(oldImgData, newX, lemming.y, waterColor)
-  ) {
-    // Reverse horizontal velocity if there's an obstacle
-    lemming.vx *= -1;
-    newX = lemming.x + lemming.vx; // calculate new position again
+  // Check if the sprite has collided on X axis with an obstacle.
+  if (pixelIsColor(oldImgData, sprite.x + sprite.width, sprite.y + (sprite.height / 2), dirtColorBytes) || pixelIsColor(oldImgData, sprite.x, sprite.y + (sprite.height / 2), dirtColorBytes)) {
+    sprite.vx *= -1; // Flip direction of lemming's movement on x-axis
   }
 
-  // Check for collision in the y-axis
-  if (
-    pixelIsColor(oldImgData, lemming.x, newY, rockColor) ||
-    pixelIsColor(oldImgData, lemming.x, newY, waterColor)
-  ) {
-    // Stop vertical velocity and start walking on the x-axis
-    lemming.vy = 0;
-    lemming.vx *= 1.2; // add a little speed boost to make it jump further
-    newY = lemming.y; // stop falling down
+  // Check if sprite has collided with obstacle or water on the Y axis.
+  if (pixelIsColor(oldImgData, sprite.x + (sprite.width / 2), sprite.y + sprite.height, dirtColorBytes) ||
+      pixelIsColor(oldImgData, sprite.x + (sprite.width / 2), sprite.y + sprite.height, rockColorBytes) || 
+      pixelIsColor(oldImgData, sprite.x + (sprite.width / 2), sprite.y + sprite.height, waterColorBytes)) {
+    sprite.vy = 0; // Stop vertical movement
+  } else {
+    sprite.vy += gravity;
   }
 
-  // Check if lemming has fallen into the water (dead)
-  if (getPixelColor(oldImgData, newX, newY) === waterColor) {
-    return; // do nothing
+  // If sprite falls into water, it is dead, stop movement entirely.
+  if(pixelIsColor(oldImgData, sprite.x + (sprite.width / 2), sprite.y + sprite.height, waterColorBytes)) {
+    sprite.vx = 0;
+    sprite.vy = 0;
   }
+  
+  // Clear the canvas and draw the sprite in its updated position
+//   ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.fillStyle = `rgb(${sprite.color.join(",")})`;
+  ctx.fillRect(sprite.x, sprite.y, sprite.width, sprite.height);
 
-  // Update lemming position
-  lemming.x = newX;
-  lemming.y = newY;
+  // Store current image data to be used in next update
+  oldImgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
 }
 
-// Main game loop
-function loop() {
-  // Clear canvas
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
+// Call update every frame
+setInterval(update, 1000/60); // 60 fps
 
-  // Draw old image data onto canvas
-  ctx.putImageData(oldImgData, 0, 0);
-
-  // Draw lemming sprite as a blue circle with green hair
-  ctx.beginPath();
-  ctx.fillStyle = "blue";
-  ctx.arc(lemming.x, lemming.y, 10, 0, 2 * Math.PI);
-  ctx.fill();
-  ctx.fillStyle = "green";
-  ctx.fillRect(lemming.x - 5, lemming.y - 18, 10, 10);
-
-  // Update lemming position and velocity
-  update();
-
-  // Schedule next frame
-  requestAnimationFrame(loop);
-}
-
-// Start game loop
-loop();
 
 </script>
 </body>
