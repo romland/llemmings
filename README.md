@@ -1,4 +1,4 @@
-# Llemmings
+# 💚💙 Llemmings 💙💚
 Llemmings is a game written by Large Language Models (LLM), like ChatGPT and GPT-4. The
 intention is that it is _only_ written by LLMs.
 
@@ -14,7 +14,7 @@ TOOD: a link to current implementation
 https://romland.github.io/llemmings  
 
 
-## The game
+## 🎮 The game
 It is (probably) not yet a game. But ...
 
 Llemmings is based on a game with a similar name by DMA Design. 
@@ -28,7 +28,7 @@ to be wrong. The aim is not to make a perfect clone of its namesake. But if it i
 it's of course fun.
 
 
-## The real game
+## 🖥️ The real game
 The real game is in the journey.
 
 Your job as a human is to assist the LLM by giving it instructions.
@@ -36,7 +36,7 @@ Your job as a human is to assist the LLM by giving it instructions.
 Any irony is purely coincidental.
 
 
-### Prompts
+### 📝 Prompts
 You will quickly realize this is a painful journey. You will find yourself reading code. A lot.
 
 Very often ... in fact, all the time ... you will get code that does not work, or only
@@ -61,7 +61,7 @@ Sometimes you surprise yourself and just one-shot a prompt. It all just works on
 One such example was the death explosion. It was a happy moment.
 
 
-### Organizing prompts
+### 🗃️ Organizing prompts
 TODO: Need to figure out how to best connect prompts to a commit and yet have prompts
       available for easy copy/pasting. It could be that I need to write something for
       this.
@@ -69,7 +69,7 @@ TODO: At the end of the day, once figured out, there should be notes here about 
 TODO: Having prompts in the source code is getting too painful now.
 
 
-## Code and quality
+## 🔥 Code and quality
 Up til now, quality has not been a big concern. It's one giant steamy pile of spaghetti (llemming code?).
 
 It's been handy to have everything in one file for prompting.
@@ -78,7 +78,7 @@ At some point down the line, probably soon, refactoring needs to be done. The `u
 object is especially unwieldy. To the point where I grin every time I see it.
 
 
-### Cheating
+### 🧠 Cheating
 If you add/change code that you did not get by the LLM, make sure that it's marked 
 with something like:
 
@@ -87,7 +87,7 @@ with something like:
 This is essentially cheating. But we are humans, we cheat.
 
 
-## Contributing and pull requests
+## 🚃 Contributing and pull requests
 You can contribute. Don't be afraid. Blame the LLM.
 
 Any pull requests are welcome, just make sure you
@@ -97,15 +97,16 @@ Any pull requests are welcome, just make sure you
 Just make sure that if you cheated, flag the line with a "HUMAN: ..." comment in the code.
 
 
-## Compiling, installing, running
+## 🏃‍♀️ Compiling, installing, running
 Just double click `index.html`.
 
 
-## An example
+## ✍️ An example
 Note that this prompt grew over time, it's not like I just wrote it down in one shot and
 out came good code. It's all an iterative process. It's a process that feels very much
-like ... programming.
+like ... programming.  
 
+TODO
 
 ## License
 MIT.
