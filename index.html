@@ -171,11 +171,11 @@ const ctx = canvas.getContext('2d');
 
 // Set constants for noise generation
 const noiseGenerator = new ImprovedNoise();
-let noiseScale = 0.05; // adjust this to change the amount of detail in the noise
+let noiseScale = 0.15; // (hillyness) adjust this to change the amount of detail in the noise
 const frequency = 2.5;
 
 // Set constants for map generation
-const numPlatforms = 5; // adjust this to change the number of platforms
+const numPlatforms = 10; // adjust this to change the number of platforms
 const platformHeight = canvas.height / numPlatforms;
 const maxPlatformWidth = canvas.width * 0.5; // adjust this to change maximum platform width
 const minPlatformWidth = canvas.width * 0.2; // adjust this to change minimum platform width
@@ -409,6 +409,7 @@ const Lemming = {
   height: 20,
   velX: 0,
   velY: 0,
+  maxVelX: 0.2,
   onGround: false,
   isDead: false,
   background: { },
@@ -419,19 +420,21 @@ const Lemming = {
     }
 
     // Check if ground is under us or not
-    let isGroundUnderneath = pixelIsColor(oldImgData, this.x + this.width / 2, this.y + this.height + 2, dirtColorBytes) || 
-                            pixelIsColor(oldImgData, this.x + this.width / 2, this.y + this.height + 2, rockColorBytes);
+    let isGroundUnderneath = pixelIsColor(oldImgData, this.x + this.width / 2, this.y + this.height + 1, dirtColorBytes) || 
+                            pixelIsColor(oldImgData, this.x + this.width / 2, this.y + this.height + 1, rockColorBytes);
 
     let heightAdjustment = 0;
-    if (isGroundUnderneath) {
-        let distanceToGround = 0;
 
-        while (pixelIsColor(oldImgData, this.x + this.width / 2, this.y + (this.height/2) + distanceToGround + 2, dirtColorBytes)
-            || pixelIsColor(oldImgData, this.x + this.width / 2, this.y + (this.height/2) + distanceToGround + 2, rockColorBytes)) {
+    if (isGroundUnderneath) {
+        let distanceToGround = -(this.height/2);
+
+        // TODO need safety guards for canvas boundary and probably a sanity check to not iterate more than N pixels (N = height?)
+        while (!pixelIsColor(oldImgData, this.x + this.width / 2, this.y + distanceToGround + 1, dirtColorBytes)
+            && !pixelIsColor(oldImgData, this.x + this.width / 2, this.y + distanceToGround + 1, rockColorBytes)) {
             distanceToGround++;
         }
-
-        heightAdjustment = distanceToGround; // subtract half the sprite's height
+        if(distanceToGround !== 0)
+          heightAdjustment = (this.height) - distanceToGround + 0.1; // subtract half the sprite's height
     }
 
     // Check if we hit a wall on the x axis
@@ -465,14 +468,11 @@ const Lemming = {
     
     if (isWaterBelow || this.y >= canvas.height-this.height) {
       this.isDead = true;
-      console.log(this.id, "should die");
     }
 
     // Apply height adjustment
     if (heightAdjustment !== 0) {
         this.y -= heightAdjustment; // move sprite up
-        console.log("Adjusted height:", this, heightAdjustment);
-        // throw "Adjusted height"
     }
     
     // Move the lemming
@@ -499,14 +499,18 @@ const Lemming = {
 
 // Create a new lemming and add it to the array of lemmings
 function spawnLemming() {
-  if(isPaused) return;
+  if(isPaused)
+    return;
+  if(lemmings.length > 0) {
+    return;
+  }
 
   const newLemming = Object.create(Lemming);
   newLemming.id = ++lastLemmingId;
   newLemming.x = Math.random() * canvas.width; // Start at a random x location
   newLemming.y = 0;
 //   newLemming.y = Math.random() * canvas.height / 4;
-  newLemming.velX = 0.4; // Walk to the right by default
+  newLemming.velX = newLemming.maxVelX; // Walk to the right by default
   lemmings.push(newLemming);
 }
 
