@@ -7,7 +7,7 @@ Your job, as a human, is to copy and paste code.
 There are a few exceptions, such as removing redeclared variables and similar small things.
 But other than that, the code should be written by the LLM.
 
-Try the latest and greatest version [here](https://romland.github.io/llemmings)!  
+The latest and greatest version is [here](https://romland.github.io/llemmings)!  
 
 
 ## 🎮 The game
@@ -26,7 +26,7 @@ is not to make a perfect clone of its namesake, but if it is about the same, it'
 ## 🖥️ The real game
 It's the journey!
 
-Your job, as a human, is to assist the LLM by giving it instructions.
+Your second job, as a human, is to give instructions to your language model of choice.
 
 
 ### 📝 Prompts
@@ -37,7 +37,7 @@ partially works. This means you as a human **failed**. You need to change someth
 prompt and try again.
 
 _The process roughly goes something like this_
-1. You have a goal, like adding a red and green block that can climb.
+1. You have a goal, like adding a green and blue block that can climb.
    You write a basic prompt explaining your idea.
 2. Out comes some code, you immediately see that this is garbage
 3. You adjust the prompt by adding some more details.
