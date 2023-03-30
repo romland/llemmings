@@ -235,6 +235,11 @@ drawMap();
 
 
 // =============== texture
+/*
+>>> Sadly I forgot to save the prompt for generating the "textures". :/
+
+
+*/
 noiseScale = 0.05; // controls zoom level
 const numOctaves = 4;
 const persistence = 0.5; // controls roughness
@@ -247,7 +252,7 @@ let foo = Uint8ClampedArray.from(oldImgData.data);
 const imgData = new ImageData(foo, width, height);
 
 function getPixelColor(imageData, x, y) {
-  const index = (y * width + x) * 4;
+  const index = Math.floor((y * width + x) * 4);
   const r = imageData.data[index];
   const g = imageData.data[index + 1];
   const b = imageData.data[index + 2];
@@ -315,16 +320,18 @@ ctx.putImageData(imgData, 0, 0);
 
 // ============== lemming sprite
 /*
-We are making a game like Lemmings, there is existing code. The relevant bits are:
+>>> New prompt for collision detection and lemming movement.
 
-The following is already declared in the program:
+We are making a game like Lemmings, there is existing code.
+
+The following are the relevant bits and are already declared in the program:
 const canvas = document.getElementById("canvas");
 const ctx = canvas.getContext("2d");
 variable oldImgData is all pixel data gotten with ctx.getImageData()
 function pixelIsColor(imageData, x, y, color): used to get compare a color of a pixel, x and y is canvas coorindate 
 function getPixelColor(imageData, x, y) is used to get the color of a pixel, x and y is canvas coorindate 
 
-The colors of various pixels are already delcared:
+The colors of various pixels are already declared:
 waterColor = '#0077be';
 rockColor = '#888888';
 dirtColor = '#4a2e00';
@@ -333,90 +340,197 @@ The pixelIsColor() and getPixelColor() take an array of the four color component
 Declare NEW constants for the colors as bytes like this: for e.g. waterColor; const waterColorBytes = [0x00, 0x77, 0xbe] ...
 
 Using the above:
-Do pixel perfect collision detection for a sprite that looks like a blue lemming with green hair (a blue box and a green box, basically), give it
-its own structure with position, velocity, etc. It should move around on a 2d canvas which has 
-gravity (that is, when there is no ground under it, it should fall down). If it runs in to an 
-obstacle on the x axis it should turn around and walk the other way. The ground can be a bit hilly,
+Do pixel perfect collision detection for a sprite that looks like a blue lemming with green hair 
+(a blue box and a green box, basically), give it its own structure with position, velocity, etc.
+
+It should move around on a 2d canvas which has gravity (that is, when there is no ground under it, 
+it should fall down). If it runs in to an obstacle on the x axis (or the edge of the canvas) it should
+turn around and walk the other way. The ground (dirt and rock) can be a bit hilly,
 so there should be some fuzziness in the collision check so that it only stops when it runs into a 
-real wall. If it falls into something on the y axis it should stop moving on the Y axis and start
-walking on the x axis. If it falls into the water, the lemming is dead. Updates should be done 
-every frame. There will eventually be many lemmings, so do note that they are not controlled by 
-keys, they move by themselves and is constrained by the collision rules outlined above.
+high obstacle. If it falls into something on the y axis it should stop moving on the Y axis and start
+walking on the x axis. If it falls into the water or went outside of canvas, the lemming is dead.
+Updates should be done every frame. There will eventually be many lemmings, so do note that they are
+not controlled by keys, they move by themselves and is constrained by the collision rules outlined above.
 
 It is important that you use the declared things I mentioned above and just give me the code with
-minor comments, no need to explain anything in plain text.
+minor comments -- be brief, don't explain anything in plain text.
 */
 
-// Declare color constant as bytes
-const waterColorBytes = [0x00, 0x77, 0xbe];
-const rockColorBytes = [0x88, 0x88, 0x88];
-const dirtColorBytes = [0x4a, 0x2e, 0x00];
+/*
+Thought: It could be interesting to ask "There is already a lot of existing functionality; which bits of the existing program do you need to know about to implement the following:"
+...or so
+*/
+const blueBox = [0x00, 0x00, 0xff];
+const greenBox = [0x00, 0xff, 0x00];
 
-// Create an object for the sprite
-const sprite = {
-  x: 100,
-  y: 100,
-  xVel: 0,
-  yVel: 0,
+const lemming = {
+  id: -49152,
+  x: 0,
+  y: 0,
   width: 20,
-  height:30,
-  isOnGround: false,
-  isAlive: true,
-  draw: function() {
-    // Draw blue rectangle for body of sprite
-    ctx.fillStyle = "#0000FF";
-    ctx.fillRect(this.x, this.y, this.width, this.height);
-    // Draw green rectangle for hair of sprite
-    ctx.fillStyle = "#00FF00";
-    ctx.fillRect(this.x, this.y-10, this.width, 10);
-  },
+  height: 20,
+  velX: 0,
+  velY: 0,
+  onGround: false,
+  isDead: false,
   update: function() {
-    const imageData = oldImgData;
-    // Check for collision in y direction
-    if (!this.isOnGround) {
-      const checkY = getPixelColor(imageData, this.x, this.y + this.height);
-      if (pixelIsColor(imageData, this.x, this.y + this.height, waterColorBytes)) {
-        this.isAlive = false; // Lemming dead
-      } else if (checkY && !pixelIsColor(imageData, this.x, this.y + this.height + 1, checkY)) {
-        this.isOnGround = true;
-        this.yVel = 0;
+    // Check if ground is under us or not
+    const isGroundUnderneath =
+        pixelIsColor(oldImgData, this.x + this.width / 2, this.y + this.height, dirtColor) || 
+        pixelIsColor(oldImgData, this.x + this.width / 2, this.y + this.height, rockColor);
+    
+    // Check if we hit a wall on the x axis
+    const hitWallOnLeft =
+        pixelIsColor(oldImgData, this.x - 1, this.y + this.height / 2, dirtColor) ||
+        pixelIsColor(oldImgData, this.x - 1, this.y + this.height / 2, rockColor);
+    const hitWallOnRight =
+        pixelIsColor(oldImgData, this.x + this.width + 1, this.y + this.height / 2, dirtColor) ||
+        pixelIsColor(oldImgData, this.x + this.width + 1, this.y + this.height / 2, rockColor); 
+    
+    // Check if we've fallen in water
+    const isWaterBelow =
+        pixelIsColor(oldImgData, this.x + this.width / 2, this.y + this.height + 1, waterColor);
+    
+console.log(this.id, getPixelColor(oldImgData, this.x, this.y), this.x, this.y, this.width, this.height);
+this.draw();
+throw "f";
+    
+    // console.log(
+    //     isGroundUnderneath,
+    //     hitWallOnLeft,
+    //     hitWallOnRight,
+    //     isWaterBelow
+    // );
+
+    // Update velocity according to the collision rules
+    if (!this.onGround) {
+      this.velY += GRAVITY;
+      
+      if (isGroundUnderneath) {
+        this.onGround = true;
+        this.velY = 0;
       }
+    } else if (this.onGround && !isGroundUnderneath) {
+      // Start falling if there's no ground
+      this.onGround = false;
     }
-    if (!this.isOnGround) { // Apply gravity if not on ground
-      this.yVel += 1;
+    
+    if (hitWallOnLeft || hitWallOnRight || this.x <= 0 || this.x >= canvas.width) {
+      this.velX *= -1;
     }
-    // Check for collision in x direction
-    const checkLeft = getPixelColor(imageData, this.x - 1, this.y + (this.height/2));
-    const checkRight = getPixelColor(imageData, this.x + this.width + 1, this.y + (this.height/2));
-    if (pixelIsColor(imageData, this.x, this.y, rockColorBytes) || pixelIsColor(imageData, this.x + this.width, this.y, rockColorBytes)) {
-      this.xVel *= -1; // Turn sprite around
-    } else if (checkLeft && !pixelIsColor(imageData, this.x - 2, this.y + (this.height/2), checkLeft) ) {
-      this.xVel *= -1;
-    } else if (checkRight && !pixelIsColor(imageData, this.x + this.width + 2, this.y + (this.height/2), checkRight) ) {
-      this.xVel *= -1;
+    
+    if (isWaterBelow || this.y >= canvas.height) {
+      this.isDead = true;
     }
-    // Update sprite position based on velocity
-    this.x += this.xVel;
-    this.y += this.yVel;
+    
+    // Move the lemming
+    this.x += this.velX;
+    this.y += this.velY;
+  },
+  
+  draw: function() {
+    // Draw the blue box and green hair
+    ctx.fillStyle = 'rgb(' + blueBox.join(',') + ')';
+    ctx.fillRect(this.x, this.y, this.width, this.height);
+    ctx.fillStyle = 'rgb(' + greenBox.join(',') + ')';
+    ctx.fillRect(this.x, this.y, 5, 5);
+    ctx.fillRect(this.x + 15, this.y, 5, 5);
   }
 };
 
-// Animation loop
-function animate() {
-  // Clear canvas
-//   ctx.clearRect(0, 0, canvas.width, canvas.height);
-  // Draw sprite
-  sprite.draw();
-  // Update sprite
-  sprite.update();
-  if (sprite.isAlive) { // If lemming is still alive
-    requestAnimationFrame(animate); // Request next frame
-  } else { // Lemming is dead
-    console.log("Lemming died"); // Game over message
+const GRAVITY = 0.03; // Adjust this until falling looks good
+let lemmings = [];
+let lemmingId = 1;
+
+// Create a new lemming and add it to the array of lemmings
+function spawnLemming() {
+  const newLemming = Object.create(lemming);
+  newLemming.id = lemmingId++;
+  newLemming.x = Math.random() * canvas.width; // Start at a random x location
+  newLemming.y = Math.random() * canvas.height / 4;
+  newLemming.velX = 1.5; // Walk to the right by default
+  lemmings.push(newLemming);
+}
+
+// Spawn a new lemming every second
+setInterval(spawnLemming, 1000);
+
+/*
+>>> New prompt to fix the issue with clearing entire context...
+
+We're making a game, to optmize the drawing, I want to change something...
+
+Instead of clearing entire canvas every frame and redrawing it, just redraw the lemming that moved. Before the lemming was drawn, it needs to keep track of the background and restore that. A lemming looks like this
+const lemming = {
+  id: -49152,
+  x: 0,
+  y: 0,
+  width: 20,
+  height: 20,
+  velX: 0,
+  velY: 0,
+  onGround: false,
+  isDead: false,
+  draw: function() {
+    // Draw the blue box and green hair
+    ctx.fillStyle = 'rgb(' + blueBox.join(',') + ')';
+    ctx.fillRect(this.x, this.y, this.width, this.height);
+    ctx.fillStyle = 'rgb(' + greenBox.join(',') + ')';
+    ctx.fillRect(this.x, this.y, 5, 5);
+    ctx.fillRect(this.x + 15, this.y, 5, 5);
   }
 }
 
-animate(); // Start animation loop
+And the frame update looks like this:
+function update() {
+   ctx.clearRect(0, 0, canvas.width, canvas.height);
+  
+  // Update and draw each lemming
+  lemmings.forEach((lemming) => {
+    lemming.update();
+    lemming.draw();
+    
+    if (lemming.isDead) {
+      // Remove dead lemmings from the array as optimization
+      const index = lemmings.indexOf(lemming);
+      lemmings.splice(index, 1);
+      console.log("removing dead lemming");
+    }
+  });
+  
+  // Schedule the next frame
+  requestAnimationFrame(update);
+}
+
+These variables are already declared, use them.
+const canvas = document.getElementById("canvas");
+const ctx = canvas.getContext("2d");
+
+It is important that you use the declared things I mentioned above and just give me the code with
+minor comments -- be brief, don't explain anything in plain text.
+*/
+function update() {
+   ctx.clearRect(0, 0, canvas.width, canvas.height);
+  
+  // Update and draw each lemming
+  lemmings.forEach((lemming) => {
+    lemming.update();
+    lemming.draw();
+    
+    if (lemming.isDead) {
+      // Remove dead lemmings from the array as optimization
+      const index = lemmings.indexOf(lemming);
+      lemmings.splice(index, 1);
+      console.log("removing dead lemming");
+    }
+  });
+  
+  // Schedule the next frame
+  requestAnimationFrame(update);
+}
+
+// Start the update loop
+update();
 
 </script>
 
