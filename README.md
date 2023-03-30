@@ -115,11 +115,10 @@ MIT.
 
 ## Random thoughts
 Brave new world.  
-The age of average (text).  
 All about the specifiprompts.  
-How dumb these LLMs are.  
-How clever these LLMs are.  
-How they are neither.  
+The age of average (text).  
+How clever/dumb/neither these LLMs are.  
 How it still feels like programming. But is it.  
+It is still creating. Which is what we like. Right.  
 
-Oh, woe is me.
+Oh, woe is us.
