@@ -175,7 +175,7 @@ let noiseScale = 0.05; // adjust this to change the amount of detail in the nois
 const frequency = 2.5;
 
 // Set constants for map generation
-const numPlatforms = 9; // adjust this to change the number of platforms
+const numPlatforms = 5; // adjust this to change the number of platforms
 const platformHeight = canvas.height / numPlatforms;
 const maxPlatformWidth = canvas.width * 0.5; // adjust this to change maximum platform width
 const minPlatformWidth = canvas.width * 0.2; // adjust this to change minimum platform width
@@ -189,7 +189,7 @@ const platforms = [];
 for (let i = 0; i < numPlatforms; i++) {
   const halfWidth = (Math.random() * (maxPlatformWidth - minPlatformWidth) + minPlatformWidth) / 2;
   const x = Math.random() * (canvas.width - halfWidth * 2) + halfWidth;
-  const y = i * platformHeight + platformHeight / 2;
+  const y = (i * platformHeight + platformHeight / 2) + platformHeight;     // add platformHeight so we don't have one at the very top
   platforms.push({x, y, halfWidth});
 }
 
@@ -378,11 +378,13 @@ Thought: It could be interesting to ask "There is already a lot of existing func
 */
 
 /*
->>>>> New prompt: So, we need to make it so that it adjusts on Y axis when it move on X axis
+>>>>> New prompt: we need to make it so that a lemming adjusts on Y axis when it moves on X axis (it's hilly!)
 
 In a game, given the below update function of a sprite walking on ground. The sprite should adjust
-itself on the Y axis automatically as it is a bit hilly ground. Right now it just walks in a straight
-line. I don't need explanation of the code, I need you to fix the code.
+itself on the Y axis automatically (both up and down) as it is a bit hilly ground. Right now it just walks in a straight
+line. Note that the ground underneath can be either dirt or rock. 
+
+I don't need explanation of the code, I need you to fix the code.
 
 */
 
@@ -398,7 +400,7 @@ const dirtColorBytes  = [0x4a, 0x2e, 0x00]; // [74, 46, 0];
 
 let lastLemmingId = 0;
 
-const lemming = {
+const Lemming = {
   id: -49152,
   age: 0,
   x: 0,
@@ -417,10 +419,21 @@ const lemming = {
     }
 
     // Check if ground is under us or not
-    const isGroundUnderneath =
-        pixelIsColor(oldImgData, this.x + this.width / 2, this.y + this.height + 2, dirtColorBytes) || 
-        pixelIsColor(oldImgData, this.x + this.width / 2, this.y + this.height + 2, rockColorBytes);
-    
+    let isGroundUnderneath = pixelIsColor(oldImgData, this.x + this.width / 2, this.y + this.height + 2, dirtColorBytes) || 
+                            pixelIsColor(oldImgData, this.x + this.width / 2, this.y + this.height + 2, rockColorBytes);
+
+    let heightAdjustment = 0;
+    if (isGroundUnderneath) {
+        let distanceToGround = 0;
+
+        while (pixelIsColor(oldImgData, this.x + this.width / 2, this.y + (this.height/2) + distanceToGround + 2, dirtColorBytes)
+            || pixelIsColor(oldImgData, this.x + this.width / 2, this.y + (this.height/2) + distanceToGround + 2, rockColorBytes)) {
+            distanceToGround++;
+        }
+
+        heightAdjustment = distanceToGround; // subtract half the sprite's height
+    }
+
     // Check if we hit a wall on the x axis
     const hitWallOnLeft =
         pixelIsColor(oldImgData, this.x - 1, this.y + this.height / 2, dirtColorBytes) ||
@@ -454,12 +467,20 @@ const lemming = {
       this.isDead = true;
       console.log(this.id, "should die");
     }
+
+    // Apply height adjustment
+    if (heightAdjustment !== 0) {
+        this.y -= heightAdjustment; // move sprite up
+        console.log("Adjusted height:", this, heightAdjustment);
+        // throw "Adjusted height"
+    }
     
     // Move the lemming
     this.x += this.velX;
     this.y += this.velY;
     this.age++;
-  },
+},
+
   
   draw: function() {
     // Draw the new lemming position
@@ -480,7 +501,7 @@ const lemming = {
 function spawnLemming() {
   if(isPaused) return;
 
-  const newLemming = Object.create(lemming);
+  const newLemming = Object.create(Lemming);
   newLemming.id = ++lastLemmingId;
   newLemming.x = Math.random() * canvas.width; // Start at a random x location
   newLemming.y = 0;
