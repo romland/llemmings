@@ -450,13 +450,18 @@ for (let i = 0; i < numPlatforms; i++) {
 }
 
 function drawMap() {
-  // Create gradient for background color
-  const grd = ctx.createLinearGradient(0, 0, 0, canvas.height);
-  grd.addColorStop(0, '#111111');
-  grd.addColorStop(1, '#444444');
-  ctx.fillStyle = grd;
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
-
+  if(false) {
+    // Create gradient for background color
+    const grd = ctx.createLinearGradient(0, 0, 0, canvas.height);
+    grd.addColorStop(0, '#111111');
+    grd.addColorStop(1, '#444444');
+    ctx.fillStyle = grd;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+  } else {
+    // plain black background    
+    ctx.fillStyle = "#000000";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+  }
   // Draw water at bottom of canvas
   ctx.fillStyle = waterColor;
   ctx.fillRect(0, canvas.height - platformHeight, canvas.width, platformHeight);
@@ -563,6 +568,36 @@ function drawCliffs() {
 // call drawMap function to generate map
 drawMap();
 drawCliffs();
+
+// Was just a debug test:
+// console.log("Unique colors after map gen:", getUniqueColors(canvas));
+
+/*
+>>>> prompt: Give me a function that give me all unique colors on a canvas, call it getUniqueColors(canvas)
+*/
+function getUniqueColors(canvas) {
+  const ctx = canvas.getContext("2d");
+  const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
+  
+  const uniqueColors = {};
+  
+  for (let i = 0; i < imageData.length; i += 4) {
+    const r = imageData[i];
+    const g = imageData[i + 1];
+    const b = imageData[i + 2];
+
+    if(!r && !g && !b) continue;  // skip background color.
+    
+    const colorKey = `${r},${g},${b}`;
+    
+    if (!uniqueColors[colorKey]) {
+      uniqueColors[colorKey] = [r, g, b];
+    }
+  }
+  
+  return Object.values(uniqueColors);
+}
+
 
 // =============== texture
 /*
@@ -812,6 +847,7 @@ const dirtColorBytes  = [0x4a, 0x2e, 0x00]; // [74, 46, 0];
 
 const terrainColorBytes = [ rockColorBytes, dirtColorBytes ];
 
+const VEL_CLIMB = 1;    // Cheat. HUMAN added this undeclared variable.
 
 let lastLemmingId = 0;
 
@@ -828,6 +864,7 @@ const Lemming = {
   deadlyVelY: 3,
   isSelected: false,
   onGround: false,
+  isClimbing: false,
   isDead: false,
   action: null,
   /*
@@ -889,28 +926,29 @@ pixels either.
 
   // Determine if the lemming should climb
   let shouldClimb = false;
-  if (this.action === "Climber") {
+  if (this.action === "Climber" ) {
     if (
-      ((hitWallOnLeft && this.velX < 0) || (hitWallOnRight && this.velX > 0)) &&
-      !isGroundUnderneath &&
-      pixelIsColor(oldImgData, this.x + this.width / 2, this.y + 1, [rockColorBytes, dirtColorBytes])
+      ((hitWallOnLeft && this.velX < 0) || (hitWallOnRight && this.velX > 0))
+      // HUMAN: Should this really be !isgroundbeneath? 
+      // && !isGroundUnderneath
+      // && pixelIsColor(oldImgData, this.x + this.width / 2, this.y + 1, [rockColorBytes, dirtColorBytes])
     ) {
       shouldClimb = true;
+      // console.log("SHOULD CLIMB");
     } else {
       this.isClimbing = false; // Reset climbing flag
 // HUMAN DEBUG
-      console.log(
-        this.velX,
-        this.x + this.width / 2,
-        this.y + 1,
-        rockColorBytes,
-        dirtColorBytes,
-        hitWallOnRight,
-        hitWallOnLeft,
-        pixelIsColor(oldImgData, this.x + this.width + 1, this.y + this.height / 2, [rockColorBytes, dirtColorBytes]),
-        // pixelIsColor(oldImgData, this.x + this.width / 2, this.y + 1, [rockColorBytes, dirtColorBytes]),
-        getPixelColor(oldImgData,this.x + this.width + 1, this.y + this.height / 2)
-      );
+      // console.log(
+      //   "rightHit", hitWallOnRight,
+      //   "leftHit:", hitWallOnLeft,
+      //   "vel:", this.velX,
+      //   "isColor:", pixelIsColor(oldImgData, this.x + this.width + 1, this.y + this.height / 2, [rockColorBytes, dirtColorBytes]),
+      //   // pixelIsColor(oldImgData, this.x + this.width / 2, this.y + 1, [rockColorBytes, dirtColorBytes]),
+      //   "getPixelColorRight:", getPixelColor(oldImgData, this.x + this.width + 1, this.y + this.height / 2),
+      //   "getPixelColorLeft:",  getPixelColor(oldImgData, this.x - 1, this.y + this.height / 2),
+      //   "rock:", rockColorBytes,
+      //   "dirt:", dirtColorBytes,
+      // );
 // /DEBUG
     }
   }
@@ -957,33 +995,35 @@ pixels either.
 
   // Handle climbing
   if (shouldClimb) {
+    // -->
+    // console.log("should climb", this, hitWallOnLeft, hitWallOnRight);
     this.isClimbing = true;
     let climbDirection = hitWallOnLeft ? 1 : -1;
     this.x += climbDirection * this.maxVelX;
     this.y -= 1;
 
-    // Check if we've reached the top of the climbable surface
-    if (
-      pixelIsColor(oldImgData, this.x + this.width / 2 + climbDirection, this.y, [rockColorBytes, dirtColorBytes]) &&
-      pixelIsColor(
-        oldImgData,
-        this.x + this.width / 2 + 2 * climbDirection,
-        this.y,
-        [rockColorBytes, dirtColorBytes]
-      )
-    ) {
-      this.velY = -VEL_CLIMB; // Start going up at climbing velocity
+    // // Check if we've reached the top of the climbable surface
+    // if (
+    //   pixelIsColor(oldImgData, this.x + this.width / 2 + climbDirection, this.y, [rockColorBytes, dirtColorBytes]) &&
+    //   pixelIsColor(
+    //     oldImgData,
+    //     this.x + this.width / 2 + 2 * climbDirection,
+    //     this.y,
+    //     [rockColorBytes, dirtColorBytes]
+    //   )
+    // )
+    {
+      this.velY = -VEL_CLIMB*0.05; // Start going up at climbing velocity
       this.onGround = false; // We've left the ground
-      this.velX = climbDirection * 0.05; // Set X velocity to match climbing direction
+      // this.velX = climbDirection * 0.05; // Set X velocity to match climbing direction
+      // this.velX = climbDirection * 0.05;
     }
   } else {
+    if((hitWallOnLeft || hitWallOnRight) && this.action === "Climber") {
+      console.log("no shouldClimb -- will turn, probably!", this);
+    }
     // Not climbing, normal movement applies
-    if (
-      hitWallOnLeft ||
-      hitWallOnRight ||
-      this.x <= this.width ||
-      this.x >= canvas.width - this.width
-    ) {
+    if (this.action !== "Climber" && (hitWallOnLeft || hitWallOnRight || this.x <= this.width || this.x >= canvas.width - this.width)) {
       this.velX *= -1;
     }
 
@@ -1850,6 +1890,8 @@ Miner: ⛏️
 Digger: 🕳️
 -->
 <div id="lemming-actions">
+  <button onclick="togglePause()">⏸️</button>
+
   <button onclick="applyAction('Climber')">🧗<!-- Climber --></button>
   <button onclick="applyAction('Floater')">🪂<!-- Floater--></button>
   <button onclick="applyAction('Bomber')">💣<!-- Bomber--></button>
@@ -1858,8 +1900,6 @@ Digger: 🕳️
   <button onclick="applyAction('Basher')">🤜💥🤛<!-- Basher--></button>
   <button onclick="applyAction('Miner')">⛏️<!-- Miner--></button>
   <button onclick="applyAction('Digger')">🕳️<!-- Digger--></button>
-
-  <button onclick="togglePause()">⏸️</button>
 </div>
 
 <style>
