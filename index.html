@@ -671,7 +671,7 @@ function getPixelIndex(x, y, width) {
 }
 
 
-if(true) {
+if(false) {
 
     // Loop over each pixel in the image
     for (let y = 0; y < height; y++) {
@@ -795,6 +795,12 @@ function isColorOneOf(needle, haystack) {
   return false;
 }
 
+// >>> a helper function some implementation of Climber wanted
+function bound(value, min, max) {
+  return Math.min(Math.max(value, min), max);
+}
+
+
 const blueBox = [0x00, 0x00, 0xff];
 const greenBox = [0x00, 0xff, 0x00];
 const GRAVITY = 0.03; // Adjust this until falling looks good
@@ -843,52 +849,10 @@ pixels either.
     pixelIsColor(oldImgData, this.x + this.width / 2, this.y + this.height + 1, rockColorBytes);
 
   let heightAdjustment = 0;
-  let canClimb = false;
-  
-  if (this.action === "Climber") {
-    // Determine if there is a climbable surface to our left and/or right
-    const climbLeft = pixelIsColor(oldImgData, this.x - 1, this.y, terrainColorBytes);
-    const climbRight = pixelIsColor(oldImgData, this.x + this.width + 1, this.y, terrainColorBytes);
 
-    // If we can climb either way, we choose the steeper slope
-    if (climbLeft || climbRight) {
-      let ascentLength = 0;
-      let maxAscentLength = 0;
-      let stepInDirection;
-
-      console.log("climber");
-
-      if (climbLeft) {
-        stepInDirection = -1; // moving left
-      } else if (climbRight) {
-        stepInDirection = 1; // moving right
-      }
-
-      while (
-        pixelIsColor(
-          oldImgData,
-          this.x + (this.width/2) + (ascentLength * stepInDirection),
-          this.y - (ascentLength + 1),
-          terrainColorBytes
-        )
-      ) {
-        ascentLength++;
-      }
-
-      maxAscentLength = (this.height / 2) + 1; // don't climb higher than half of the sprite's height
-      
-      if (ascentLength <= maxAscentLength) {
-        canClimb = true;
-        
-        // Adjust height and x position accordingly
-        heightAdjustment = ascentLength + 0.1;
-        this.x += stepInDirection * 3;
-      }
-    }    
-  }
-
-  if (!canClimb && isGroundUnderneath) {
+  if (isGroundUnderneath) {
     let distanceToGround = -(this.height / 4);
+
     while (
       this.y + distanceToGround + 1 >= 0 &&
       this.y + distanceToGround + 1 < canvas.height &&
@@ -923,6 +887,34 @@ pixels either.
   // Check if we've fallen in water
   const isWaterBelow = pixelIsColor(oldImgData, this.x + this.width / 2, this.y + this.height + 1, waterColorBytes);
 
+  // Determine if the lemming should climb
+  let shouldClimb = false;
+  if (this.action === "Climber") {
+    if (
+      ((hitWallOnLeft && this.velX < 0) || (hitWallOnRight && this.velX > 0)) &&
+      !isGroundUnderneath &&
+      pixelIsColor(oldImgData, this.x + this.width / 2, this.y + 1, [rockColorBytes, dirtColorBytes])
+    ) {
+      shouldClimb = true;
+    } else {
+      this.isClimbing = false; // Reset climbing flag
+// HUMAN DEBUG
+      console.log(
+        this.velX,
+        this.x + this.width / 2,
+        this.y + 1,
+        rockColorBytes,
+        dirtColorBytes,
+        hitWallOnRight,
+        hitWallOnLeft,
+        pixelIsColor(oldImgData, this.x + this.width + 1, this.y + this.height / 2, [rockColorBytes, dirtColorBytes]),
+        // pixelIsColor(oldImgData, this.x + this.width / 2, this.y + 1, [rockColorBytes, dirtColorBytes]),
+        getPixelColor(oldImgData,this.x + this.width + 1, this.y + this.height / 2)
+      );
+// /DEBUG
+    }
+  }
+
   // Update velocity according to the collision rules
   if (!this.onGround) {
     if (this.action === "Floater") {
@@ -931,22 +923,7 @@ pixels either.
       this.velY += GRAVITY;
     }
 
-    if (canClimb) {
-      this.y -= heightAdjustment; // move sprite up
-
-      // Don't fall off the edge of the climbable surface
-      if (
-        !pixelIsColor(
-          oldImgData,
-          this.x + (this.width/2),
-          this.y + this.height + 1,
-          terrainColorBytes
-        )
-      ) {
-        canClimb = false;
-      }
-    } else if (isGroundUnderneath) {
-      // console.log(this.velY);
+    if (isGroundUnderneath) {
       if (this.velY > this.deadlyVelY) {
         // splat
         this.isDead = true;
@@ -978,36 +955,59 @@ pixels either.
     }
   }
 
-  if (
-    hitWallOnLeft ||
-    hitWallOnRight ||
-    this.x <= this.width ||
-    this.x >= canvas.width - this.width
-  ) {
-    this.velX *= -1;
-  }
+  // Handle climbing
+  if (shouldClimb) {
+    this.isClimbing = true;
+    let climbDirection = hitWallOnLeft ? 1 : -1;
+    this.x += climbDirection * this.maxVelX;
+    this.y -= 1;
 
-  if (isWaterBelow || this.y >= canvas.height - this.height) {
-    this.isDead = true;
-  }
-
-  // Apply height adjustment
-  if (heightAdjustment !== 0 && !canClimb) {
-    if (this.y - heightAdjustment >= 0) {
-      this.y -= heightAdjustment; // move sprite up
-    } else {
-      this.isDead = true;
-      return;
+    // Check if we've reached the top of the climbable surface
+    if (
+      pixelIsColor(oldImgData, this.x + this.width / 2 + climbDirection, this.y, [rockColorBytes, dirtColorBytes]) &&
+      pixelIsColor(
+        oldImgData,
+        this.x + this.width / 2 + 2 * climbDirection,
+        this.y,
+        [rockColorBytes, dirtColorBytes]
+      )
+    ) {
+      this.velY = -VEL_CLIMB; // Start going up at climbing velocity
+      this.onGround = false; // We've left the ground
+      this.velX = climbDirection * 0.05; // Set X velocity to match climbing direction
     }
+  } else {
+    // Not climbing, normal movement applies
+    if (
+      hitWallOnLeft ||
+      hitWallOnRight ||
+      this.x <= this.width ||
+      this.x >= canvas.width - this.width
+    ) {
+      this.velX *= -1;
+    }
+
+    if (isWaterBelow || this.y >= canvas.height - this.height) {
+      this.isDead = true;
+    }
+
+    // Apply height adjustment
+    if (heightAdjustment !== 0 && !this.isClimbing) { // only adjust if not climbing
+      if (this.y - heightAdjustment >= 0) {
+        this.y -= heightAdjustment; // move sprite up
+      } else {
+        this.isDead = true;
+        return;
+      }
+    }
+
+    // Move the lemming
+    this.x += this.velX;
+    this.y += this.velY;
+    this.age++;
   }
-
-  // Move the lemming
-  this.x += this.velX;
-  this.y += this.velY;
-  this.age++;
-},
-
-
+}
+,
 
 
   draw: function() {
@@ -1047,7 +1047,7 @@ function spawnLemming() {
   newLemming.velX = newLemming.maxVelX; // Walk to the right by default
 
   //if(newLemming.id % 2) {
-  if(newLemming.id === 1) {
+  if(newLemming.id === 1 || newLemming.id === 5) {
     console.log("Making new lemming a climber: ", newLemming);
     newLemming.action = "Climber";
   }
@@ -1162,8 +1162,8 @@ update() code went here
 let background; // global variable to store canvas image data
 let isPaused = false;
 
-/*
-canvas.addEventListener('click', () => {
+function togglePause()
+{
   isPaused = !isPaused;
 
   lemmings.forEach((lemming) => {
@@ -1172,6 +1172,11 @@ canvas.addEventListener('click', () => {
         getPixelColor(oldImgData, lemming.x + lemming.width / 2, lemming.y + lemming.height)
     );
   });
+}
+
+/*
+canvas.addEventListener('click', () => {
+  togglePause();
 });
 */
 function getBackground() {
@@ -1532,18 +1537,23 @@ function applyAction(action) {
 >>> Resetting chat history -- it keeps getting confused by the Floater action. So will prefix with more context.
 
 We are making a game with lemmings. A specific type of lemming is a Climber. A lemming that is a Climber
-will climb up (not down) steep dirt or rock obstacles (compare their colors against the canvas data, always
-use oldImgData for that -- not ctx), it will walk like any other lemming, the only difference is that it 
-can also ascend steeper obstacles.
+will climb up (but not down) steep dirt or rock obstacles. That means it should stick to either pixels on
+the left or right of it. You can find out which direction a lemming is walking in by looking at velX (you really
+only need to check obstacle in the direction it is walking). The surfaces they can climb is rock and dirt. You
+can find out what is what by looking at pixel data in oldImgData.
 
-When it is climbing these steep obstacles, move it upwards along Y axis, but make sure the lemming move
-along the pixels it is climbing on (that is, on either side of the lemming).
+It will walk like any other lemming, the only difference is that it can also ascend steeper obstacles.
 
-If a climber is climbing, you should probably not do the heightAdjustment as that only applies if the lemming
-is walking on the ground.
+When it is climbing an obstacles, move it upwards along Y axis at the same speed as it would as if
+it was walking. But make sure the lemming move along the pixels it is climbing on (that is, on either side
+of the lemming).
 
-As a hint, since you are struggling, you want to put the functionality for this inside if(this.action === "Climber") { ... },
-in the appropriate place in the update function.
+If a climber is currently climbing, we probably don't want to do the heightAdjustment as that only applies
+if the lemming is walking on the ground.
+
+As a hint, since you are struggling, you will want to put the functionality for this inside 
+if(this.action === "Climber") { ... }, in the appropriate place in the update function. You will probably
+also need a flag to check if a lemming is currently climbing.
 
 To illustrate with ASCII:
 
@@ -1553,7 +1563,7 @@ S           o   c        |
 
 "S" is where the lemmings start walking
 "-" is a platform (rock or dirt)
-"|" is either rock or dirt too, but it's very steep and would stop a normal lemming from going further
+"|" is either rock or dirt too, but it's very steep and would stop a normal lemming from going further - it should climb up this obstacle at walking speed
 "o" is a normal walking lemming
 "c" is a Climber
 "G" is the goal where the lemmings want to go
@@ -1561,28 +1571,7 @@ S           o   c        |
 The Climber (c) in the above illustration would be able to reach the goal, but the normal lemming (o) would not, 
 it would simply walk back and forth between the steep obstacle and S.
 
-The following functionality is declared implemented:
-function isColorOneOf(needle, haystack) {
-  for (let i = 0; i < haystack.length; i++) {
-    const color = haystack[i];
-    
-    if (color[0] === needle[0] &&
-        color[1] === needle[1] &&
-        color[2] === needle[2]) {
-      return true;
-    }
-  }
-  
-  return false;
-}
-
-const terrainColorBytes = [
-  [102, 102, 102], // rock color 
-  [150, 75, 0] // dirt color
-];
-
-Don't use pixelIsColor to check if pixels are climbable surfaces. Use isColorOneOf(needle, haystack) instead, where
-needle is the pixel's color, and haystack is an array of several colors (e.g. the ones in terrainColorBytes).
+The function pixelIsColor() can take several colors in the color argument, if the pixel at x/y match either of them, the function will return true.
 
 const canvas = document.getElementById("canvas");
 const ctx = canvas.getContext("2d");
@@ -1745,8 +1734,8 @@ const Lemming = {
 I only want to change the update() function in the lemming. Show me the changed update() function, the
 rest of the Lemming you don't have to give me code for.
 
-I don't want pseudo-code, I want real code. It could be that you need more context from the existing
-code-base, please let me know if so.
+I don't want pseudo-code, I want real code. If you use a function not mentioned above, give implementation for that.
+
 */
       selectedLemming.action = "Climber";
       selectedLemming.isSelected = false;
@@ -1869,6 +1858,8 @@ Digger: 🕳️
   <button onclick="applyAction('Basher')">🤜💥🤛<!-- Basher--></button>
   <button onclick="applyAction('Miner')">⛏️<!-- Miner--></button>
   <button onclick="applyAction('Digger')">🕳️<!-- Digger--></button>
+
+  <button onclick="togglePause()">⏸️</button>
 </div>
 
 <style>
