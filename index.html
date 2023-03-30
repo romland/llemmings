@@ -200,7 +200,7 @@ function drawMap() {
   grd.addColorStop(1, '#444444');
   ctx.fillStyle = grd;
   ctx.fillRect(0, 0, canvas.width, canvas.height);
-  
+
   // Draw water at bottom of canvas
   ctx.fillStyle = waterColor;
   ctx.fillRect(0, canvas.height - platformHeight, canvas.width, platformHeight);
@@ -249,12 +249,12 @@ const height = canvas.height;
 // Create a blank image to draw onto (actually, copy existing image ...)
 let oldImgData = ctx.getImageData(0,0,width,height);    // TODO: This should be renamed, but I don't want to do it now since it would make some prompts invalid (for demonstration purposes). It does nicely illustrate the example of the need to keep track of these things.
 let canvasBytes = Uint8ClampedArray.from(oldImgData.data);
-console.log("clamped:", Uint8ClampedArray.from(oldImgData.data));
 const imgData = new ImageData(canvasBytes, width, height);
-console.log(imgData);
 
 function getPixelColor(imageData, x, y) {
-  const index = Math.floor((y * width + x) * 4);
+    x = Math.round(x);
+    y = Math.round(y);
+  const index = ((y * width) + x) * 4;
   const r = imageData.data[index];
   const g = imageData.data[index + 1];
   const b = imageData.data[index + 2];
@@ -264,6 +264,9 @@ function getPixelColor(imageData, x, y) {
 }
 
 function pixelIsColor(imageData, x, y, color, debug) {
+    x = Math.round(x);
+    y = Math.round(y);
+  
   const [r, g, b, alpha] = getPixelColor(imageData, x, y);
 
   if(r === undefined) {
@@ -275,56 +278,59 @@ function pixelIsColor(imageData, x, y, color, debug) {
   return r === color[0] && g === color[1] && b === color[2];
 }
 
+if(true) {
 
-// Loop over each pixel in the image
-for (let y = 0; y < height; y++) {
-  for (let x = 0; x < width; x++) {
-    const pixelOffset = ((y * width) + x) * 4; // x2 for RGBA channels
+    // Loop over each pixel in the image
+    for (let y = 0; y < height; y++) {
+    for (let x = 0; x < width; x++) {
+        const pixelOffset = ((y * width) + x) * 4; // x2 for RGBA channels
 
-    const isRock = pixelIsColor(imgData, x, y, [0x88, 0x88, 0x88, 255]);
-    const isDirt = pixelIsColor(imgData, x, y, [0x4a, 0x2e, 0x00, 255]);
+        const isRock = pixelIsColor(imgData, x, y, [0x88, 0x88, 0x88, 255]);
+        const isDirt = pixelIsColor(imgData, x, y, [0x4a, 0x2e, 0x00, 255]);
 
-    if(!isRock && !isDirt) {
-        // console.log("skipping");
-        continue;
+        if(!isRock && !isDirt) {
+            // console.log("skipping");
+            continue;
+        }
+
+
+        // Calculate value of noise at this pixel
+        let noiseValue = 0;
+        for (let octave = 1; octave <= numOctaves; octave++) {
+        const frequency = Math.pow(2, octave);
+        const amplitude = Math.pow(persistence, octave);
+        noiseValue += noiseGenerator.noise(x * noiseScale * frequency,
+                                            y * noiseScale * frequency,
+                                            0) * amplitude;
+        }
+        noiseValue = (noiseValue * 0.5) + 0.5; // normalise between 0 and 1
+
+        // Use noise value to determine pixel color
+        let r, g, b;
+        if (isRock) { // rock color
+        const shade = noiseValue + (Math.random() * 0.2);
+        r = shade * 90;
+        g = shade * 90;
+        b = shade * 90;
+        } else { // dirt color
+        const shade = noiseValue + (Math.random() * 0.2) - 0.4;
+        r = shade * 120;
+        g = shade * 100;
+        b = shade * 80;
+        }
+
+        // Set the pixel color in the image data buffer
+        imgData.data[pixelOffset] = r;   // Red channel
+        imgData.data[pixelOffset+1] = g; // Green channel
+        imgData.data[pixelOffset+2] = b; // Blue channel
+        imgData.data[pixelOffset+3] = 255; // Alpha channel (255 for opaque)
+    }
     }
 
+    // Draw final image to canvas
+    ctx.putImageData(imgData, 0, 0);
 
-    // Calculate value of noise at this pixel
-    let noiseValue = 0;
-    for (let octave = 1; octave <= numOctaves; octave++) {
-      const frequency = Math.pow(2, octave);
-      const amplitude = Math.pow(persistence, octave);
-      noiseValue += noiseGenerator.noise(x * noiseScale * frequency,
-                                          y * noiseScale * frequency,
-                                          0) * amplitude;
-    }
-    noiseValue = (noiseValue * 0.5) + 0.5; // normalise between 0 and 1
-
-    // Use noise value to determine pixel color
-    let r, g, b;
-    if (isRock) { // rock color
-      const shade = noiseValue + (Math.random() * 0.2);
-      r = shade * 90;
-      g = shade * 90;
-      b = shade * 90;
-    } else { // dirt color
-      const shade = noiseValue + (Math.random() * 0.2) - 0.4;
-      r = shade * 120;
-      g = shade * 100;
-      b = shade * 80;
-    }
-
-    // Set the pixel color in the image data buffer
-    imgData.data[pixelOffset] = r;   // Red channel
-    imgData.data[pixelOffset+1] = g; // Green channel
-    imgData.data[pixelOffset+2] = b; // Blue channel
-    imgData.data[pixelOffset+3] = 255; // Alpha channel (255 for opaque)
-  }
 }
-
-// Draw final image to canvas
-ctx.putImageData(imgData, 0, 0);
 
 // ============== lemming sprite
 /*
@@ -374,6 +380,12 @@ const blueBox = [0x00, 0x00, 0xff];
 const greenBox = [0x00, 0xff, 0x00];
 const GRAVITY = 0.03; // Adjust this until falling looks good
 const lemmings = [];
+
+const waterColorBytes = [0x00, 0x77, 0xbe]; // [0, 119, 190];
+const rockColorBytes  = [0x88, 0x88, 0x88]; // [136, 136, 136];
+const dirtColorBytes  = [0x4a, 0x2e, 0x00]; // [74, 46, 0];
+
+
 let lastLemmingId = 0;
 
 const lemming = {
@@ -389,27 +401,27 @@ const lemming = {
   isDead: false,
   background: { },
   update: function() {
-    if(this.y >= (canvas.height - (this.height+this.velY))) {
+    if(this.y >= (canvas.height - (this.height+this.velY+1))) {
         this.isDead = true;
         return;
     }
 
     // Check if ground is under us or not
     const isGroundUnderneath =
-        pixelIsColor(oldImgData, this.x + this.width / 2, this.y + this.height, dirtColor, this) || 
-        pixelIsColor(oldImgData, this.x + this.width / 2, this.y + this.height, rockColor, this);
+        pixelIsColor(oldImgData, this.x + this.width / 2, this.y + this.height + 2, dirtColorBytes) || 
+        pixelIsColor(oldImgData, this.x + this.width / 2, this.y + this.height + 2, rockColorBytes);
     
     // Check if we hit a wall on the x axis
     const hitWallOnLeft =
-        pixelIsColor(oldImgData, this.x - 1, this.y + this.height / 2, dirtColor) ||
-        pixelIsColor(oldImgData, this.x - 1, this.y + this.height / 2, rockColor);
+        pixelIsColor(oldImgData, this.x - 1, this.y + this.height / 2, dirtColorBytes) ||
+        pixelIsColor(oldImgData, this.x - 1, this.y + this.height / 2, rockColorBytes);
     const hitWallOnRight =
-        pixelIsColor(oldImgData, this.x + this.width + 1, this.y + this.height / 2, dirtColor) ||
-        pixelIsColor(oldImgData, this.x + this.width + 1, this.y + this.height / 2, rockColor); 
+        pixelIsColor(oldImgData, this.x + this.width + 1, this.y + this.height / 2, dirtColorBytes) ||
+        pixelIsColor(oldImgData, this.x + this.width + 1, this.y + this.height / 2, rockColorBytes); 
     
     // Check if we've fallen in water
     const isWaterBelow =
-        pixelIsColor(oldImgData, this.x + this.width / 2, this.y + this.height + 1, waterColor);
+        pixelIsColor(oldImgData, this.x + this.width / 2, this.y + this.height + 1, waterColorBytes);
     
     // Update velocity according to the collision rules
     if (!this.onGround) {
@@ -433,34 +445,22 @@ const lemming = {
       console.log(this.id, "should die");
     }
     
+    // TODO: Capped for now, it looks silly, but need to find out what is wrong with collisions
+    // this.velY = Math.min(1, this.velY);
+
     // Move the lemming
     this.x += this.velX;
-    this.y += Math.max(1, this.velY);
+    this.y += this.velY;
     this.age++;
   },
   
   draw: function() {
-    // TODO: This will fail if we have multiple moving objects, we need a full copy of background
-    //       to restore back from, and it needs to be in a pass before we draw any lemmings.
-    if (this.background.data) {
-        // Restore the background pixels before drawing the new position
-        // TODO: This is failing, look into after collisions are fixed
-        ctx.putImageData(this.background.data, this.background.x, this.background.y);
-    }
-
-    // Save the background pixels
-    this.background.x = this.x - 1;
-    this.background.y = this.y - 1;
-    this.background.width = this.width + 2;
-    this.background.height = this.height + 2;
-    this.background.data = ctx.getImageData(this.background.x, this.background.y, this.background.width, this.background.height);
-    
     // Draw the new lemming position
     ctx.fillStyle = 'rgb(' + blueBox.join(',') + ')';
     ctx.fillRect(this.x, this.y, this.width, this.height);
     ctx.fillStyle = 'rgb(' + greenBox.join(',') + ')';
-    ctx.fillRect(this.x, this.y, 5, 5);
-    ctx.fillRect(this.x + 15, this.y, 5, 5);
+    ctx.fillRect(this.x, this.y, 5 - 1, 5 - 1);
+    ctx.fillRect(this.x + 15, this.y, 5 - 1, 5 - 1);
 
     // Debug
     ctx.strokeStyle = "white";
@@ -471,6 +471,8 @@ const lemming = {
 
 // Create a new lemming and add it to the array of lemmings
 function spawnLemming() {
+  if(isPaused) return;
+
   const newLemming = Object.create(lemming);
   newLemming.id = ++lastLemmingId;
   newLemming.x = Math.random() * canvas.width; // Start at a random x location
@@ -488,7 +490,7 @@ setInterval(spawnLemming, 1000);
 /*
 >>> New prompt to fix: We don't want to clear entire context, just draw and restore what was changed (the lemming)
 
-We're making a game, to optmize the drawing, I want to change something...
+We're making a game (Lemmings), to optmize the drawing, I want to change something...
 
 Instead of clearing entire canvas every frame and redrawing it, just redraw the lemming that moved.
 Before the lemming was drawn, it needs to keep track of the background and restore that. Make sure
@@ -549,10 +551,16 @@ You may NOT change the lemming.update() method.
 
 It is important that you use the declared things I mentioned above and just give me the code with
 minor comments -- be brief, don't explain anything in plain text.
-*/
+
+==============
+>>>>>>>>> VERSION 2 -- I had trouble making it understand that it should only update partial blocks -- so do entire canvas...
+==============
+
+Instead of clearing entire canvas every frame, make sure we draw back the background, and then the 
+lemmings on top of that. Fix this method:
 
 function update() {
-//    ctx.clearRect(0, 0, canvas.width, canvas.height);
+   ctx.clearRect(0, 0, canvas.width, canvas.height);
   
   // Update and draw each lemming
   lemmings.forEach((lemming) => {
@@ -563,13 +571,65 @@ function update() {
       // Remove dead lemmings from the array as optimization
       const index = lemmings.indexOf(lemming);
       lemmings.splice(index, 1);
-    //   console.log("removing dead lemming", "index", index, lemming, getPixelColor(oldImgData, lemming.x, lemming.y));
+      console.log("removing dead lemming");
     }
   });
-  
   // Schedule the next frame
   requestAnimationFrame(update);
 }
+
+Also tell me how I should get the background data before we get to our first update.
+*/
+
+/*
+>>>>>> add a pause function on mouse click in the update function
+update() code went here
+*/
+
+let background; // global variable to store canvas image data
+let isPaused = false;
+
+canvas.addEventListener('click', () => {
+  isPaused = !isPaused;
+
+  lemmings.forEach((lemming) => {
+    console.log(
+        lemming,
+        getPixelColor(oldImgData, lemming.x + lemming.width / 2, lemming.y + lemming.height)
+    );
+  });
+});
+
+function getBackground() {
+  background = ctx.getImageData(0, 0, canvas.width, canvas.height);
+}
+
+function update() {
+  if (isPaused) {
+    requestAnimationFrame(update);
+    return;
+  }
+  // Restore the background
+  ctx.putImageData(background, 0, 0);
+
+  // Update and draw each lemming
+  lemmings.forEach((lemming) => {
+    lemming.update();
+    lemming.draw();
+    
+    if (lemming.isDead) {
+      // Remove dead lemmings from the array as optimization
+      const index = lemmings.indexOf(lemming);
+      lemmings.splice(index, 1);
+      console.log("removing dead lemming");
+    }
+  });
+
+  // Schedule the next frame
+  requestAnimationFrame(update);
+}
+
+getBackground();
 
 // Start the update loop
 update();
