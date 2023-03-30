@@ -49,7 +49,7 @@ _The process roughly goes something like this_
 Eventually you will get something that works. Kind of.
 
 It will hurt to debug a snippet of code to figure out how you should change your prompt.
-You, human, must resist fixing the code. You, human, must fix the prompt instead.
+**You, human, must resist fixing the code. You, human, must fix the prompt instead.**
 
 Sometimes you surprise yourself and just one-shot a prompt. It all just works on first try.
 One such example was the death explosion. It was a happy moment.
