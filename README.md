@@ -9,6 +9,7 @@ But other than that, the code should be written by the LLM.
 
 The latest and greatest version is [here](https://romland.github.io/llemmings)!  
 
+![Alt text](latest.png?raw=true "Screenshot of Llemmings")
 
 ## 🎮 The game
 It is (probably) not yet a game. But ...
@@ -55,9 +56,11 @@ One such example was the death explosion. It was a happy moment.
 
 
 ### 🗃️ Organizing prompts
-README TODO: Need to figure out how to best connect prompts to a commit and yet have prompts available for easy copy/pasting. It could be that I need to write something for this.  
-README TODO: At the end of the day, once figured out, there should be notes here about how you organize your prompts!  
-README TODO: Having prompts in the source code is getting too painful now.  
+The prompts are in the code now. This is not going to hold much longer. So I need to figure out how to
+best connect prompts to a code to have them available for easy copy/pasting. It could be that I need
+to implement something outside of this project for that.  
+
+Once figured out, there should be notes here about how you organize your prompts with the code!  
 
 
 ## 🔥 Code and quality
@@ -153,4 +156,4 @@ How it still feels like programming. But is it.
 It is still creating. Which is what we like. Right.  
 This project is education.  
 
-Oh, woe is us.
+**Oh, woe is us.**
