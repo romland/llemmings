@@ -768,8 +768,8 @@ const Lemming = {
 
         if(distanceToGround !== 0)
           heightAdjustment = (this.height) - distanceToGround + 0.1; // subtract half the sprite's height
-/*
-// ----------------------- This is the suggested "Climber" code -- I need to fix the map so that there are so climbable obstacles to test this.
+
+        // This is the suggested "Climber" code -- I need to fix the map so that there are so climbable obstacles to test this.
         // Check if we can start climbing
         const wallOnRight = pixelIsColor(oldImgData, this.x + this.width + 1, this.y + this.height / 2, rockColorBytes) ||
                             pixelIsColor(oldImgData, this.x + this.width + 1, this.y + this.height / 2, dirtColorBytes);
@@ -795,8 +795,7 @@ const Lemming = {
             return; // don't continue with regular movement logic
           }
         }
-// ----------------------- /Climber
-*/
+        // End of suggested climber code.
           
     }
 
