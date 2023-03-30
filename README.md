@@ -65,7 +65,7 @@ Up til now, quality has not been a big concern. It's one giant steamy pile of sp
 
 It's been handy to have everything in one file for prompting.
 
-At some point down the line, probably soon, refactoring needs to be done. The `update` function in the `Lemming`
+At some point down the line, probably soon, refactoring needs to be done by the LLM (😱). The `update` function in the `Lemming`
 object is especially unwieldy. To the point where I grin every time I see it.
 
 
@@ -87,8 +87,6 @@ Any pull requests are welcome, just make sure you
 
 If you cheated, flag the line with a "HUMAN: ..." comment in the code.
 
-_Tip: You can check commit history and you'll get the gist._
-
 Currently I have settled for commit messages like this:
 ```
 Commit title
@@ -101,6 +99,9 @@ ChatGPT: subtitle
 ...
 ```
 Preferably only one prompt per commit. But I failed in the beginning.
+
+_You can check the commit history and you'll get the gist._
+
 
 ## 🏃‍♀️ Compiling, installing, running
 Just double click `index.html`.
