@@ -24,26 +24,26 @@ them safely home. These green and blue blocks are pretty dumb. Your job as a hum
 assist them by giving them instructions. For instance, stop them from going in some direction.
 
 It must be said that the implementeation so far is all from memory. Some things are very likely
-to be wrong. The aim is not to make a perfect clone of its namesake. But if it is about the same,
-it's of course fun.
+to be wrong.
+
+The aim is not to make a perfect clone of its namesake, but if it is about the same, it's of
+course fun.
 
 
 ## 🖥️ The real game
-The real game is in the journey.
+It's the journey!
 
 Your job as a human is to assist the LLM by giving it instructions.
-
-Any irony is purely coincidental.
 
 
 ### 📝 Prompts
 You will quickly realize this is a painful journey. You will find yourself reading code. A lot.
 
 Very often ... in fact, all the time ... you will get code that does not work, or only
-partially works. This means you as a human failed. You need to change something in your
+partially works. This means you as a human **failed**. You need to change something in your
 prompt and try again.
 
-Process is roughly:
+_The process roughly goes something like this_
 1. You have a goal, like adding a red and green block that can climb.
    You write a basic prompt explaining your idea.
 2. Out comes some code, you immediately see that this is garbage
@@ -64,9 +64,9 @@ One such example was the death explosion. It was a happy moment.
 ### 🗃️ Organizing prompts
 TODO: Need to figure out how to best connect prompts to a commit and yet have prompts
       available for easy copy/pasting. It could be that I need to write something for
-      this.
-TODO: At the end of the day, once figured out, there should be notes here about how you organize your prompts!
-TODO: Having prompts in the source code is getting too painful now.
+      this.  
+TODO: At the end of the day, once figured out, there should be notes here about how you organize your prompts!  
+TODO: Having prompts in the source code is getting too painful now.  
 
 
 ## 🔥 Code and quality
