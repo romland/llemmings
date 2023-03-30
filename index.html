@@ -435,8 +435,39 @@ const Lemming = {
             && !pixelIsColor(oldImgData, this.x + this.width / 2, this.y + distanceToGround + 1, rockColorBytes)) {
             distanceToGround++;
         }
+
         if(distanceToGround !== 0)
           heightAdjustment = (this.height) - distanceToGround + 0.1; // subtract half the sprite's height
+
+// ----------------------- This is the suggested "Climber" code -- I need to fix the map so that there are so climbable obstacles to test this.
+        // Check if we can start climbing
+        const wallOnRight = pixelIsColor(oldImgData, this.x + this.width + 1, this.y + this.height / 2, rockColorBytes) ||
+                            pixelIsColor(oldImgData, this.x + this.width + 1, this.y + this.height / 2, dirtColorBytes);
+        const wallOnLeft = pixelIsColor(oldImgData, this.x - 1, this.y + this.height / 2, rockColorBytes) ||
+                            pixelIsColor(oldImgData, this.x - 1, this.y + this.height / 2, dirtColorBytes);
+        
+        if (wallOnLeft || wallOnRight) {
+          const wallColor = wallOnLeft ? oldImgData.data[getPixelIndex(this.x - 1, this.y + this.height / 2)].toString()
+                                          : oldImgData.data[getPixelIndex(this.x + this.width + 1, this.y + this.height / 2)].toString();
+          if (wallColor === rockColorBytes.toString() || wallColor === dirtColorBytes.toString()) {
+            // start climbing
+            this.action = "Climber";
+            this.startClimbing();
+
+            // set the max height of climb
+            let maxHeight = this.y;
+            while (pixelIsColor(oldImgData, this.x + this.width / 2, maxHeight - 1, rockColorBytes) ||
+                pixelIsColor(oldImgData, this.x + this.width / 2, maxHeight - 1, dirtColorBytes)) {
+              maxHeight--;
+            }
+            this.climbMaxHeight = maxHeight;
+
+            return; // don't continue with regular movement logic
+          }
+        }
+// ----------------------- /Climber
+
+          
     }
 
     // Check if we hit a wall on the x axis
@@ -453,8 +484,12 @@ const Lemming = {
     
     // Update velocity according to the collision rules
     if (!this.onGround) {
-      this.velY += GRAVITY;
-      
+      if (this.action === "Floater") {
+        this.velY += GRAVITY * 0.1;
+      } else {
+        this.velY += GRAVITY;
+      }
+
       if (isGroundUnderneath) {
         // console.log(this.velY);
         if(this.velY > this.deadlyVelY) {
@@ -687,7 +722,10 @@ function update() {
       lemmings.splice(index, 1);
       console.log("removing dead lemming");
       for(let i = 0; i < 50; i++) {
-        particles.push(new Particle(lemming.x + Math.random() * 20 - 10, lemming.y + Math.random() * 20 - 10));
+        // I cheated and added this color variation myself. :/ 
+        const p = new Particle(lemming.x + Math.random() * 20 - 10, lemming.y + Math.random() * 20 - 10);
+        p.color = i < 20 ? "#55ff55" : "#5555ff";
+        particles.push(p);
       }
 
     }
@@ -1013,9 +1051,142 @@ function applyAction(action) {
   // Apply the action to the selected lemming
   switch (action) {
     case 'Climber':
+      // >>> Prompt
+/*
+>>> Resetting chat history -- it keeps getting confused by the Floater action. So will prefix with more context.
+
+We are making a game with lemmings, a specific type of lemming is a Climber. What would we need to add to the lemming's update function below (see original below).
+The Climber action should allow a Lemming to climb steep dirt or rock walls (compare their colors against the canvas data), and it will continue climbing as far as it can until it can walk along the X axis again.
+It can only climb upwards.
+
+You probably need to figure out some trickery here to determine whether the Lemming ran into something it should climb...
+
+The following is declared already:
+const canvas = document.getElementById("canvas");
+const ctx = canvas.getContext("2d");
+const Lemming = {
+  id: -49152,
+  age: 0,
+  x: 0,
+  y: 0,
+  width: 10,
+  height: 20,
+  velX: 0,
+  velY: 0,
+  maxVelX: 0.2,
+  deadlyVelY: 3,
+  isSelected: false,
+  onGround: false,
+  isDead: false,
+  action: null,
+  update: function() {
+    if(this.y >= (canvas.height - (this.height+this.velY+1))) {
+        this.isDead = true;
+        return;
+    }
+
+    // Check if ground is under us or not
+    let isGroundUnderneath = pixelIsColor(oldImgData, this.x + this.width / 2, this.y + this.height + 1, dirtColorBytes) || 
+                            pixelIsColor(oldImgData, this.x + this.width / 2, this.y + this.height + 1, rockColorBytes);
+
+    let heightAdjustment = 0;
+
+    if (isGroundUnderneath) {
+        let distanceToGround = -(this.height/4);
+
+        // TODO need safety guards for canvas boundary and probably a sanity check to not iterate more than N pixels (N = height?)
+        while (!pixelIsColor(oldImgData, this.x + this.width / 2, this.y + distanceToGround + 1, dirtColorBytes)
+            && !pixelIsColor(oldImgData, this.x + this.width / 2, this.y + distanceToGround + 1, rockColorBytes)) {
+            distanceToGround++;
+        }
+        if(distanceToGround !== 0)
+          heightAdjustment = (this.height) - distanceToGround + 0.1; // subtract half the sprite's height
+    }
+
+    // Check if we hit a wall on the x axis
+    const hitWallOnLeft =
+        pixelIsColor(oldImgData, this.x - 1, this.y + this.height / 2, dirtColorBytes) ||
+        pixelIsColor(oldImgData, this.x - 1, this.y + this.height / 2, rockColorBytes);
+    const hitWallOnRight =
+        pixelIsColor(oldImgData, this.x + this.width + 1, this.y + this.height / 2, dirtColorBytes) ||
+        pixelIsColor(oldImgData, this.x + this.width + 1, this.y + this.height / 2, rockColorBytes); 
+
+    // Check if we've fallen in water
+    const isWaterBelow =
+        pixelIsColor(oldImgData, this.x + this.width / 2, this.y + this.height + 1, waterColorBytes);
+    
+    // Update velocity according to the collision rules
+    if (!this.onGround) {
+      if (this.action === "Floater") {
+        this.velY += GRAVITY * 0.1;
+      } else {
+        this.velY += GRAVITY;
+      }
+
+      if (isGroundUnderneath) {
+        // console.log(this.velY);
+        if(this.velY > this.deadlyVelY) {
+          // splat
+          this.isDead = true;
+          return;
+        }
+        this.onGround = true;
+        this.velY = 0;
+      }
+    } else if (this.onGround && !isGroundUnderneath) {
+      // Start falling if there's no ground
+      this.onGround = false;
+    }
+
+    // Check if there are other lemmings that are blockers
+    for (let i = 0; i < lemmings.length; i++) {
+      const otherLemming = lemmings[i];
+
+      if (
+        otherLemming !== this &&
+        !otherLemming.isDead &&
+        otherLemming.action === "Blocker" &&
+        this.x + this.width > otherLemming.x &&
+        this.x < otherLemming.x + otherLemming.width &&
+        this.y + this.height > otherLemming.y &&
+        this.y < otherLemming.y + otherLemming.height
+      ) {
+        console.log("Ran into a blocker?", this.x, this.y)
+        this.velX *= -1;
+      }
+    }
+
+    if (hitWallOnLeft || hitWallOnRight || this.x <= this.width || this.x >= canvas.width-this.width) {
+      this.velX *= -1;
+    }
+    
+    if (isWaterBelow || this.y >= canvas.height-this.height) {
+      this.isDead = true;
+    }
+
+    // Apply height adjustment
+    if (heightAdjustment !== 0) {
+        this.y -= heightAdjustment; // move sprite up
+    }
+    
+    // Move the lemming
+    this.x += this.velX;
+    this.y += this.velY;
+    this.age++;
+  }
+}
+
+I only want to change the update() function in the lemming, any boilerplate around that you can omit.
+
+I don't want pseudo-code, I want real code. It could be that you need more context from the existing code-base, please let me know if so.
+*/
       break;
     case 'Floater':
       //add floating behavior here
+      // >>> Prompt:
+      // Give me the code for how the Floater action should make the lemming behave now. There is already a selected lemming, I just need the code on how the lemming should behave in its update()
+      selectedLemming.action = "Floater";
+      selectedLemming.isSelected = false;
       break;
     case 'Bomber':
       //add bombing behavior here
@@ -1129,6 +1300,12 @@ Digger: 🕳️
   <button onclick="applyAction('Miner')">⛏️<!-- Miner--></button>
   <button onclick="applyAction('Digger')">🕳️<!-- Digger--></button>
 </div>
+
+<style>
+  button {
+    font-size: 40px;
+  }
+</style>
 
 </body>
 </html>
