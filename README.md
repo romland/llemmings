@@ -7,9 +7,15 @@ Your job, as a human, is to copy and paste code.
 There are a few exceptions, such as removing redeclared variables and similar small things.
 But other than that, the code should be written by the LLM.
 
+## README TODOS
+TODO: Need emojis in this file. It's all the rage!  
+TODO: Screenshot(s), video? and well  
+TOOD: a link to current implementation    
+https://romland.github.io/llemmings  
+
 
 ## The game
-First of all, is not yet a game. But ...
+It is (probably) not yet a game. But ...
 
 Llemmings is based on a game with a similar name by DMA Design. 
 
@@ -77,7 +83,7 @@ with something like:
 
 "// HUMAN: I Have no hair left. I ran out of patience. I, bad human, added this line."
 
-This is essentially cheating. But we all cheat.
+This is essentially cheating. But we are humans, we cheat.
 
 
 ## Contributing and pull requests
@@ -85,12 +91,12 @@ Anyone can contribute. Don't be afraid. Blame the LLM.
 
 Any pull requests are welcome, just make sure you
 ...say which prompt(s) you used
-...say which LLM was used
+...say which LLM was used (if you want to be fancy, you can disclose temperature, etc)
 
-And of course, if you cheated, flag the line with a "HUMAN: ..." comment in the code.
+Just make sure that if you cheated, flag the line with a "HUMAN: ..." comment in the code.
 
 
-## An examples
+## An example
 Note that this prompt grew over time, it's not like I just wrote it down in one shot and
 out came good code. It's all an iterative process. It's a process that feels very much
 like ... programming.
