@@ -1003,101 +1003,8 @@ pixels either.
     }
 
     // ============ Digger/Basher/Miner code
-    if (this.action === "Basher") {
-      let isWallInFront = false;
-      const frontX = this.velX > 0 ? this.x + this.width : this.x; // If moving to the right, check the rightmost pixel of the lemming. Otherwise, check the leftmost pixel.
-      for (let i = 1; i <= this.height + 3; i++) { // Check if there is dirt or rock within jumping reach
-        // Check the pixel where the basher is going to move (2 pixels ahead)
-        const pixelData = ctx.getImageData(frontX + (2 * this.velX), this.y + i, 1, 1).data;
-        const [r,g,b,a] = pixelData.slice(0,4); // Get the RGBA values of the pixel
-        if(r === dirtColorBytes[0] && g === dirtColorBytes[1] && b === dirtColorBytes[2] && a === dirtColorBytes[3]){ // Check if it's dirt
-          isWallInFront = true;
-          break;
-        } else if(r === rockColorBytes[0] && g === rockColorBytes[1] && b === rockColorBytes[2] && a === rockColorBytes[3]){ // Check if it's rock
-          isWallInFront = true;
-          if (this.y + i < canvas.height - this.height) { // Leave 5 pixels at the bottom and dig a tunnel
-            for (let j = 1; j <= this.height + 5; j++) {
-              background.data[((this.y + i + j) * canvas.width + frontX + (2 * this.velX)) * 4] = 0;
-              ctx.putImageData(background, 0, 0);
-            }
-          }
-          break;
-        }
-      }
-    
-      if (!isWallInFront) { // If there's no wall in front, just move forward
-        this.x += this.velX;
-        this.y += this.velY;
-      } else {
-        for (let i = 1; i <= this.height + 5; i++) { // Remove pixels to make a tunnel
-          background.data[((this.y + i) * canvas.width + frontX + (2 * this.velX)) * 4] = 0;
-          ctx.putImageData(background, 0, 0);
-        }
-      }
-    }
-    
-    if (this.action === "Digger") {
-      if (this.onGround) {
-        let canDig = true;
-        for (let i = 1; i <= this.width + 3; i++) { // Check if there is dirt or rock within digging reach
-          const pixelData = ctx.getImageData(this.x + i, this.y + this.height + 2, 1, 1).data;
-          const [r,g,b,a] = pixelData.slice(0, 4); 
-          if(r === dirtColorBytes[0] && g === dirtColorBytes[1] && b === dirtColorBytes[2] && a === dirtColorBytes[3]){ // Check if it's dirt
-            canDig = false;
-            break;
-          } else if(r === rockColorBytes[0] && g === rockColorBytes[1] && b === rockColorBytes[2] && a === rockColorBytes[3]){ // Check if it's rock
-            canDig = false;
-            break;
-          }
-        }
-    
-        if (canDig) { // Start digging if there's nothing within digging reach
-          for (let i = 1; i <= this.width + 3; i++) {
-            for (let j = 0; j <= 2; j++) {
-              background.data[((this.y + this.height + 1 + j) * canvas.width + this.x + i) * 4] = 0;
-            }
-          }
-          this.y += 3;
-        } else {
-          this.x += this.velX;
-          this.y += this.velY;
-        }
-      } else {
-        this.y += this.velY;
-      }
-    }
-
-    if (this.action === "Miner") {
-      if (this.onGround) {
-        let canDig = true;
-        const tunnelHeight = Math.round(1.5 * this.height);
-        for (let i = 1; i <= this.width + tunnelHeight + 3; i++) { // Check if there is dirt or rock within digging reach
-          const pixelData = ctx.getImageData(this.x + i, this.y + this.height + 2 + (i * tunnelHeight / (this.width + tunnelHeight)), 1, 1).data;
-          const [r,g,b,a] = pixelData.slice(0, 4); 
-          if(r === dirtColorBytes[0] && g === dirtColorBytes[1] && b === dirtColorBytes[2] && a === dirtColorBytes[3]){ // Check if it's dirt
-            canDig = false;
-            break;
-          } else if(r === rockColorBytes[0] && g === rockColorBytes[1] && b === rockColorBytes[2] && a === rockColorBytes[3]){ // Check if it's rock
-            canDig = false;
-            break;
-          }
-        }
-    
-        if (canDig) { // Start digging if there's nothing within digging reach
-          for (let i = 1; i <= this.width + tunnelHeight + 3; i++) {
-            for (let j = 0; j < tunnelHeight; j++) {
-              background.data[((this.y + this.height + 1 + Math.round(j * (i / (this.width + tunnelHeight)))) * canvas.width + this.x + i) * 4] = 0;
-            }
-          }
-          this.x += 1.5 * this.velX;
-          this.y += 0.5 * this.velY;
-        } else {
-          this.x += this.velX;
-          this.y += this.velY;
-        }
-      } else {
-        this.y += this.velY;
-      }
+    if(this.action === "Digger" || this.action === "Miner" || this.action === "Basher") {   // HUMAN added
+      startDigging(this);
     }
     // ============ /Digger/Basher/Miner code
 
@@ -1184,6 +1091,130 @@ pixels either.
   }
 };
 
+// ============ Digger/Basher/Miner code (prompt down by actions at 'Digger')
+const transparentColorBytes = [ 0,0,0 ];    // HUMAN: Added this line manually
+
+function isOnGround(lemming) {
+  for (let i = 1; i <= lemming.height + 5; i++) { // Check below the lemming's feet
+    const pixelData = ctx.getImageData(lemming.x + Math.floor(lemming.width / 2), lemming.y + lemming.height + i, 1, 1).data;
+    const [r,g,b,a] = pixelData.slice(0,4);
+    if(r === transparentColorBytes[0] && g === transparentColorBytes[1] && b === transparentColorBytes[2] && a === transparentColorBytes[3]){ // If it's transparent, there's no surface
+      return false;
+    }
+  }
+  return true;
+}
+
+function startDigging(lemming) {
+  lemming.onGround = isOnGround(lemming);
+  if (lemming.onGround) {
+    lemming.velX *= 0.2; // Slow down the lemming when digging
+    lemming.velY = 0; // Stop vertical movement
+    lemming.jumpCount = lemming.canJump ? 0 : lemming.jumpCount; // Cancel any jumping attempt
+    switch (lemming.action) {
+      case "Basher":
+        digBasher(lemming);
+        break;
+      case "Digger":
+        digDigger(lemming);
+        break;
+      case "Miner":
+        digMiner(lemming);
+        break;
+    }
+  } else { // If not on ground, just fall
+    lemming.velY += gravity;
+  }
+}
+function digBasher(lemming) {
+  let isWallInFront = false;
+  const frontX = lemming.velX > 0 ? lemming.x + lemming.width : lemming.x; // If moving to the right, check the rightmost pixel of the lemming. Otherwise, check the leftmost pixel.
+  for (let i = 1; i <= lemming.height + 3; i++) { // Check if there is dirt or rock within jumping reach
+    // Check the pixel where the basher is going to move (2 pixels ahead)
+    const pixelData = ctx.getImageData(frontX + (2 * lemming.velX), lemming.y + i, 1, 1).data;
+    const [r,g,b,a] = pixelData.slice(0,4); // Get the RGBA values of the pixel
+    if(r === dirtColorBytes[0] && g === dirtColorBytes[1] && b === dirtColorBytes[2] && a === dirtColorBytes[3]){ // Check if it's dirt
+      isWallInFront = true;
+      break;
+    } else if(r === rockColorBytes[0] && g === rockColorBytes[1] && b === rockColorBytes[2] && a === rockColorBytes[3]){ // Check if it's rock
+      isWallInFront = true;
+      if (lemming.y + i < canvas.height - lemming.height) { // Leave 5 pixels at the bottom and dig a tunnel
+        for (let j = 1; j <= lemming.height + 5; j++) {
+          background.data[((lemming.y + i + j) * canvas.width + frontX + (2 * lemming.velX)) * 4] = 0;
+          ctx.putImageData(background, 0, 0);
+        }
+      }
+      break;
+    }
+  }
+
+  if (!isWallInFront) { // If there's no wall in front, just move forward
+    lemming.x += lemming.velX;
+    lemming.y += lemming.velY;
+  } else {
+    for (let i = 1; i <= lemming.height + 5; i++) { // Remove pixels to make a tunnel
+      background.data[((lemming.y + i) * canvas.width + frontX + (2 * lemming.velX)) * 4] = 0;
+      ctx.putImageData(background, 0, 0);
+    }
+  }
+}
+function digDigger(lemming) {
+  let canDig = true;
+  for (let i = 1; i <= lemming.width + 3; i++) { // Check if there is dirt or rock within digging reach
+    const pixelData = ctx.getImageData(lemming.x + i, lemming.y + lemming.height + 2, 1, 1).data;
+    const [r,g,b,a] = pixelData.slice(0, 4); 
+    if(r === dirtColorBytes[0] && g === dirtColorBytes[1] && b === dirtColorBytes[2] && a === dirtColorBytes[3]){ // Check if it's dirt
+      canDig = false;
+      break;
+    } else if(r === rockColorBytes[0] && g === rockColorBytes[1] && b === rockColorBytes[2] && a === rockColorBytes[3]){ // Check if it's rock
+      canDig = false;
+      break;
+    }
+  }
+
+  if (canDig) { // Start digging if there's nothing within digging reach
+    for (let i = 1; i <= lemming.width + 3; i++) {
+      for (let j = 0; j <= 2; j++) {
+        background.data[((lemming.y + lemming.height + 1 + j) * canvas.width + lemming.x + i) * 4] = 0;
+      }
+    }
+    lemming.y += 3; // Move the lemming down after digging
+  } else {
+    lemming.x += lemming.velX;
+    lemming.y += lemming.velY;
+  }
+}
+function digMiner(lemming) {
+  let canDig = true;
+  const tunnelHeight = Math.round(1.5 * lemming.height);
+  for (let i = 1; i <= lemming.width + tunnelHeight + 3; i++) { // Check if there is dirt or rock within digging reach
+    const pixelData = ctx.getImageData(lemming.x + i, lemming.y + lemming.height + 2 + (i * tunnelHeight / (lemming.width + tunnelHeight)), 1, 1).data;
+    const [r,g,b,a] = pixelData.slice(0, 4); 
+    if(r === dirtColorBytes[0] && g === dirtColorBytes[1] && b === dirtColorBytes[2] && a === dirtColorBytes[3]){ // Check if it's dirt
+      canDig = false;
+      break;
+    } else if(r === rockColorBytes[0] && g === rockColorBytes[1] && b === rockColorBytes[2] && a === rockColorBytes[3]){ // Check if it's rock
+      canDig = false;
+      break;
+    }
+  }
+
+  if (canDig) { // Start digging if there's nothing within digging reach
+    for (let i = 1; i <= lemming.width + tunnelHeight + 3; i++) {
+      for (let j = 0; j < tunnelHeight; j++) {
+        background.data[((lemming.y + lemming.height + 1 + Math.round(j * (i / (lemming.width + tunnelHeight)))) * canvas.width + lemming.x + i) * 4] = 0;
+      }
+    }
+    lemming.x += 1.5 * lemming.velX; // Move the lemming diagonally downwards after digging
+    lemming.y += 0.5 * lemming.velY;
+  } else {
+    lemming.x += lemming.velX;
+    lemming.y += lemming.velY;
+  }
+}
+
+
+// ============ /Digger/Basher/Miner code
 
 /*
 let oldImgData = ctx.getImageData(0,0,width,height);    // TODO: This should be renamed, but I don't want to do it now since it would make some prompts invalid (for demonstration purposes). It does nicely illustrate the example of the need to keep track of these things.
@@ -2048,7 +2079,7 @@ in the snippet I gave you, implement them and show them to me.
 We are making a game with lemmings. There are three similar types of lemmings:
 - Basher - The Basher will at when encountering an obstacle it cannot traverse, instead of turning around, carve a tunnel in front of it. That is, remove pixels in the background. The height of the tunnel is the same as the height of the lemming (+ a few pixels maybe)
 - Digger - The Digger works almost the same, except that it will not wait for an obstacle before it starts digging. It will immediately start digging straight down. The hole it digs is a few pixels wider than the lemming is wide.
-- Miner - The Miner works almost the same as the Digger, the only difference is that it will dig a tunnel diagonally downwards. The size of the tunnel it is digging is 150% of the height of the lemming.
+- Miner - The Miner works almost the same as the Digger, the only difference is that it will dig a tunnel diagonally downwards, in the direction it was walking. The size of the tunnel it is digging is 150% of the height of the lemming.
 
 They all need to be on the ground to be able to dig. They should keep on digging until they cannot dig any more (that is, they are now where there is no surface).
 Remember that they dig over time (no instant tunnels), they all dig at pace of around 20% of the normal walking pace.
@@ -2057,14 +2088,14 @@ For context, I give you the following code, which is the Lemming (object):
 
 ... <<Lemming object here>> ...
 
-If you use functions that are not in the snippet above, give me those as well.
+Reuse functions where possible. If you use functions that are not in the snippet above, give me those as well.
 
 You can find out what type it is by looking at the "action" property of a lemming.
 
 Remove a pixel from the canvas using, e.g.: background.data[(y * canvas.width + x) * 4] = 0;
 Remember to restore canvas with something like this every frame: ctx.putImageData(background, ...)
 
-Give me only need code, I don't need explanation.
+Give me only code, I don't need explanation.
 */
       selectedLemming.action = "Miner";     // HUMAN: Added this.
       selectedLemming.isSelected = false;

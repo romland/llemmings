@@ -116,7 +116,7 @@ Maybe the commit history will be the most interesting part of this project.
 Just open `index.html` in your favorite web-browser.
 
 
-## TODO
+## 🚧 TODO
 There is a lot. It would be nice if there was a list somewhere. There isn't. Just do what you want to do.
 
 Some thoughts:
@@ -133,11 +133,12 @@ Some thoughts:
 - ... yeah ...
 
 
-## ✍️ An example
+## ✍️ An example prompt
 Note that a prompt like this grew over time (likely hours), it's not like it was just written
 down and in one shot came good code fit-for-purose. It's all an iterative process. And it feels
 very much like ... programming.  
 
+_This was a very ambitious one. And it largely let me down -- but we got there in the end._
 ```
 Do pixel perfect collision detection for a sprite that looks like a blue lemming with green hair
 (a blue box and a green box, basically), give it its own structure with position, velocity, etc.
@@ -151,14 +152,13 @@ by keys, they move by themselves and is constrained by the collision rules outli
 It is important that you use the declared things I mentioned above and just give me the code with
 minor comments, no need to explain anything in plain text.
 ```
-This was a very ambitious one. And it largely let me down -- but we got there in the end.
 
 
-## License
+## 📄 License
 AGPL.
 
 
-## Random thoughts
+## 🎲 Random thoughts
 Brave new world.  
 All about the specifiprompts.  
 The age of average (text).  
@@ -167,4 +167,4 @@ How it still feels like programming. But is it.
 It is still creating. Which is what we like. Right.  
 This project is education.  
 
-**Oh, woe is us.**
+**Oh, woe is us.** 😲
