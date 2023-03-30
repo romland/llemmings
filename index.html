@@ -247,9 +247,9 @@ const width = canvas.width;
 const height = canvas.height;
 
 // Create a blank image to draw onto (actually, copy existing image ...)
-let oldImgData = ctx.getImageData(0,0,width,height);
-let foo = Uint8ClampedArray.from(oldImgData.data);
-const imgData = new ImageData(foo, width, height);
+let oldImgData = ctx.getImageData(0,0,width,height);    // TODO: This should be renamed, but I don't want to do it now since it would make some prompts invalid (for demonstration purposes). It does nicely illustrate the example of the need to keep track of these things.
+let canvasBytes = Uint8ClampedArray.from(oldImgData.data);
+const imgData = new ImageData(canvasBytes, width, height);
 
 function getPixelColor(imageData, x, y) {
   const index = Math.floor((y * width + x) * 4);
@@ -391,9 +391,9 @@ const lemming = {
     const isWaterBelow =
         pixelIsColor(oldImgData, this.x + this.width / 2, this.y + this.height + 1, waterColor);
     
-console.log(this.id, getPixelColor(oldImgData, this.x, this.y), this.x, this.y, this.width, this.height);
-this.draw();
-throw "f";
+// console.log(this.id, getPixelColor(oldImgData, this.x, this.y), this.x, this.y, this.width, this.height);
+// this.draw();
+// throw "f";
     
     // console.log(
     //     isGroundUnderneath,
@@ -429,13 +429,22 @@ throw "f";
   },
   
   draw: function() {
+    // Save the background (ChatGPT said this)
+    ctx.save();
+    ctx.fillStyle = '#FFFFFF';
+    ctx.fillRect(this.x, this.y, this.width, this.height);
+    
     // Draw the blue box and green hair
     ctx.fillStyle = 'rgb(' + blueBox.join(',') + ')';
     ctx.fillRect(this.x, this.y, this.width, this.height);
     ctx.fillStyle = 'rgb(' + greenBox.join(',') + ')';
     ctx.fillRect(this.x, this.y, 5, 5);
     ctx.fillRect(this.x + 15, this.y, 5, 5);
-  }
+    
+    // Restore the background (ChatGPT said this)
+    ctx.restore();
+    }
+
 };
 
 const GRAVITY = 0.03; // Adjust this until falling looks good
@@ -456,11 +465,15 @@ function spawnLemming() {
 setInterval(spawnLemming, 1000);
 
 /*
->>> New prompt to fix the issue with clearing entire context...
+>>> New prompt to fix: We don't want to clear entire context, just draw and restore what was changed (the lemming)
 
 We're making a game, to optmize the drawing, I want to change something...
 
-Instead of clearing entire canvas every frame and redrawing it, just redraw the lemming that moved. Before the lemming was drawn, it needs to keep track of the background and restore that. A lemming looks like this
+Instead of clearing entire canvas every frame and redrawing it, just redraw the lemming that moved.
+Before the lemming was drawn, it needs to keep track of the background and restore that. Make sure
+we do not get any memory leaks around keeping track of the previous background.
+
+A lemming structure looks like this:
 const lemming = {
   id: -49152,
   x: 0,
@@ -506,15 +519,45 @@ These variables are already declared, use them.
 const canvas = document.getElementById("canvas");
 const ctx = canvas.getContext("2d");
 
+I want to remind you that I don't think calling save() and restore() on the context will save 
+and restore any pixel data. You need to figure out how to do that.
+
 It is important that you use the declared things I mentioned above and just give me the code with
 minor comments -- be brief, don't explain anything in plain text.
 */
+
+// Initialize dirtyRegions with a single rect covering the entire canvas
+// Now, why would you do that ... let dirtyRegions = [ {x: 0, y: 0, width: canvas.width, height: canvas.height} ];
+let dirtyRegions = [  ];
+
 function update() {
-   ctx.clearRect(0, 0, canvas.width, canvas.height);
+  // Clear each dirty region
+  dirtyRegions.forEach((region) => {
+    ctx.clearRect(region.x, region.y, region.width, region.height);
+  });
+  
+  // Reset dirtyRegions
+  dirtyRegions = [];
   
   // Update and draw each lemming
   lemmings.forEach((lemming) => {
+    const previousCoords = { x: lemming.x, y: lemming.y };
     lemming.update();
+    
+    // Calculate the dirty region (the union of the previous and new rectangles)
+    const dirtyX = Math.min(previousCoords.x, lemming.x);
+    const dirtyY = Math.min(previousCoords.y, lemming.y);
+    const dirtyWidth = Math.max(previousCoords.x + lemming.width, lemming.x + lemming.width) - dirtyX;
+    const dirtyHeight = Math.max(previousCoords.y + lemming.height, lemming.y + lemming.height) - dirtyY;
+
+    // I thought it should remove a few pixels around it since it leaves a trail... But it seems that was not the case!
+    // const dirtyRegion = { x: dirtyX - 2, y: dirtyY - 2, width: dirtyWidth + 4, height: dirtyHeight + 4 };
+    const dirtyRegion = { x: dirtyX, y: dirtyY, width: dirtyWidth, height: dirtyHeight };
+    
+    // Add the dirty region to the array
+    dirtyRegions.push(dirtyRegion);
+    
+    // Redraw the lemming
     lemming.draw();
     
     if (lemming.isDead) {
@@ -528,6 +571,7 @@ function update() {
   // Schedule the next frame
   requestAnimationFrame(update);
 }
+
 
 // Start the update loop
 update();
