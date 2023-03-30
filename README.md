@@ -7,12 +7,7 @@ Your job, as a human, is to copy and paste code.
 There are a few exceptions, such as removing redeclared variables and similar small things.
 But other than that, the code should be written by the LLM.
 
-Most recent version:
-## README TODOS
-TODO: Screenshot(s), video? and well  
-TOOD: a link to current implementation    
-https://romland.github.io/llemmings  
-
+Latest version is [here](https://romland.github.io/llemmings).  
 
 ## 🎮 The game
 It is (probably) not yet a game. But ...
@@ -59,11 +54,9 @@ One such example was the death explosion. It was a happy moment.
 
 
 ### 🗃️ Organizing prompts
-TODO: Need to figure out how to best connect prompts to a commit and yet have prompts
-      available for easy copy/pasting. It could be that I need to write something for
-      this.  
-TODO: At the end of the day, once figured out, there should be notes here about how you organize your prompts!  
-TODO: Having prompts in the source code is getting too painful now.  
+README TODO: Need to figure out how to best connect prompts to a commit and yet have prompts available for easy copy/pasting. It could be that I need to write something for this.  
+README TODO: At the end of the day, once figured out, there should be notes here about how you organize your prompts!  
+README TODO: Having prompts in the source code is getting too painful now.  
 
 
 ## 🔥 Code and quality
@@ -107,12 +100,15 @@ Some thoughts: make it pretty, animations (maybe their green hair should move in
 shaders, sound, speach bubbles (Oh no!), add the missing types of green-blue blocks (the builder looks particularly nasty on paper),
 the goal of the game, score, better maps, levels. ...
 
+README TODO: Maybe add a screenshot(s) or video? 
+
+
 ## ✍️ An example
 Note that a prompt like this grew over time (likely hours), it's not like it was just written
 down and in one shot came good code fit-for-purose. It's all an iterative process. And it feels
 very much like ... programming.  
 
-TODO
+README TODO
 
 ## License
 MIT.
