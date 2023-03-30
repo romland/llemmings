@@ -300,7 +300,9 @@ walls here and there, these walls should only be placed on top of platforms and 
 a bit of randomly generated jagged edges. The cliff walls can be quite tall (a few platforms high)
 and take up quite a bit of width (make this configurable). The cliff walls should not be symmetrical,
 as that looks a bit silly and artificial. Make them look organic (procedural, random). Their peaks 
-should also only extend upwards, never downwards as the cliff base should be the platform they are placed on.
+should also only extend upwards, never downwards as the cliff base should be the platform they are
+placed on. The cliff base must always be flat.
+
 The cliff walls should be blue (0000ff), for now.
 
 You can picture the cliff walls like this (illustration as ASCII art):
@@ -486,40 +488,76 @@ function drawMap() {
 }
 
 function drawCliffs() {
-  console.log(platforms);
-  platforms.forEach((platform) => {      
-    const wallWidth = platform.halfWidth * Math.random() * 2.5;
-    const cliffHeight = Math.random() * platformHeight * 2;
-    const cliffTopX = platform.x - wallWidth / 2;
-    const cliffBottomX = platform.x + wallWidth / 2;
-    let posX = cliffTopX;
-  
-    while (posX <= cliffBottomX) {
-      let segmentWidth = Math.random() * 10;
-      let segmentHeight = Math.random() * 25;
-    
+  const cliffWidth = 100; // The width of the cliff
+
+  platforms.forEach((platform) => {
+    let addCliffRight = true;
+    let addCliffLeft = true;
+
+    // Check if there is platform to the right/left and closer than the cliff width
+    for (let i = 0; i < platforms.length; i++) {
+      if (i !== platforms.indexOf(platform)) {
+        if (platforms[i].x - platform.x > 0 && platforms[i].x - platform.x < cliffWidth * 2) {
+          addCliffRight = false;
+        } else if (platforms[i].x - platform.x < 0 && platforms[i].x - platform.x > -cliffWidth * 2) {
+          addCliffLeft = false;
+        }
+      }
+    }
+
+    // Human hack: I want cliffs to test 'climber' on
+    addCliffRight = true;
+    addCliffLeft = true;
+
+
+    // Draw a cliff to the right and/or left of the platform
+    if (addCliffRight) {
+      const x = platform.x + platform.halfWidth;
+      const y = platform.y - platformHeight;
       ctx.beginPath();
-      ctx.moveTo(posX, platform.y - cliffHeight);
-      while (segmentWidth > 0 && posX <= cliffBottomX) {
-        posX += segmentWidth;
-        ctx.lineTo(posX, platform.y - cliffHeight - segmentHeight);
-        segmentWidth = Math.random() * 10;
-        segmentHeight = Math.random() * 25;
+      ctx.moveTo(x, y);
+
+      // Add jagged edges to cliff top
+      let prevPoint = [x, y];
+      for (let i = 1; i <= cliffWidth / 10; i++) {
+        const nextPoint = [x + i * 10, y + Math.random() * platformHeight / 2];
+        const cp1 = [prevPoint[0] + 5, prevPoint[1]];
+        const cp2 = [nextPoint[0] - 5, nextPoint[1]];
+        ctx.bezierCurveTo(cp1[0], cp1[1], cp2[0], cp2[1], nextPoint[0], nextPoint[1]);
+        prevPoint = nextPoint;
       }
-      
-      if (posX > cliffBottomX) {
-        const overshootX = posX - cliffBottomX;
-        const overshootY = overshootX / 2;
-        ctx.lineTo(cliffBottomX, platform.y - cliffHeight - overshootY);
-      }
-    
-      ctx.lineTo(posX, platform.y);
+
+      ctx.lineTo(x + cliffWidth, platform.y);
+      ctx.lineTo(x, platform.y);
       ctx.closePath();
-      ctx.fillStyle = platform.color;//dirtColor;//"#0000ff";
+      ctx.fillStyle = platform.color;//"#0000ff";
+      ctx.fill();
+    }
+    if (addCliffLeft) {
+      const x = platform.x - platform.halfWidth;
+      const y = platform.y - platformHeight;
+      ctx.beginPath();
+      ctx.moveTo(x, y);
+
+      // Add jagged edges to cliff top
+      let prevPoint = [x, y];
+      for (let i = 1; i <= cliffWidth / 10; i++) {
+        const nextPoint = [x - i * 10, y + Math.random() * platformHeight / 2];
+        const cp1 = [prevPoint[0] - 5, prevPoint[1]];
+        const cp2 = [nextPoint[0] + 5, nextPoint[1]];
+        ctx.bezierCurveTo(cp1[0], cp1[1], cp2[0], cp2[1], nextPoint[0], nextPoint[1]);
+        prevPoint = nextPoint;
+      }
+
+      ctx.lineTo(x - cliffWidth, platform.y);
+      ctx.lineTo(x, platform.y);
+      ctx.closePath();
+      ctx.fillStyle = platform.color;//"#0000ff";
       ctx.fill();
     }
   });
 }
+
 
 // call drawMap function to generate map
 drawMap();
