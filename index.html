@@ -143,6 +143,13 @@ class ImprovedNoise {
   }
 }
 
+// HUMAN CHEAT: I moved these to top.
+let background; // global variable to store canvas image data (restored in main loop below somewhere)
+function getBackground() {
+  background = ctx.getImageData(0, 0, canvas.width, canvas.height);
+}
+
+
 /*
 Using plain javascript and canvas, let's create a level that looks and act like the game Lemmings. 
 Specifics are:
@@ -612,7 +619,7 @@ const persistence = 0.5; // controls roughness
 const width = canvas.width;
 const height = canvas.height;
 
-// Create a blank image to draw onto (actually, copy existing image ...)
+// Create a blank image to draw onto (HUMAN: actually, copy existing image ...)
 let oldImgData = ctx.getImageData(0,0,width,height);    // TODO: This should be renamed, but I don't want to do it now since it would make some prompts invalid (for demonstration purposes). It does nicely illustrate the example of the need to keep track of these things.
 let canvasBytes = Uint8ClampedArray.from(oldImgData.data);
 const imgData = new ImageData(canvasBytes, width, height);
@@ -985,7 +992,8 @@ pixels either.
       this.onGround = false; // We've left the ground
     } else {
       // Not climbing, normal movement applies
-      if (this.action !== "Climber" && (hitWallOnLeft || hitWallOnRight || this.x <= this.width || this.x >= canvas.width - this.width)) {
+      // HUMAN CHEAT: I added check for 'this.velY === 0' here so that we don't turn when we are falling
+      if (this.velY === 0 && this.action !== "Climber" && (hitWallOnLeft || hitWallOnRight || this.x <= this.width || this.x >= canvas.width - this.width)) {
         this.velX *= -1;
       }
 
@@ -1001,6 +1009,14 @@ pixels either.
           this.isDead = true;
           return;
         }
+      }
+
+      // Check if this is a Bomber, and if so create a hole
+      // TODO: Need to make nearby aliens die...
+      if (this.action === "Bomber") {
+        createHole(this.x, this.y + this.height);   // HUMAN CHEAT: I added + this.height
+        this.isDead = true;     // HUMAN cheat: I had to add "isDead" flag :/
+        return;
       }
 
       // Move the lemming
@@ -1029,6 +1045,80 @@ pixels either.
     ctx.strokeText(this.id, this.x + 1, this.y + 13)
   }
 };
+
+
+/*
+let oldImgData = ctx.getImageData(0,0,width,height);    // TODO: This should be renamed, but I don't want to do it now since it would make some prompts invalid (for demonstration purposes). It does nicely illustrate the example of the need to keep track of these things.
+let canvasBytes = Uint8ClampedArray.from(oldImgData.data);
+const imgData = new ImageData(canvasBytes, width, height);
+*/
+// >>>> Note, original prompt for the creating Bomber action gave us a simpler version of this.
+/*
+>>> NEW PROMPT: and we need to now make it work... it even hallucinated and called oldImgData newImgData ... hmm
+On a byte representation of a canvas (RGBA), given an x and y position, an explosion creates a hole. It clears
+all pixels (set them to black) in an area of say 50 by 50 pixels. The edges of the hole should look a bit rough
+and random, a bit spikey even -- not just a plain circle.
+
+At your disposal you have a perlin noise class that is global called 'noiseGenerator'.
+It can be used like this, for example:
+noiseValue = noiseGenerator.noise(x * noiseScale * frequency, 0, 0) * 0.5 + 0.5;
+
+You can't use any canvas drawing methods because we only have arrays, so use direct pixel manipulation on the data 
+that you can get with getBackground() which got its data from this: ctx.putImageData(background, ...).
+You can get to the width and height of the data by using the global variables canvas.width and canvas.height.
+
+Since the hole will affect collisions, you also need to clear the same pixels in oldImgData which is
+also originally from ctx.putImageData(oldImgData...).
+
+Don't use any local variables called oldImageData or newImageData as that is very confusing since there are global variables
+with similar names. (that you picked, I might add)
+
+If you want to go fancy, you only update the area that needs updating instead of the entire canvas.
+
+Make it a function like this: createHole(x, y, holeSize = 50). I don't need any explanations, just code.
+Note that the x/y that are passed in might be doubles, make them ints.
+*/
+// HUMAN NOTE: This hole sucks, but well, at least it's a hole. And well, there's a lot of things going wrong here. It's a bad prompt apparently.
+function createHole(x, y) {
+  var holeSize = 50;
+  var rands = [];
+
+  x = Math.floor(x);
+  y = Math.floor(y);
+        
+  
+  // Clear pixels in background and oldImgData arrays
+  for (var yOffset = -holeSize/2; yOffset < holeSize/2; yOffset++) {
+    for (var xOffset = -holeSize/2; xOffset < holeSize/2; xOffset++) {
+      var xCoord = x + xOffset;
+      var yCoord = y + yOffset
+      
+      if (xCoord >= 0 && xCoord < canvas.width && yCoord >= 0 && yCoord < canvas.height) {
+        // Determine pixel color based on perlin noise
+        var noiseValue = noiseGenerator.noise(xCoord * noiseScale * frequency, yCoord * noiseScale * frequency, 0) * 0.5 + 0.5;
+        var alpha = Math.round(noiseValue * 255);
+        
+        // Set r, g, b, and a channels of pixel
+        background.data[(yCoord * canvas.width + xCoord) * 4] = 0;
+        background.data[(yCoord * canvas.width + xCoord) * 4 + 1] = 0;
+        background.data[(yCoord * canvas.width + xCoord) * 4 + 2] = 0;
+        background.data[(yCoord * canvas.width + xCoord) * 4 + 3] = alpha;
+
+        oldImgData.data[(yCoord * canvas.width + xCoord) * 4] = 0;
+        oldImgData.data[(yCoord * canvas.width + xCoord) * 4 + 1] = 0;
+        oldImgData.data[(yCoord * canvas.width + xCoord) * 4 + 2] = 0;
+        oldImgData.data[(yCoord * canvas.width + xCoord) * 4 + 3] = alpha;
+      }
+    }
+  }
+  
+  // Update only the affected region of the canvas
+  ctx.putImageData(background, x - holeSize/2, y - holeSize/2, x - holeSize/2, y - holeSize/2, holeSize, holeSize);
+  ctx.putImageData(oldImgData, x - holeSize/2, y - holeSize/2, x - holeSize/2, y - holeSize/2, holeSize, holeSize);
+}
+
+
+
 
 // Create a new lemming and add it to the array of lemmings
 function spawnLemming() {
@@ -1158,7 +1248,6 @@ Also tell me how I should get the background data before we get to our first upd
 update() code went here
 */
 
-let background; // global variable to store canvas image data
 let isPaused = false;
 
 function togglePause()
@@ -1178,9 +1267,6 @@ canvas.addEventListener('click', () => {
   togglePause();
 });
 */
-function getBackground() {
-  background = ctx.getImageData(0, 0, canvas.width, canvas.height);
-}
 let particles = [];
 
 function update() {
@@ -1526,7 +1612,7 @@ function applyAction(action) {
   // Note: I had to add this myself
   if(selectedLemming.action) {
     console.log("lemming already had an action");
-
+    return;
   }
   // Apply the action to the selected lemming
   switch (action) {
@@ -1748,6 +1834,24 @@ I don't want pseudo-code, I want real code. If you use a function not mentioned 
       break;
     case 'Bomber':
       //add bombing behavior here
+/*
+>>>> Prompt
+We are making a game with lemmings. A specific type of lemming is a Bomber. When a lemming is assigned to be a bomber,
+it should stop moving and then blow up and create an random, organic looking hole at it's location -- the lemming will die from this. The hole
+it leaves after should be carved out by clearing pixels in oldImgData.
+
+A lemming looks like this:
+
+
+Create a function that creates the hole.
+I also need the logic to add to Lemming's update function.
+
+I don't want pseudo-code, I want real code. And only code, no comments. If you need to create functions not declared
+in the snippet I gave you, implement them and show them to me.
+
+*/      
+      selectedLemming.action = "Bomber";
+      selectedLemming.isSelected = false;
       break;
     case 'Blocker':
       //add blocking behavior here
