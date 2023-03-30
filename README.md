@@ -60,7 +60,7 @@ One such example was the death explosion. It was a happy moment.
 
 ### 🗃️ Organizing prompts
 The prompts are in the code now. This is not going to hold much longer. So I need to figure out how to
-best connect prompts to a code to have them available for easy copy/pasting. It could be that I need
+best connect prompts to code to have them available for easy copy/pasting. It could be that I need
 to implement something outside of this project for that.  
 
 Once figured out, there should be notes here about how you organize your prompts with the code!  
