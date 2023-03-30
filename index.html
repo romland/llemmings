@@ -311,104 +311,121 @@ ctx.putImageData(imgData, 0, 0);
 
 // ============== lemming sprite
 /*
+The following is already declared in the program:
+const canvas = document.getElementById("canvas");
+const ctx = canvas.getContext("2d");
 variable oldImgData is all pixel data gotten with ctx.getImageData()
-function pixelIsColor(imageData, x, y, color) is used to get compare a color of a pixel
-function getPixelColor(imageData, x, y) is used to get the color of a pixel
+function pixelIsColor(imageData, x, y, color): used to get compare a color of a pixel, x and y is canvas coorindate 
+function getPixelColor(imageData, x, y) is used to get the color of a pixel, x and y is canvas coorindate 
 
-The colors of various pixel data are:
-const waterColor = '#0077be';
-const rockColor = '#888888';
-const dirtColor = '#4a2e00';
+The colors of various pixels are already delcared:
+waterColor = '#0077be';
+rockColor = '#888888';
+dirtColor = '#4a2e00';
+
+The pixelIsColor() and getPixelColor() take an array of the four color components as the color argument. Figure it out.
+Declare constants for the colors like this: for e.g. waterColor; const waterColorBytes = [0x00, 0x77, 0xbe] ...
 
 Using the above:
-Do collision detection for a sprite that looks a little like a blue lemming with green hair. It 
-should move around on a 2d canvas which has gravity (that is, when there is no ground under it, 
-it should fall down). If it runs in to an obstacle on the x or y axis it should turn around and 
-go the other way.
+Do collision detection for a sprite that looks a little like a blue lemming with green hair, give it
+its own structure with position, velocity, etc. It should move around on a 2d canvas which has 
+gravity (that is, when there is no ground under it, it should fall down). If it runs in to an 
+obstacle on the x axis it should turn around and walk the other way. If it falls into something 
+on the y axis it should stop moving on the Y axis and start walking on the x axis. If it falls 
+into the water, the sprite should stop moving (the lemming is dead). The animation should be 
+updated every frame. The lemming is not controlled by keys, it moves by itself and is constrained 
+by the rules outlined above.
 */
+// set constants for colors
+const waterColorBytes = [0x00, 0x77, 0xbe, 0xff];
+const rockColorBytes = [0x88, 0x88, 0x88, 0xff];
+const dirtColorBytes = [0x4a, 0x2e, 0x00, 0xff];
 
+let intervalHandle = null;
 
-
-// const canvas = document.getElementById("canvas");
-// const ctx = canvas.getContext("2d");
-
-// set up the sprite
-let sprite = {
+// define the sprite object
+let lemming = {
   x: 50,
-  y: 0,
-  width: 20,
-  height: 40,
-  color: "blue",
-  hairColor: "green",
-  falling: true,
-  xSpeed: 0.1,
-  ySpeed: 0,
+  y: 50,
+  width: 10,
+  height: 20,
+  vx: 3,
+  vy: 0,
+  onGround: false,
+  isDead: false
 };
 
-// draw the sprite initially
-ctx.fillStyle = sprite.color;
-ctx.fillRect(sprite.x, sprite.y, sprite.width, sprite.height);
-ctx.fillStyle = sprite.hairColor;
-ctx.fillRect(sprite.x, sprite.y, sprite.width, sprite.height / 4);
-
-// update the sprite's position on each frame
+// update function to be called every frame
 function update() {
-  // apply gravity
-  if (sprite.falling) {
-    sprite.ySpeed += 0.1;
+  // calculate new position of lemming based on velocity
+  lemming.x += lemming.vx;
+  lemming.y += lemming.vy;
+  
+  // check for collision with ground
+  let pixelsBelow = [];
+  for (let i = 0; i < lemming.width; i++) {
+    pixelsBelow.push(getPixelColor(oldImgData, lemming.x + i, lemming.y + lemming.height));
   }
-  
-  // move horizontally
-  sprite.x += sprite.xSpeed;
-  
-/*
-  if (pixelIsColor(ctx.getImageData(sprite.x, sprite.y, sprite.x + sprite.width, sprite.y + 1), "gray")) {
-    sprite.xSpeed *= -1;
-    sprite.x -= sprite.width;
-    console.log("horiz collision 1");
-  } else if (pixelIsColor2(ctx.getImageData(sprite.x, sprite.y, sprite.x - 1, sprite.y + 1), "gray")) {
-*/
+console.log(pixelsBelow); clearInterval(intervalHandle);
 
-  // check for collisions horizontally
-  if (pixelIsColor(oldImgData, sprite.x, sprite.y, [0x4a, 0x2e, 0x00, 255] )) {
-    sprite.xSpeed *= -1;
-    sprite.x -= sprite.width;
-    console.log("horiz collision 1");
-  } else if (pixelIsColor(oldImgData, sprite.x, sprite.y, [0x4a, 0x2e, 0x00, 255] )) {
-    sprite.xSpeed *= -1;
-    sprite.x += sprite.width;
-    console.log("horiz collision 2");
-  }
-  
-  // move vertically
-  sprite.y += sprite.ySpeed;
-/*
-  if (pixelIsColor2(ctx.getImageData(sprite.x, sprite.y, sprite.x + 1, sprite.y + sprite.height), "gray")) {
-*/  
-  // check for collisions vertically
-  if (!pixelIsColor(oldImgData, sprite.x + 1, sprite.y + sprite.height, [0x4a, 0x2e, 0x00, 255])) {
-    sprite.falling = false;
-    sprite.ySpeed = 0;
-    sprite.y -= sprite.height - ((sprite.y + sprite.height) % 20);
-    // console.log("vert collision 1");
+  if (pixelsBelow.every(pixel => pixelIsColor(oldImgData, pixel, dirtColorBytes))) {
+    lemming.onGround = true;
+    lemming.vy = 0;
   } else {
-    sprite.falling = true;
-    // console.log("vert collision 2");
+    lemming.onGround = false;
+    lemming.vy += 0.5; // simulate gravity
   }
   
-  // redraw the sprite
-//   ctx.clearRect(0, 0, canvas.width, canvas.height);
-  ctx.fillStyle = sprite.color;
-  ctx.fillRect(sprite.x, sprite.y, sprite.width, sprite.height);
-  ctx.fillStyle = sprite.hairColor;
-  ctx.fillRect(sprite.x, sprite.y, sprite.width, sprite.height / 4);
-
-  window.requestAnimationFrame(update);
+  // check for collision with walls
+  let pixelsAhead = [];
+  for (let i = 0; i < lemming.height; i++) {
+    pixelsAhead.push(getPixelColor(oldImgData, lemming.x + lemming.width, lemming.y + i));
+  }
+  
+  if (pixelsAhead.some(pixel => pixelIsColor(oldImgData, pixel, rockColorBytes))) {
+    lemming.vx = -lemming.vx; // change direction
+  }
+  
+  pixelsAhead = [];
+  for (let i = 0; i < lemming.height; i++) {
+    pixelsAhead.push(getPixelColor(oldImgData, lemming.x - 1, lemming.y + i));
+  }
+  
+  if (pixelsAhead.some(pixel => pixelIsColor(oldImgData, pixel, rockColorBytes))) {
+    lemming.vx = -lemming.vx; // change direction
+  }
+  
+  // check for collision with top of screen
+  if (lemming.y < 0) {
+    lemming.vy = 0;
+  }
+  
+  // check for collision with water
+  let pixelsInWater = [];
+  for (let i = 0; i < lemming.width; i++) {
+    pixelsInWater.push(getPixelColor(oldImgData, lemming.x + i, lemming.y + lemming.height));
+  }
+  
+  if (pixelsInWater.every(pixel => pixelIsColor(oldImgData, pixel, waterColorBytes))) {
+    lemming.isDead = true;
+    lemming.vx = 0;
+    lemming.vy = 0;
+  }
 }
 
-window.requestAnimationFrame(update);
-
-
+// main game loop
+intervalHandle = setInterval(function() {
+  update();
+  
+  if (!lemming.isDead) {
+    // clear the canvas
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    
+    // draw the new position of the lemming
+    ctx.fillStyle = "#0095DD";
+    ctx.fillRect(lemming.x, lemming.y, lemming.width, lemming.height);
+  }
+}, 16); // frame rate of 60 fps (1000 ms / 60 = 16 ms)
 
   </script>
 </body>
