@@ -279,29 +279,31 @@ drawMap();
 >>>>>> Next attempt at prompt:
 Update the map generation below to not only give me platforms, but add steep cliff
 walls here and there, these walls should only be placed on top of platforms and should have
-a bit of randomly generated jagged edges. The cliff walls can be quite tall (a few platforms high at most)
-and take up quite a bit of width (make this configurable). The cliff walls can be symmetrical, but they
-don't have to be. The cliff walls should be blue (0000ff), for now.
+a bit of randomly generated jagged edges. The cliff walls can be quite tall (a few platforms high)
+and take up quite a bit of width (make this configurable). The cliff walls should not be symmetrical,
+as that looks a bit silly and artificial. Make them loog organic (procedural, random). They should also
+only extend upwards, never downwards, their base should be the platform they are placed on.
+The cliff walls should be blue (0000ff), for now.
 
 You can picture the cliff walls like this:
 
-    /\
-   |  \
+   ./\
+   |  \.
    /   \
 
 or
 
-/\
+/\..
 
 or
 
-  /\
- /  \
+ ./\
+ /  \.
 /    \
 
 or
- |\
- | \
+ |\.
+.| \.
  |  \
  /   \
 
@@ -459,49 +461,36 @@ function drawMap() {
     ctx.fill();
   }
 }
-function drawCliffs() {
-  const wallWidth = 150; // Set the width of the wall
-  
-  // Loop through all platforms to add cliff walls
-  platforms.forEach((platform) => {
-    const x = platform.x;
-    const y = platform.y;
-    
-    // Determine whether to add cliff walls or not
-    if (Math.random() < 0.5) {
-      ctx.fillStyle = rockColor;//"#0000ff";
-      
-      // Add left cliff wall
-      const leftX = x - platform.halfWidth - wallWidth;
-      const wallHeight = platformHeight * 1.5;
-      ctx.beginPath();
-      ctx.moveTo(leftX, y);
-      let currentX = leftX;
-      let nextX = leftX + Math.random() * (wallWidth / 2) + (wallWidth / 2);
-      let nextY = y - Math.random() * (wallHeight / 2) - (wallHeight / 2);
-      while (currentX < x - platform.halfWidth) {
-        ctx.lineTo(nextX, nextY);
-        currentX = nextX;
-        nextX = currentX + Math.random() * (wallWidth / 2) + (wallWidth / 4);
-        nextY = y - Math.random() * (wallHeight / 2) - (wallHeight / 4);
-      }
-      ctx.lineTo(x - platform.halfWidth, y);
-      ctx.fill();
 
-      // Add right cliff wall
-      const rightX = x + platform.halfWidth;
+function drawCliffs() {
+  const wallColor = rockColor; //'#0000ff';
+  const maxWallWidth = canvas.width * 0.25; // adjust this to change maximum wall width
+  const minWallWidth = canvas.width * 0.05; // adjust this to change minimum wall width
+  const cliffProbability = 0.4; // adjust this to change the chance of generating a cliff wall
+  
+  platforms.forEach((platform) => {      
+    if (Math.random() < cliffProbability) {
+      ctx.fillStyle = wallColor;
       ctx.beginPath();
-      ctx.moveTo(rightX, y);
-      currentX = rightX;
-      nextX = rightX - Math.random() * (wallWidth / 2) - (wallWidth / 2);
-      nextY = y - Math.random() * (wallHeight / 2) - (wallHeight / 2);
-      while (currentX > x + platform.halfWidth) {
-        ctx.lineTo(nextX, nextY);
-        currentX = nextX;
-        nextX = currentX - Math.random() * (wallWidth / 2) - (wallWidth / 4);
-        nextY = y - Math.random() * (wallHeight / 2) - (wallHeight / 4);
+      
+      // Determine base position of cliff
+      const baseX = Math.random() * (platform.halfWidth * 2 - maxWallWidth) + (platform.x - platform.halfWidth);
+      const baseY = platform.y;
+      
+      // Generate random jagged edges for cliff
+      let x = baseX;
+      let y = baseY;
+      ctx.moveTo(x, y);
+      while (x <= baseX + maxWallWidth) {
+        x += Math.random() * (maxWallWidth / 8) + (maxWallWidth / 10); // randomly step right
+        y += (Math.random() * maxWallWidth) - (maxWallWidth / 2); // randomly step up or down
+        ctx.lineTo(x, y);
       }
-      ctx.lineTo(x + platform.halfWidth, y);
+      
+      // Finish cliff path and fill it in
+      ctx.lineTo(baseX + maxWallWidth, baseY);
+      ctx.lineTo(baseX, baseY);
+      ctx.closePath();
       ctx.fill();
     }
   });
@@ -518,7 +507,7 @@ drawCliffs();
 
 
 */
-if(false) {}
+
 noiseScale = 0.05; // controls zoom level
 const numOctaves = 4;
 const persistence = 0.5; // controls roughness
@@ -557,7 +546,7 @@ function pixelIsColor(imageData, x, y, color, debug) {
   return r === color[0] && g === color[1] && b === color[2];
 }
 
-if(false) {
+if(true) {
 
     // Loop over each pixel in the image
     for (let y = 0; y < height; y++) {
