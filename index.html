@@ -249,7 +249,9 @@ const height = canvas.height;
 // Create a blank image to draw onto (actually, copy existing image ...)
 let oldImgData = ctx.getImageData(0,0,width,height);    // TODO: This should be renamed, but I don't want to do it now since it would make some prompts invalid (for demonstration purposes). It does nicely illustrate the example of the need to keep track of these things.
 let canvasBytes = Uint8ClampedArray.from(oldImgData.data);
+console.log("clamped:", Uint8ClampedArray.from(oldImgData.data));
 const imgData = new ImageData(canvasBytes, width, height);
+console.log(imgData);
 
 function getPixelColor(imageData, x, y) {
   const index = Math.floor((y * width + x) * 4);
@@ -261,8 +263,14 @@ function getPixelColor(imageData, x, y) {
   return [r, g, b, a];
 }
 
-function pixelIsColor(imageData, x, y, color) {
+function pixelIsColor(imageData, x, y, color, debug) {
   const [r, g, b, alpha] = getPixelColor(imageData, x, y);
+
+  if(r === undefined) {
+    console.warn("Should not happen:", "lemming:", debug, "len:", lemmings.length, "image:", imageData, r, g, b, alpha, "x:"+x, "y:"+y, "comparing:"+color, "index:"+Math.floor((y * width + x) * 4));
+    debug.draw();
+    throw "This should not happen"
+  }
 
   return r === color[0] && g === color[1] && b === color[2];
 }
@@ -346,14 +354,16 @@ Do pixel perfect collision detection for a sprite that looks like a blue lemming
 It should move around on a 2d canvas which has gravity (that is, when there is no ground under it, 
 it should fall down). If it runs in to an obstacle on the x axis (or the edge of the canvas) it should
 turn around and walk the other way. The ground (dirt and rock) can be a bit hilly,
-so there should be some fuzziness in the collision check so that it only stops when it runs into a 
-high obstacle. If it falls into something on the y axis it should stop moving on the Y axis and start
-walking on the x axis. If it falls into the water or went outside of canvas, the lemming is dead.
+so there should be some fuzziness in the collision, it only stops when it runs into a tall obstacle.
+If it falls into something on the y axis it should stop failling and start walking on the x axis.
+If it falls into the water or went outside of canvas, the lemming is dead. Remember to check against
+canvas bounds so that we don't try to get pixel data that does not exist.
+
 Updates should be done every frame. There will eventually be many lemmings, so do note that they are
 not controlled by keys, they move by themselves and is constrained by the collision rules outlined above.
 
-It is important that you use the declared things I mentioned above and just give me the code with
-minor comments -- be brief, don't explain anything in plain text.
+It is important that you use the declared things I mentioned above. Just give me the code with
+minor comments and be brief, don't explain anything with plain text.
 */
 
 /*
@@ -362,9 +372,13 @@ Thought: It could be interesting to ask "There is already a lot of existing func
 */
 const blueBox = [0x00, 0x00, 0xff];
 const greenBox = [0x00, 0xff, 0x00];
+const GRAVITY = 0.03; // Adjust this until falling looks good
+const lemmings = [];
+let lastLemmingId = 0;
 
 const lemming = {
   id: -49152,
+  age: 0,
   x: 0,
   y: 0,
   width: 20,
@@ -377,8 +391,8 @@ const lemming = {
   update: function() {
     // Check if ground is under us or not
     const isGroundUnderneath =
-        pixelIsColor(oldImgData, this.x + this.width / 2, this.y + this.height, dirtColor) || 
-        pixelIsColor(oldImgData, this.x + this.width / 2, this.y + this.height, rockColor);
+        pixelIsColor(oldImgData, this.x + this.width / 2, this.y + this.height, dirtColor, this) || 
+        pixelIsColor(oldImgData, this.x + this.width / 2, this.y + this.height, rockColor, this);
     
     // Check if we hit a wall on the x axis
     const hitWallOnLeft =
@@ -405,24 +419,26 @@ const lemming = {
       this.onGround = false;
     }
     
-    if (hitWallOnLeft || hitWallOnRight || this.x <= 0 || this.x >= canvas.width) {
+    if (hitWallOnLeft || hitWallOnRight || this.x <= this.width || this.x >= canvas.width-this.width) {
       this.velX *= -1;
     }
     
-    if (isWaterBelow || this.y >= canvas.height) {
+    if (isWaterBelow || this.y >= canvas.height-this.height) {
       this.isDead = true;
+      console.log(this.id, "should die");
     }
     
     // Move the lemming
     this.x += this.velX;
-    this.y += this.velY;
+    this.y += Math.max(1, this.velY);
+    this.age++;
   },
   
   draw: function() {
     if (this.background.data) {
         // Restore the background pixels before drawing the new position
-        // console.log(this.background.data, this.background.x, this.background.y);
-        ctx.putImageData(this.background.data, this.background.x, this.background.y);
+        // TODO: This is failing, look into after collisions are fixed
+        // ctx.putImageData(this.background.data, this.background.x, this.background.y);
     }
 
     // Save the background pixels
@@ -438,23 +454,24 @@ const lemming = {
     ctx.fillStyle = 'rgb(' + greenBox.join(',') + ')';
     ctx.fillRect(this.x, this.y, 5, 5);
     ctx.fillRect(this.x + 15, this.y, 5, 5);
+
+    // Debug
+    ctx.strokeStyle = "white";
+    ctx.strokeText(this.id, this.x + 5, this.y + 13)
   }
 
 };
 
-const GRAVITY = 0.03; // Adjust this until falling looks good
-let lemmings = [];
-let lemmingId = 1;
-
 // Create a new lemming and add it to the array of lemmings
 function spawnLemming() {
   const newLemming = Object.create(lemming);
-  newLemming.id = lemmingId++;
+  newLemming.id = ++lastLemmingId;
   newLemming.x = Math.random() * canvas.width; // Start at a random x location
   newLemming.y = Math.random() * canvas.height / 4;
   newLemming.velX = 1.5; // Walk to the right by default
   lemmings.push(newLemming);
 }
+
 
 // Spawn a new lemming every second
 // throw "arrr stop -- fix save/restore background"
@@ -537,7 +554,7 @@ function update() {
       // Remove dead lemmings from the array as optimization
       const index = lemmings.indexOf(lemming);
       lemmings.splice(index, 1);
-      console.log("removing dead lemming");
+      console.log("removing dead lemming", "index", index, lemming, getPixelColor(oldImgData, lemming.x, lemming.y));
     }
   });
   
