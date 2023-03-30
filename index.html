@@ -514,44 +514,36 @@ Do not use ctx.save() and ctx.restore().
 It is important that you use the declared things I mentioned above and just give me the code with
 minor comments -- be brief, don't explain anything in plain text.
 */
+let prevBackgroundData = null;
 
-// Keep track of the previous background with a buffer
-const backgroundBuffer = document.createElement('canvas');
-backgroundBuffer.width = canvas.width;
-backgroundBuffer.height = canvas.height;
+function updateBackground(lemming) {
+  if (!prevBackgroundData) {
+    prevBackgroundData = ctx.getImageData(lemming.x, lemming.y, lemming.width, lemming.height);
+  } else {
+    ctx.putImageData(prevBackgroundData, lemming.x, lemming.y);
+  }
+}
 
 function update() {
   // Update and draw each lemming
   lemmings.forEach((lemming) => {
-    // Save previous background
-    const x = lemming.x - lemming.velX;
-    const y = lemming.y - lemming.velY;
-    const width = lemming.width + Math.abs(lemming.velX);
-    const height = lemming.height + Math.abs(lemming.velY);
-    const prevBackground = ctx.getImageData(x, y, width, height);
-
-    // Clear previous lemming location
-    ctx.putImageData(backgroundBuffer.getContext('2d')
-      .getImageData(x, y, width, height), x, y);
-
     lemming.update();
+    
+    updateBackground(lemming);
     lemming.draw();
-
+    
     if (lemming.isDead) {
       // Remove dead lemmings from the array as optimization
       const index = lemmings.indexOf(lemming);
       lemmings.splice(index, 1);
       console.log("removing dead lemming");
-    } else {
-      // Restore previous background
-      ctx.putImageData(prevBackground, x, y);
-      backgroundBuffer.getContext('2d').putImageData(prevBackground, x, y);
     }
   });
-
+  
   // Schedule the next frame
   requestAnimationFrame(update);
 }
+
 
 
 // Start the update loop
