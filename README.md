@@ -140,7 +140,7 @@ This was a very ambitious one. And it largely let me down -- but we got there in
 
 
 ## License
-MIT.
+AGPL.
 
 
 ## Random thoughts
