@@ -875,181 +875,140 @@ pixels either.
 (and then the full update() method was passed in)
   */
   update: function() {
-  if (this.y >= canvas.height - (this.height + this.velY + 1)) {
-    this.isDead = true;
-    return;
-  }
-
-  // Check if ground is under us or not
-  let isGroundUnderneath =
-    pixelIsColor(oldImgData, this.x + this.width / 2, this.y + this.height + 1, dirtColorBytes) ||
-    pixelIsColor(oldImgData, this.x + this.width / 2, this.y + this.height + 1, rockColorBytes);
-
-  let heightAdjustment = 0;
-
-  if (isGroundUnderneath) {
-    let distanceToGround = -(this.height / 4);
-
-    while (
-      this.y + distanceToGround + 1 >= 0 &&
-      this.y + distanceToGround + 1 < canvas.height &&
-      !pixelIsColor(
-        oldImgData,
-        this.x + this.width / 2,
-        this.y + distanceToGround + 1,
-        dirtColorBytes
-      ) &&
-      !pixelIsColor(
-        oldImgData,
-        this.x + this.width / 2,
-        this.y + distanceToGround + 1,
-        rockColorBytes
-      )
-    ) {
-      distanceToGround++;
+    if (this.y >= canvas.height - (this.height + this.velY + 1)) {
+      this.isDead = true;
+      return;
     }
 
-    if (distanceToGround !== 0) {
-      heightAdjustment = this.height - distanceToGround + 0.1; // subtract half the sprite's height
-    }
-  }
+    // Check if ground is under us or not
+    let isGroundUnderneath =
+      pixelIsColor(oldImgData, this.x + this.width / 2, this.y + this.height + 1, dirtColorBytes) ||
+      pixelIsColor(oldImgData, this.x + this.width / 2, this.y + this.height + 1, rockColorBytes);
 
-  // Check if we hit a wall on the x axis
-  const hitWallOnLeft = pixelIsColor(oldImgData, this.x - 1, this.y + this.height / 2, dirtColorBytes) ||
-                        pixelIsColor(oldImgData, this.x - 1, this.y + this.height / 2, rockColorBytes);
-  const hitWallOnRight =
-    pixelIsColor(oldImgData, this.x + this.width + 1, this.y + this.height / 2, dirtColorBytes) ||
-    pixelIsColor(oldImgData, this.x + this.width + 1, this.y + this.height / 2, rockColorBytes);
-
-  // Check if we've fallen in water
-  const isWaterBelow = pixelIsColor(oldImgData, this.x + this.width / 2, this.y + this.height + 1, waterColorBytes);
-
-  // Determine if the lemming should climb
-  let shouldClimb = false;
-  if (this.action === "Climber" ) {
-    if (
-      ((hitWallOnLeft && this.velX < 0) || (hitWallOnRight && this.velX > 0))
-      // HUMAN: Should this really be !isgroundbeneath? 
-      // && !isGroundUnderneath
-      // && pixelIsColor(oldImgData, this.x + this.width / 2, this.y + 1, [rockColorBytes, dirtColorBytes])
-    ) {
-      shouldClimb = true;
-      // console.log("SHOULD CLIMB");
-    } else {
-      this.isClimbing = false; // Reset climbing flag
-// HUMAN DEBUG
-      // console.log(
-      //   "rightHit", hitWallOnRight,
-      //   "leftHit:", hitWallOnLeft,
-      //   "vel:", this.velX,
-      //   "isColor:", pixelIsColor(oldImgData, this.x + this.width + 1, this.y + this.height / 2, [rockColorBytes, dirtColorBytes]),
-      //   // pixelIsColor(oldImgData, this.x + this.width / 2, this.y + 1, [rockColorBytes, dirtColorBytes]),
-      //   "getPixelColorRight:", getPixelColor(oldImgData, this.x + this.width + 1, this.y + this.height / 2),
-      //   "getPixelColorLeft:",  getPixelColor(oldImgData, this.x - 1, this.y + this.height / 2),
-      //   "rock:", rockColorBytes,
-      //   "dirt:", dirtColorBytes,
-      // );
-// /DEBUG
-    }
-  }
-
-  // Update velocity according to the collision rules
-  if (!this.onGround) {
-    if (this.action === "Floater") {
-      this.velY += GRAVITY * 0.1;
-    } else {
-      this.velY += GRAVITY;
-    }
+    let heightAdjustment = 0;
 
     if (isGroundUnderneath) {
-      if (this.velY > this.deadlyVelY) {
-        // splat
-        this.isDead = true;
-        return;
+      let distanceToGround = -(this.height / 4);
+
+      while (
+        this.y + distanceToGround + 1 >= 0 &&
+        this.y + distanceToGround + 1 < canvas.height &&
+        !pixelIsColor(
+          oldImgData,
+          this.x + this.width / 2,
+          this.y + distanceToGround + 1,
+          dirtColorBytes
+        ) &&
+        !pixelIsColor(
+          oldImgData,
+          this.x + this.width / 2,
+          this.y + distanceToGround + 1,
+          rockColorBytes
+        )
+      ) {
+        distanceToGround++;
       }
-      this.onGround = true;
-      this.velY = 0;
+
+      if (distanceToGround !== 0) {
+        heightAdjustment = this.height - distanceToGround + 0.1; // subtract half the sprite's height
+      }
     }
-  } else if (this.onGround && !isGroundUnderneath) {
-    // Start falling if there's no ground
-    this.onGround = false;
-  }
 
-  // Check if there are other lemmings that are blockers
-  for (let i = 0; i < lemmings.length; i++) {
-    const otherLemming = lemmings[i];
+    // Check if we hit a wall on the x axis
+    const hitWallOnLeft = pixelIsColor(oldImgData, this.x - 1, this.y + this.height / 2, dirtColorBytes) ||
+                          pixelIsColor(oldImgData, this.x - 1, this.y + this.height / 2, rockColorBytes);
+    const hitWallOnRight =
+      pixelIsColor(oldImgData, this.x + this.width + 1, this.y + this.height / 2, dirtColorBytes) ||
+      pixelIsColor(oldImgData, this.x + this.width + 1, this.y + this.height / 2, rockColorBytes);
 
-    if (
-      otherLemming !== this &&
-      !otherLemming.isDead &&
-      otherLemming.action === "Blocker" &&
-      this.x + this.width > otherLemming.x &&
-      this.x < otherLemming.x + otherLemming.width &&
-      this.y + this.height > otherLemming.y &&
-      this.y < otherLemming.y + otherLemming.height
-    ) {
-      console.log("Ran into a blocker?", this.x, this.y);
-      this.velX *= -1;
+    // Check if we've fallen in water
+    const isWaterBelow = pixelIsColor(oldImgData, this.x + this.width / 2, this.y + this.height + 1, waterColorBytes);
+
+    // Determine if the lemming should climb
+    let shouldClimb = false;
+    if (this.action === "Climber" ) {
+      if ((hitWallOnLeft && this.velX < 0) || (hitWallOnRight && this.velX > 0)) {
+        shouldClimb = true;
+      } else {
+        this.isClimbing = false; // Reset climbing flag
+      }
     }
-  }
 
-  // Handle climbing
-  if (shouldClimb) {
-    // -->
-    // console.log("should climb", this, hitWallOnLeft, hitWallOnRight);
-    this.isClimbing = true;
-    let climbDirection = hitWallOnLeft ? 1 : -1;
-    this.x += climbDirection * this.maxVelX;
-    this.y -= 1;
+    // Update velocity according to the collision rules
+    if (!this.onGround) {
+      if (this.action === "Floater") {
+        this.velY += GRAVITY * 0.1;
+      } else {
+        this.velY += GRAVITY;
+      }
 
-    // // Check if we've reached the top of the climbable surface
-    // if (
-    //   pixelIsColor(oldImgData, this.x + this.width / 2 + climbDirection, this.y, [rockColorBytes, dirtColorBytes]) &&
-    //   pixelIsColor(
-    //     oldImgData,
-    //     this.x + this.width / 2 + 2 * climbDirection,
-    //     this.y,
-    //     [rockColorBytes, dirtColorBytes]
-    //   )
-    // )
-    {
+      if (isGroundUnderneath) {
+        if (this.velY > this.deadlyVelY) {
+          // splat
+          this.isDead = true;
+          return;
+        }
+        this.onGround = true;
+        this.velY = 0;
+      }
+    } else if (this.onGround && !isGroundUnderneath) {
+      // Start falling if there's no ground
+      this.onGround = false;
+    }
+
+    // Check if there are other lemmings that are blockers
+    for (let i = 0; i < lemmings.length; i++) {
+      const otherLemming = lemmings[i];
+
+      if (
+        otherLemming !== this &&
+        !otherLemming.isDead &&
+        otherLemming.action === "Blocker" &&
+        this.x + this.width > otherLemming.x &&
+        this.x < otherLemming.x + otherLemming.width &&
+        this.y + this.height > otherLemming.y &&
+        this.y < otherLemming.y + otherLemming.height
+      ) {
+        console.log("Ran into a blocker?", this.x, this.y);
+        this.velX *= -1;
+      }
+    }
+
+    // Handle climbing
+    if (shouldClimb) {
+      this.isClimbing = true;
+      let climbDirection = hitWallOnLeft ? 1 : -1;
+      this.x += climbDirection * this.maxVelX;
+      this.y -= 1;
+
       this.velY = -VEL_CLIMB*0.05; // Start going up at climbing velocity
       this.onGround = false; // We've left the ground
-      // this.velX = climbDirection * 0.05; // Set X velocity to match climbing direction
-      // this.velX = climbDirection * 0.05;
-    }
-  } else {
-    if((hitWallOnLeft || hitWallOnRight) && this.action === "Climber") {
-      console.log("no shouldClimb -- will turn, probably!", this);
-    }
-    // Not climbing, normal movement applies
-    if (this.action !== "Climber" && (hitWallOnLeft || hitWallOnRight || this.x <= this.width || this.x >= canvas.width - this.width)) {
-      this.velX *= -1;
-    }
-
-    if (isWaterBelow || this.y >= canvas.height - this.height) {
-      this.isDead = true;
-    }
-
-    // Apply height adjustment
-    if (heightAdjustment !== 0 && !this.isClimbing) { // only adjust if not climbing
-      if (this.y - heightAdjustment >= 0) {
-        this.y -= heightAdjustment; // move sprite up
-      } else {
-        this.isDead = true;
-        return;
+    } else {
+      // Not climbing, normal movement applies
+      if (this.action !== "Climber" && (hitWallOnLeft || hitWallOnRight || this.x <= this.width || this.x >= canvas.width - this.width)) {
+        this.velX *= -1;
       }
+
+      if (isWaterBelow || this.y >= canvas.height - this.height) {
+        this.isDead = true;
+      }
+
+      // Apply height adjustment
+      if (heightAdjustment !== 0 && !this.isClimbing) { // only adjust if not climbing
+        if (this.y - heightAdjustment >= 0) {
+          this.y -= heightAdjustment; // move sprite up
+        } else {
+          this.isDead = true;
+          return;
+        }
+      }
+
+      // Move the lemming
+      this.x += this.velX;
+      this.y += this.velY;
+      this.age++;
     }
-
-    // Move the lemming
-    this.x += this.velX;
-    this.y += this.velY;
-    this.age++;
-  }
-}
-,
-
-
+  },
   draw: function() {
     // Draw the new lemming position
     ctx.fillStyle = 'rgb(' + blueBox.join(',') + ')';
