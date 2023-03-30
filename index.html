@@ -175,7 +175,7 @@ let noiseScale = 0.05; // adjust this to change the amount of detail in the nois
 const frequency = 2.5;
 
 // Set constants for map generation
-const numPlatforms = 10; // adjust this to change the number of platforms
+const numPlatforms = 9; // adjust this to change the number of platforms
 const platformHeight = canvas.height / numPlatforms;
 const maxPlatformWidth = canvas.width * 0.5; // adjust this to change maximum platform width
 const minPlatformWidth = canvas.width * 0.2; // adjust this to change minimum platform width
@@ -376,6 +376,16 @@ minor comments and be brief, don't explain anything with plain text.
 Thought: It could be interesting to ask "There is already a lot of existing functionality; which bits of the existing program do you need to know about to implement the following:"
 ...or so
 */
+
+/*
+>>>>> New prompt: So, we need to make it so that it adjusts on Y axis when it move on X axis
+
+In a game, given the below update function of a sprite walking on ground. The sprite should adjust
+itself on the Y axis automatically as it is a bit hilly ground. Right now it just walks in a straight
+line. I don't need explanation of the code, I need you to fix the code.
+
+*/
+
 const blueBox = [0x00, 0x00, 0xff];
 const greenBox = [0x00, 0xff, 0x00];
 const GRAVITY = 0.03; // Adjust this until falling looks good
@@ -445,9 +455,6 @@ const lemming = {
       console.log(this.id, "should die");
     }
     
-    // TODO: Capped for now, it looks silly, but need to find out what is wrong with collisions
-    // this.velY = Math.min(1, this.velY);
-
     // Move the lemming
     this.x += this.velX;
     this.y += this.velY;
@@ -478,7 +485,7 @@ function spawnLemming() {
   newLemming.x = Math.random() * canvas.width; // Start at a random x location
   newLemming.y = 0;
 //   newLemming.y = Math.random() * canvas.height / 4;
-  newLemming.velX = 1.5; // Walk to the right by default
+  newLemming.velX = 0.4; // Walk to the right by default
   lemmings.push(newLemming);
 }
 
