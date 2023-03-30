@@ -373,6 +373,7 @@ const lemming = {
   velY: 0,
   onGround: false,
   isDead: false,
+  background: { },
   update: function() {
     // Check if ground is under us or not
     const isGroundUnderneath =
@@ -418,21 +419,26 @@ const lemming = {
   },
   
   draw: function() {
-    // Save the background (ChatGPT said this)
-    ctx.save();
-    ctx.fillStyle = '#FFFFFF';
-    ctx.fillRect(this.x, this.y, this.width, this.height);
+    if (this.background.data) {
+        // Restore the background pixels before drawing the new position
+        // console.log(this.background.data, this.background.x, this.background.y);
+        ctx.putImageData(this.background.data, this.background.x, this.background.y);
+    }
+
+    // Save the background pixels
+    this.background.x = this.x - 1;
+    this.background.y = this.y - 1;
+    this.background.width = this.width + 2;
+    this.background.height = this.height + 2;
+    this.background.data = ctx.getImageData(this.background.x, this.background.y, this.background.width, this.background.height);
     
-    // Draw the blue box and green hair
+    // Draw the new lemming position
     ctx.fillStyle = 'rgb(' + blueBox.join(',') + ')';
     ctx.fillRect(this.x, this.y, this.width, this.height);
     ctx.fillStyle = 'rgb(' + greenBox.join(',') + ')';
     ctx.fillRect(this.x, this.y, 5, 5);
     ctx.fillRect(this.x + 15, this.y, 5, 5);
-    
-    // Restore the background (ChatGPT said this)
-    ctx.restore();
-    }
+  }
 
 };
 
@@ -451,6 +457,7 @@ function spawnLemming() {
 }
 
 // Spawn a new lemming every second
+// throw "arrr stop -- fix save/restore background"
 setInterval(spawnLemming, 1000);
 
 /*
@@ -484,7 +491,7 @@ const lemming = {
   }
 }
 
-And the frame update looks like this:
+And the frame update currently looks like this:
 function update() {
    ctx.clearRect(0, 0, canvas.width, canvas.height);
   
@@ -509,27 +516,21 @@ These variables are already declared, use them.
 const canvas = document.getElementById("canvas");
 const ctx = canvas.getContext("2d");
 
-Do not use ctx.save() and ctx.restore().
+Do not use ctx.save() and ctx.restore() (you don't understand what they do). In essence, what you 
+want to do is save the pixel data before you draw a lemming. Next frame you want to restore that, 
+then draw the lemming at its new position. You probably only need to change the lemming.draw() 
+method. You may NOT change the lemming.update() method. 
 
 It is important that you use the declared things I mentioned above and just give me the code with
 minor comments -- be brief, don't explain anything in plain text.
 */
-let prevBackgroundData = null;
-
-function updateBackground(lemming) {
-  if (!prevBackgroundData) {
-    prevBackgroundData = ctx.getImageData(lemming.x, lemming.y, lemming.width, lemming.height);
-  } else {
-    ctx.putImageData(prevBackgroundData, lemming.x, lemming.y);
-  }
-}
 
 function update() {
+//    ctx.clearRect(0, 0, canvas.width, canvas.height);
+  
   // Update and draw each lemming
   lemmings.forEach((lemming) => {
     lemming.update();
-    
-    updateBackground(lemming);
     lemming.draw();
     
     if (lemming.isDead) {
@@ -543,8 +544,6 @@ function update() {
   // Schedule the next frame
   requestAnimationFrame(update);
 }
-
-
 
 // Start the update loop
 update();
