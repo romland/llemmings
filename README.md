@@ -2,10 +2,10 @@
 Llemmings is a game written by Large Language Models (LLM), like ChatGPT and GPT-4. The
 intention is that it is _only_ written by LLMs.
 
-There are a few exceptions, such as removing redeclared variable names and similar tiny things.
-But other than that, the code should be written by the LLM.
-
 Your job, as a human, is to copy and paste code.
+
+There are a few exceptions, such as removing redeclared variables and similar small things.
+But other than that, the code should be written by the LLM.
 
 
 ## The game
@@ -39,20 +39,20 @@ prompt and try again.
 
 Process is roughly:
 1. You have a goal, like adding a red and green block that can climb.
-   You write a basic prompt explaining how it should work
+   You write a basic prompt explaining your idea.
 2. Out comes some code, you immediately see that this is garbage
 3. You adjust the prompt by adding some more details.
-   Eventually you get a passable snippet.
-4. You test it and see that it does not work, you spend time figuring out
+   Eventually you get something passable.
+4. You test it and see that it does not work at all, you spend time figuring out
    why and then adjust the prompt accordingly.
 
 Eventually you will get something that works. Kind of.
 
-Sometimes you surprise yourself and just one-shot a prompt. It all just works on first try.
-One such example was the death explosion. One prompt and it just ... worked.
+It will hurt to debug a snippet of code to figure out how you should change your prompt.
+You, human, must resist fixing the code. You, human, must fix the prompt instead.
 
-Just know that it will hurt to debug a snippet of code, just to figure out how you should change
-your prompt. You, human, must resist fixing the code. You, human, must fix the prompt instead.
+Sometimes you surprise yourself and just one-shot a prompt. It all just works on first try.
+One such example was the death explosion. It was a happy moment.
 
 
 ### Organizing prompts
@@ -62,12 +62,13 @@ TODO: Need to figure out how to best connect prompts to a commit and yet have pr
 TODO: At the end of the day, once figured out, there should be notes here about how you organize your prompts!
 
 
-## Code quality
-As of now, it's not been a big concern. It's one giant steamy pile of spaghetti (llemming code?).
+## Code and quality
+Up til now, quality has not been a big concern. It's one giant steamy pile of spaghetti (llemming code?).
 
-It's been handy to have everything in one file for prompting. 
+It's been handy to have everything in one file for prompting.
 
-At some point down the line, probably soon, refactoring needs to be done.
+At some point down the line, probably soon, refactoring needs to be done. The `update` function in the `Lemming`
+object is especially unwieldy. To the point where I grin a little every time I see it.
 
 
 ## Cheating
