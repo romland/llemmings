@@ -305,29 +305,33 @@ The cliff walls should be blue (0000ff), for now.
 
 You can picture the cliff walls like this:
 
-   ./\
-   |  \.
-   /   \
+   ./\   /\
+   |  \./  \
+   /   \    \
+   """"""""""
 
 or
 
 /\..
+""
 
 or
 
  ./\
  /  \.
 /    \
-
+""""""
 or
  |\.
 .| \.
  |  \
  /   \
+ """"""
 
 etc. 
 
-They should look a bit jagged and randomly placed but the base of the walls must always be on top of a platform.
+They should look a bit jagged and randomly placed but the base of the walls must always be on top of a platform,
+however, no cliffs must be drawn on the top 50 pixels of the canvas.
 
 The code for generating the platforms is below, finish the drawCliffs method to add these cliff walls.
 
@@ -482,48 +486,37 @@ function drawMap() {
 
 
 function drawCliffs() {
-  platforms.forEach((platform) => {
-    // Choose random starting position for cliff wall on platform.
-    const wallStartX = Math.random() * platform.halfWidth * 2 + platform.x - platform.halfWidth;
-    const wallTopY = platform.y - Math.random() * platformHeight / 2.5;  
-    // Wall width will be between 10% and 20% of the total platform width.
-
-    // ChatGPT note: I (human) changed the 0.1 here to 0.8 because I wanted chance for larger cliffs
-    // Original: const wallWidth = Math.random() * platform.halfWidth * 0.1 + platform.halfWidth * 0.1;
-    const wallWidth = Math.random() * platform.halfWidth * 0.8 + platform.halfWidth * 0.1;
-
-    // Wall height is some multiple of platform height and ends at top of canvas
-    const wallHeight = (Math.floor(Math.random() * 3) + 2) * platformHeight;
-
-    // Create path for wall with jagged edges
+  platforms.forEach((platform) => {      
+    const cliffHeight = canvas.height / 3; 
+    let cliffWidth = (Math.random() * (maxPlatformWidth - minPlatformWidth) + minPlatformWidth);
+    
+    let lastX = platform.x - platform.halfWidth;
+    let lastY = platform.y - platformHeight/1.5;
+    
+    ctx.fillStyle = dirtColor;//"#0000ff";
     ctx.beginPath();
-    ctx.moveTo(wallStartX, wallTopY);
-    let prevX = wallStartX;
-    let prevY = wallTopY;
+    ctx.moveTo(lastX, lastY);
+    
+    while (lastX < platform.x + platform.halfWidth) {
+      lastX += Math.random() * cliffWidth/8;
+      lastY -= Math.random() * cliffHeight/4;
 
-    while (prevX < wallStartX + wallWidth && prevX <= platform.x + platform.halfWidth) {
-      // Jitter Y coordinate up or down by 20% of platform height.
-      const nextY = prevY + platformHeight * (Math.random() * 0.4 - 0.2);
-
-      // Jitter X coordinate to achieve jaggedness.
-      const nextX = prevX + (wallWidth / 40) + Math.random() * ((wallWidth / 10) * -2);
-
-      if (nextY >= wallTopY - wallHeight) {        // Stop printing when reach top of screen
-        ctx.lineTo(nextX, nextY);
-        prevX = nextX;
-        prevY = nextY;
-      } else {
-        // ctx.strokeStyle = "#FFFF00";
-        // ctx.strokeRect(prevX, prevY, 2, 2);
+      if (lastX > platform.x + platform.halfWidth) {
         break;
       }
+        
+      ctx.lineTo(lastX, lastY);
+              
+      lastX += Math.random() * cliffWidth/8;
+      lastY += Math.random() * cliffHeight/4;
 
-
+      ctx.lineTo(lastX, lastY);
     }
-
-    ctx.fillStyle = dirtColor; //'#0000ff';                      // Wall should be blue
-    ctx.fill();                                     // Fill the wall
-
+  
+    ctx.lineTo(platform.x + platform.halfWidth, platform.y);
+    ctx.lineTo(platform.x - platform.halfWidth, platform.y);
+    ctx.closePath();
+    ctx.fill();
   });
 }
 
