@@ -7,7 +7,8 @@ Your job, as a human, is to copy and paste code.
 There are a few exceptions, such as removing redeclared variables and similar small things.
 But other than that, the code should be written by the LLM.
 
-Latest version is [here](https://romland.github.io/llemmings).  
+Try the latest and greatest version [here](https://romland.github.io/llemmings)!  
+
 
 ## 🎮 The game
 It is (probably) not yet a game. But ...
@@ -110,8 +111,10 @@ very much like ... programming.
 
 README TODO
 
+
 ## License
 MIT.
+
 
 ## Random thoughts
 Brave new world.  
