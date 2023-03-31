@@ -38,7 +38,7 @@ Your second job, as a human, is to give instructions to your language model of c
 
 
 ## 🤓 Now we know
-_Human_:
+_Human_:  
    Write me one of those cute grammatical definitions with phonetics and stuff where you say what "llemming code" is so I can put it on project page on github. The double-l with the m in llemming is a word-play on LLM, btw.
 
 _LLM_:  
@@ -179,12 +179,8 @@ AGPL.
 
 
 ## 🎲 Random thoughts
-Brave new world.  
 All about the specifiprompts.  
-The age of average (text).  
-How clever/dumb/neither these LLMs are.  
-How it still feels like programming. But is it.  
+It's the age of average text.  
 It is still creating. Which is what we like. Right.  
-This project is education.  
 
 **Oh, woe is us.** 😲
