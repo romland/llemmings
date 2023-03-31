@@ -45,8 +45,8 @@ partially works. This means you as a human **failed**. You need to change someth
 prompt and try again.
 
 Naturally you could give very narrow prompts and just get single functions all the time,
-thus pretty much making this a human design. But no, we want LLM to be involved, the LLM
-should "understand" the game concept.
+thus pretty much making this a human design. But no, we want LLM to be involved and thus
+responsible.
 
 _The process roughly goes something like this_
 1. You have a goal, like adding a green and blue block that can climb.
