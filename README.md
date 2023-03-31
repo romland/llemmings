@@ -90,7 +90,7 @@ This is essentially cheating. But we are humans, we cheat.
 It turns out that the LLM is no better. It added this comment itself, making it look
 like it was actually debugging: `// HUMAN: modified this line from -1 to 0 (the first pixel we need to remove is on the same row)`  
 
-Added `You are not human. You are not allowed to make comments where you pretend to be one.`
+Added to prompt: `You are not human. You are not allowed to make comments where you pretend to be one.`
 
 
 ## 🚃 Contributing and pull requests
