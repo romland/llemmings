@@ -39,14 +39,14 @@ Your second job, as a human, is to give instructions to your language model of c
 
 ## Now we know
 _Human_:
-> Write me one of those cute grammatical definitions with phonetics and stuff where you say what "llemming code" is so I can put it on project page on github. The double-l with the m in llemming is a word-play on LLM, btw.
+   Write me one of those cute grammatical definitions with phonetics and stuff where you say what "llemming code" is so I can put it on project page on github. The double-l with the m in llemming is a word-play on LLM, btw.
 
 _LLM_:  
-**Definition:**
-_Llemming code ( /ˈlɛmɪŋ kəʊd/ )_, also known as LLM code, refers to the tendency of software developers to blindly follow trends or adopt popular coding practices without considering their own software design goals or project requirements. Similar to lemmings following each other off a cliff, llemming coders often follow established patterns or frameworks without understanding their underlying logic or making informed decisions about their implementation.
+**Definition:**  
+   _Llemming code ( /ˈlɛmɪŋ kəʊd/ )_, also known as LLM code, refers to the tendency of software developers to blindly follow trends or adopt popular coding practices without considering their own software design goals or project requirements. Similar to lemmings following each other off a cliff, llemming coders often follow established patterns or frameworks without understanding their underlying logic or making informed decisions about their implementation.
 
 **Usage:**
-"Be wary of llemming code and always question your choices before copy-pasting code snippets from StackOverflow."
+   "Be wary of llemming code and always question your choices before copy-pasting code snippets from StackOverflow."
 
 
 ### 📝 Prompts
