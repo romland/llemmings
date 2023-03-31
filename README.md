@@ -76,10 +76,12 @@ Once figured out, there should be notes here about how you organize your prompts
 ## 🤓 Now we know
 _Human_  
 ```
-Write me one of those cute grammatical definitions with phonetics and stuff where you say what "llemming code" is so I can put it on project page on github. The double-l with the m in llemming is a word-play on LLM, btw.
+Write me one of those cute grammatical definitions with phonetics and stuff where you 
+say what "llemming code" is so I can put it on project page on github. The double-l with 
+the m in llemming is a word-play on LLM, btw.
 ```
 
-The truth-teller _ChatGPT_:
+The truth-teller _ChatGPT_
 > Certainly, here you go!
 > 
 > **Title:** Definition of "Llemming Code"
