@@ -79,11 +79,20 @@ _Human_
 Write me one of those cute grammatical definitions with phonetics and stuff where you say what "llemming code" is so I can put it on project page on github. The double-l with the m in llemming is a word-play on LLM, btw.
 ```
 
-**Definition:**  
-   _Llemming code ( /ˈlɛmɪŋ kəʊd/ )_, also known as LLM code, refers to the tendency of software developers to blindly follow trends or adopt popular coding practices without considering their own software design goals or project requirements. Similar to lemmings following each other off a cliff, llemming coders often follow established patterns or frameworks without understanding their underlying logic or making informed decisions about their implementation.
-
-**Usage:**  
-   "Be wary of llemming code and always question your choices before copy-pasting code snippets from StackOverflow."
+The truth-teller _ChatGPT_:
+> Certainly, here you go!
+> 
+> **Title:** Definition of "Llemming Code"
+> 
+> **Phonetics:** /’lɛmɪŋ kəʊd/
+> 
+> **Definition:**
+> 
+> "Llemming code" is a term for any code written with poor practices, often hastily put together and copied from other sources without proper understanding or evaluation. The name is a word-play on the acronym LLM, which stands for “low-level maintenance” and reflects the lack of care given to the codebase.
+> 
+> Despite its whimsical name, Llemming code can have serious consequences for software projects, leading to bugs, vulnerabilities, and decreased performance. Such code may also be difficult to maintain due to its disorderliness, unreliable structure, and tendency to break. Hence, it's considered bad coding practice.
+> 
+> It's important to avoid the writing of llemming code and adopt clean coding practices for the proper functioning and longevity of the software.
 
 
 ## 🔥 Code and quality
