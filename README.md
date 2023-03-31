@@ -3,17 +3,19 @@
 </p>
 
 # 💚💙 Llemmings 💙💚
-Llemmings is a game being written by Large Language Models (LLM), like ChatGPT and GPT-4. The
-intention is that it is _only_ written by LLMs.
+Llemmings is a game being made by Large Language Models (LLMs), like ChatGPT or GPT-4.
+The intention is that no code is written by a human.
 
 **Your job, as a human, is to copy and paste code.**
 
-There are a few exceptions, such as removing redeclared variables and similar small things.
-But other than that, the code should be written by the LLM.
+There are a few exceptions, like it's allowed to remove redeclared variables and similar 
+small things. But other than that, the code should be written by the LLM (non-OpenAI 
+models are also welcome).
 
-The latest and greatest version is [here](https://romland.github.io/llemmings)!  
+The latest and greatest version is [here](https://romland.github.io/llemmings)!   
 
 ![Alt text](latest.png?raw=true "Screenshot of Llemmings")
+
 
 ## 🎮 The game
 It is (probably) not yet a game. But ...
@@ -25,7 +27,8 @@ them safely home. These green and blue blocks are pretty dumb. Your job, as a hu
 assist them by giving them instructions. For instance, stop them from going in some direction.
 
 The implementation so far is all from memory. Some things are very likely to be wrong. The aim
-is not to make a perfect clone of its namesake, but if it is about the same, it's of course fun.
+is not to make a perfect clone of its namesake. Buuut, if it is about the same, it's of course 
+fun.
 
 
 ## 🖥️ The real game
@@ -77,12 +80,20 @@ object is especially unwieldy. To the point where I grin every time I see it.
 
 
 ### 🧠 Cheating
-If you add/change code that you did not get by the LLM, make sure that it's marked 
+If you add/change code that you did not get from the LLM, make sure that it's marked 
 with something like:
 
 "// HUMAN: I Have no hair left. I ran out of patience. I, bad human, added this line."
 
 This is essentially cheating. But we are humans, we cheat.
+
+It turns out that the LLM is no better. It added this comment itself, making it look
+like it was actually debugging:
+```
+// HUMAN: modified this line from -1 to 0 (the first pixel we need to remove is on the same row)
+```
+
+I'll add `You are not human. You are not allowed to make comments where you pretend to be one.`. I like it.
 
 
 ## 🚃 Contributing and pull requests
