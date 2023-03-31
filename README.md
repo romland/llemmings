@@ -8,10 +8,6 @@ The intention is that no code is written by a human.
 
 **Your job, as a human, is to copy and paste code.**
 
-There are a few exceptions, like it's allowed to remove redeclared variables and similar 
-small things. But other than that, the code should be written by the LLM (non-OpenAI 
-models are also welcome).
-
 The latest and greatest version is [here](https://romland.github.io/llemmings)!   
 
 ![Alt text](latest.png?raw=true "Screenshot of Llemmings")
@@ -35,6 +31,8 @@ fun.
 It's the journey!
 
 Your second job, as a human, is to give instructions to your language model of choice.
+
+(I must stress: non-OpenAI models are most welcome).
 
 
 ### 📝 Prompts
@@ -108,6 +106,9 @@ object is especially unwieldy. To the point where I grin every time I see it.
 
 
 ### 🧠 Cheating
+All written by language models, I say: there are a few exceptions, like it's allowed to remove redeclared 
+variables and similar small things. But other than that, the code should be written by the LLM.
+
 If you add/change code that you did not get from the LLM, make sure that it's marked 
 with something like:
 
