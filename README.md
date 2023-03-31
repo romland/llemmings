@@ -163,9 +163,9 @@ Note that a prompt like this grew over time (likely hours), it's not like it was
 down and in one shot came good code fit-for-purose. It's all an iterative process. And it feels
 very much like ... programming.  
 
-- Digger/Miner/Basher: https://github.com/romland/llemmings/commit/334cb3bc296961d763d5ab242422ab5b2975e67f
-- Bomber: https://github.com/romland/llemmings/commit/b621cc5a83bb84c378624308f0815d17cfc58a02
-- Helper functions: https://github.com/romland/llemmings/commit/d2e2afed4be9b23f250b140eb8b4ff0d5086590c
+- [Digger/Miner/Basher](https://github.com/romland/llemmings/commit/334cb3bc296961d763d5ab242422ab5b2975e67f)
+- [Bomber](https://github.com/romland/llemmings/commit/b621cc5a83bb84c378624308f0815d17cfc58a02)
+- [Helper functions](https://github.com/romland/llemmings/commit/d2e2afed4be9b23f250b140eb8b4ff0d5086590c)
 
 
 ## 📄 License
