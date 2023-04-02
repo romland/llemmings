@@ -1,0 +1,3 @@
+>>> Prompt:
+How to make body black and spanning full window:
+body { font-family: Arial, sans-serif; background-color: #000; margin: 0; padding: 0; }

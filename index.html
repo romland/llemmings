@@ -9,11 +9,14 @@
         button {
           font-size: 40px;
         }
+
+        /* >>> Prompt: css.0001.txt */
         body {
-            font-family: Arial, sans-serif;
-            background-color: #F0F0F0;
-            margin: 0;
-            padding: 0;
+          font-family: Arial, sans-serif;
+          background-color: #000;
+          margin: 0;
+          padding: 0;
+          height: 100vh; /* set the height to 100% of the viewport height */
         }
 
         header {
@@ -673,8 +676,7 @@ const Lemming = {
         this.y += this.velY;
         this.age++;
     }
-},
-
+  },
   draw: function() {
     // Draw the new lemming position
     ctx.fillStyle = 'rgb(' + blueBox.join(',') + ')';
