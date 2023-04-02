@@ -1,0 +1,46 @@
+We are making a game with lemmings. There are three similar types of lemmings:
+- Basher - The Basher will when encountering an obstacle it cannot traverse, instead of turning 
+  around, carve a tunnel in front of it (velocity on Y should be ignored). That is, clear pixels
+  on the background. The height of the tunnel is the same as the height of the lemming.
+- Digger - The Digger works almost the same, except that it will not wait for an obstacle before
+  it starts digging. It will immediately start digging straight down (ignore x velocity). The hole
+  it digs is a few pixels wider than the lemming.
+- Miner - The Miner works almost the same as the Digger, the only difference is that it will dig
+  a tunnel diagonally downwards, in the direction it was walking. The size of the tunnel it is 
+  digging is 150% of the height of the lemming.
+
+They all need to be on the ground to be able to dig.
+
+A lemming that has started digging is done digging when it no longer found anything to dig, it should
+then be a normal lemming again (set action to null). Remember that the basher is slightly different
+in that it will not start digging immediately, but only when it first runs into an obstacle.
+
+Remember that they dig a little bit every frame (make it configurable how much, no instant tunnels),
+they all dig at pace of around 20% of the normal walking pace.
+
+All diggers should look-ahead by 3 pixels (use a const LOOK_AHEAD) to see if there is a wall, and
+also clear 3 pixels in front of them. This so they are able to move through their tunnel to continue
+digging. When they are actually digging they should never turn around.
+
+This is parts of the Lemming (object):
+
+... <<Lemming object here>> ...
+
+- You can find out what type a lemming is in the "action" property.
+- Clear a pixel with clearPixel(x, y)
+- The lemming.x/y/velX/velY are often doubles. Whenever you work with background.data or oldImgData.data,
+  make sure the indices are ints.
+- Use functions you already added: getPixelColor(imageData, x, y),
+  pixelIsColor(imageData, x, y, color) and
+  getPixelIndex(x, y, width).
+  Do bounds checking (canvas.width/height) before using those functions.
+- Don't ever use ctx.getImageData() or ctx.putImageData(), it's handled elsewhere.
+- Reuse functions where possible. If you use functions that are not in the snippet above, give me those
+  as well.
+- I suggest you make a new function to handle the different diggers, e.g.: startDigging(lemming), it should
+  probably return a boolean to indicate whether the lemming dug this frame or not.
+- Make as much as possible configurable with consts.
+- You don't need to give me lemming's update function, it calls startDigging() if a lemming is of correct type
+
+You are not human. You are not allowed to make comments where you pretend to be one.
+Don't overcomplicate things. Give me only code, I don't need explanation.

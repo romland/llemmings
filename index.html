@@ -52,6 +52,7 @@
 
 
     <canvas id="canvas" width="800" height="600"></canvas>
+    <div id="coordinatesDiv"></div>
 
   
 
@@ -71,7 +72,7 @@ function RNG(seed) {
 // const currentSeed = 1680052705344;
 // const currentSeed = 1680055455055;
 // const currentSeed = 1680197028534; // Cliffy!
-const currentSeed = 1680258447690; //1680214558374; // Lemming #2 (Basher) survive
+const currentSeed = 1680397601417; // Lemming #2 (Basher) survive
 
 console.log("Current seed: ", currentSeed);
 Math.random = RNG(currentSeed);
@@ -565,7 +566,7 @@ function drawCliffs() {
 
     // Draw a cliff to the right and/or left of the platform
     if (addCliffRight) {
-      const x = platform.x + platform.halfWidth;
+      const x = platform.x + platform.halfWidth - 2;      // HUMAN: 1-off fixed
       const y = platform.y - platformHeight;
       ctx.beginPath();
       ctx.moveTo(x, y);
@@ -587,7 +588,7 @@ function drawCliffs() {
       ctx.fill();
     }
     if (addCliffLeft) {
-      const x = platform.x - platform.halfWidth;
+      const x = platform.x - platform.halfWidth + 2;      // HUMAN: 1-off fixed
       const y = platform.y - platformHeight;
       ctx.beginPath();
       ctx.moveTo(x, y);
@@ -914,6 +915,7 @@ const Lemming = {
   isClimbing: false,
   isDead: false,
   action: null,
+  actionStarted : false,
   /*
   >>>> new prompt
 Rewrite this whole method to make sure we do not attempt to check pixels that are out of bounds of the canvas:
@@ -1004,8 +1006,9 @@ pixels either.
     }
 
     // ============ Digger/Basher/Miner code
+    let digging = false;    // HUMAN
     if(this.action === "Digger" || this.action === "Miner" || this.action === "Basher") {   // HUMAN: added this if()
-      startDigging(this);
+      digging = startDigging(this);   // HUMAN: assign result
     }
     // ============ /Digger/Basher/Miner code
 
@@ -1038,8 +1041,9 @@ pixels either.
       this.onGround = false; // We've left the ground
     } else {
       // Not climbing, normal movement applies
-      // HUMAN CHEAT: I added check for 'this.velY === 0' here so that we don't turn when we are falling
-      if (this.velY === 0 && this.action !== "Climber" && (hitWallOnLeft || hitWallOnRight || this.x <= this.width || this.x >= canvas.width - this.width)) {
+      // HUMAN: added check for 'this.velY === 0' here so that we don't turn when we are falling
+      // HUMAN: don't turn if digging
+      if (!digging && this.velY === 0 && this.action !== "Climber" && (hitWallOnLeft || hitWallOnRight || this.x <= this.width || this.x >= canvas.width - this.width)) {
         this.velX *= -1;
       }
 
@@ -1048,9 +1052,9 @@ pixels either.
       }
 
       // Apply height adjustment
-      if (heightAdjustment !== 0 && !this.isClimbing) { // only adjust if not climbing
+      if (heightAdjustment !== 0 && !this.isClimbing && !digging) { // only adjust if not climbing
         if (this.y - heightAdjustment >= 0) {
-          this.y -= heightAdjustment; // move sprite up
+          this.y -= heightAdjustment; // move sprite up (HUMAN comment: gravity takes care of down)
         } else {
           this.isDead = true;
           return;
@@ -1060,9 +1064,16 @@ pixels either.
       // Check if this is a Bomber, and if so create a hole
       // TODO: Need to make nearby aliens die...
       if (this.action === "Bomber") {
-        createHole(this.x, this.y + this.height);   // HUMAN CHEAT: I added + this.height
-        this.isDead = true;     // HUMAN cheat: I had to add "isDead" flag :/
+        createHole(this.x, this.y + this.height);   // HUMAN CHEAT: added + this.height
+        this.isDead = true;                         // HUMAN cheat: added "isDead" flag
         return;
+      }
+
+      // HUMAN: this if block to slow down when digging
+      if (this.actionStarted && (this.action === "Basher" || this.action === "Digger" || this.action === "Miner")) {
+        this.velX = (this.velX > 0 ? this.maxVelX * DIGGER_SPEED_FACTOR : -this.maxVelX * DIGGER_SPEED_FACTOR);
+      } else {
+        this.velX = (this.velX > 0 ? this.maxVelX : -this.maxVelX);
       }
 
       // Move the lemming
@@ -1088,131 +1099,160 @@ pixels either.
 
     // Debug
     ctx.strokeStyle = "white";
-    ctx.strokeText(this.id, this.x + 1, this.y + 13)
+    ctx.strokeText(this.id, this.x + 1, this.y + 13);
+    if(this.action) {
+      ctx.font = "7px Arial";
+      ctx.strokeText(this.action, this.x - 5, this.y - 5);
+    }
   }
 };
 
-// =======================================================================================================
-// ============ Digger/Basher/Miner code (prompt down by actions at 'Digger')
-const PIXELS_PER_FRAME = 0.2; // Number of pixels to dig per frame
+// =========================================================================
+// Digger/Basher/Miner code
+// >>> Prompt: ./instructions/digger-miner-basher.0001.txt
 
-function startDigging(lemming) {
-  if (!lemming.onGround) {
-    return;
+const DIGGER_LOOK_AHEAD = 4;
+const DIGGER_SPEED_FACTOR = 0.1;    // HUMAN: Changed my mind; changed from 0.2
+
+function startDigging(lemming)
+{
+  if(!lemming.onGround || (lemming.action !== "Basher" && lemming.action !== "Digger" && lemming.action !== "Miner")) {
+    return false;
   }
 
-  let diggingWidth, diggingHeight, xOffset, yOffset, digDirection;
-
-  switch (lemming.action) {
+  switch(lemming.action) {
     case "Basher":
-      if (lemming.turnsSinceActionStart === undefined && (lemming.velX !== 0 || lemming.isClimbing)) {
-        // Set up the initial tunnel
-        lemming.turnsSinceActionStart = 0;
-        diggingWidth = 1;
-        diggingHeight = lemming.height + 4;
-        xOffset = lemming.velX > 0 ? lemming.width : -1;
-        yOffset = -2;
-        digDirection = lemming.velX > 0 ? "right" : "left";
-      } else if (lemming.turnsSinceActionStart !== undefined &&
-                lemming.turnsSinceActionStart < (lemming.width / PIXELS_PER_FRAME) &&
-                !lemming.isClimbing) {
-        // Carve the tunnel
-        diggingWidth = 3;
-        diggingHeight = lemming.height + 4;
-        xOffset = lemming.velX > 0 ? lemming.width : -3;
-        yOffset = -2;
-        digDirection = lemming.velX > 0 ? "right" : "left";
-        lemming.turnsSinceActionStart++;
-      } else {
-        // Done digging
-        lemming.action = null;
-        delete lemming.turnsSinceActionStart;
-        return;
-      }
-      break;
-
+      return bash(lemming);
     case "Digger":
-      diggingWidth = lemming.width + 2;
-      diggingHeight = 1;
-      xOffset = -1;
-      yOffset = lemming.height + 2;
-      digDirection = "down";
-      break;
-
+      return dig(lemming);
     case "Miner":
-      diggingWidth = Math.ceil(lemming.height * 1.5);
-      diggingHeight = lemming.height + 4;
-      xOffset = lemming.velX > 0 ? lemming.width : -diggingWidth+1;
-      yOffset = -2;
-      digDirection = lemming.velX > 0 ? "downRight" : "downLeft";
-      break;
-
-    default:
-      // Not a digger, do nothing
-      return;
+      return mine(lemming);
   }
 
-  let startIndexX = Math.max(0, Math.min(Math.floor(lemming.x + xOffset), canvas.width - diggingWidth));
-  let endIndexX = startIndexX + diggingWidth;
-  let startIndexY = Math.max(0, Math.min(Math.floor(lemming.y + yOffset), canvas.height - diggingHeight));
-  let endIndexY = startIndexY + diggingHeight;
+  return false;
+}
 
-  let colorIndexesToRemove = [];
+function bash(lemming)
+{
+  const x = Math.round(lemming.x);
+  const y = Math.round(lemming.y);
+  const vx = Math.round(lemming.velX);
+  const vy = Math.round(lemming.velY);
 
-  for (let y = startIndexY; y < endIndexY; y++) {
-    for (let x = startIndexX; x < endIndexX; x++) {
-      const index = getPixelIndex(x, y, canvas.width);
+  let pixelsDug = 0, startX, facingX, facingY;
 
-      if (pixelIsColor(oldImgData, x, y, dirtColorBytes) ||
-          pixelIsColor(oldImgData, x, y, rockColorBytes)) {
-        // Digging through an obstacle, remove it
-        colorIndexesToRemove.push(index, index + 1, index + 2, index + 3);
-        continue;
-      }
+  if(lemming.totalDug === undefined) {
+    lemming.totalDug = 0;
+  }
 
-      if (x === startIndexX || x === endIndexX - 1 || y === startIndexY || y === endIndexY - 1) {
-        // Digging a hole, remove the collision layer
-        colorIndexesToRemove.push(index, index + 1, index + 2, index + 3);
+  if(lemming.velX > 0) {
+    facingX = x + lemming.width + DIGGER_LOOK_AHEAD;
+    facingY = y + (lemming.height/2);
+    startX = x;
+  } else if(lemming.velX < 0) {
+    facingX = x;
+    facingY = y + (lemming.height/2);
+    startX = x - vx - DIGGER_LOOK_AHEAD;
+  } else {
+    return false;
+  }
+
+  if(!isColorOneOf(getPixelColor(oldImgData, facingX, facingY), terrainColorBytes)) {
+    return false;
+  }
+
+  for(let i = 0; i < lemming.height + 1; i++) {
+    for(let j = startX - 1; j < facingX; j++) {
+      if(isColorOneOf(getPixelColor(oldImgData, j, y + i), terrainColorBytes)) {
+        clearPixel(j, y + i);
+        pixelsDug++;
+        lemming.actionStarted = true;
       } else {
-        // Clearing background layer
-        background.data[index] = 0;
-        background.data[index + 1] = 0;
-        background.data[index + 2] = 0;
-        background.data[index + 3] = 0;
+        console.log("nothing at", j, y+i, getPixelColor(oldImgData, j, y+i), lemming);
       }
     }
   }
 
-  for (let index of colorIndexesToRemove) {
-    oldImgData.data[index] = 0;
+  lemming.totalDug += pixelsDug;
+
+  if(lemming.actionStarted && !pixelsDug) {
+    console.log(lemming.action, lemming.id, "done after removing", lemming.totalDug, "pixels");    // HUMAN
+    lemming.action = null;
+    lemming.actionStarted = false;
   }
 
-  if (digDirection === "up") {
-    lemming.y -= PIXELS_PER_FRAME;
-  } else if (digDirection === "down") {
-    lemming.y += PIXELS_PER_FRAME;
-  } else if (digDirection === "left") {
-    lemming.x -= PIXELS_PER_FRAME;
-  } else if (digDirection === "right") {
-    lemming.x += PIXELS_PER_FRAME;
-  } else if (digDirection === "downRight") {
-    lemming.x += PIXELS_PER_FRAME * Math.cos(Math.PI / 4);
-    lemming.y += PIXELS_PER_FRAME * Math.sin(Math.PI / 4);
-  } else if (digDirection === "downLeft") {
-    lemming.x -= PIXELS_PER_FRAME * Math.cos(Math.PI / 4);
-    lemming.y += PIXELS_PER_FRAME * Math.sin(Math.PI / 4);
+  return pixelsDug > 0;
+}
+
+function dig(lemming)
+{
+  const x = Math.round(lemming.x);
+  const y = Math.round(lemming.y);
+  const vx = Math.round(lemming.velX);
+  const vy = Math.round(lemming.velY);
+
+  let pixelsDug = 0, startY, facingX, facingY;
+
+  if(lemming.totalDug === undefined) {
+    lemming.totalDug = 0;
   }
+
+  facingX = x;
+  facingY = y + lemming.height + DIGGER_LOOK_AHEAD;
+  startY = y + lemming.height;
+
+  for(let i = 0; i < lemming.width; i++) {
+    for(let j = startY - 1; j < facingY; j++) {
+      if(isColorOneOf(getPixelColor(oldImgData, x + i, y + j), terrainColorBytes)) {
+        clearPixel(i, y + j);
+        pixelsDug++;
+        lemming.actionStarted = true;
+      }
+    }
+  }
+
+  lemming.totalDug += pixelsDug;
+
+  if(lemming.actionStarted && !pixelsDug) {
+    console.log(lemming.action, lemming.id, "done after removing", lemming.totalDug, "pixels");    // HUMAN
+    lemming.action = null;
+    lemming.actionStarted = false;
+  } else if(pixelsDug) {
+    lemming.velX = 0;
+  }
+
+  return pixelsDug > 0;
 }
 
 
-// ============ /Digger/Basher/Miner code
-// =======================================================================================================
+
+// === /Digger/Basher/Miner code
+// =========================================================================
 
 /*
-let oldImgData = ctx.getImageData(0,0,width,height);    // TODO: This should be renamed, but I don't want to do it now since it would make some prompts invalid (for demonstration purposes). It does nicely illustrate the example of the need to keep track of these things.
-let canvasBytes = Uint8ClampedArray.from(oldImgData.data);
-const imgData = new ImageData(canvasBytes, width, height);
+>>> Prompt, this came from _one_ of the discarded Digger/Miner/Basher implementations.
+The LLM kept getting tiny parts of this wrong over and over, so I lifted this implementation
+to make it a bit easier to get something useful.
 */
+function clearPixel(x, y) {
+  if (x >= canvas.width || y >= canvas.height || x < 0 || y < 0) {
+    return;
+  }
+  
+  const pixelIndex = getPixelIndex(x, y, canvas.width);
+  oldImgData.data[pixelIndex] = 0;
+  oldImgData.data[pixelIndex + 1] = 0;
+  oldImgData.data[pixelIndex + 2] = 0;
+  oldImgData.data[pixelIndex + 3] = 255;
+
+  background.data[pixelIndex] = 0;
+  background.data[pixelIndex + 1] = 0;
+  background.data[pixelIndex + 2] = 0;
+  background.data[pixelIndex + 3] = 255;
+}
+
+
+
 // >>>> Note, original prompt for the creating Bomber action gave us a simpler version of this.
 /*
 >>> NEW PROMPT: and we need to now make it work... it even hallucinated and called oldImgData newImgData ... hmm
@@ -1302,6 +1342,11 @@ function spawnLemming() {
     console.log("Making new lemming a", newLemming.action, newLemming);
   }
 
+  if(newLemming.id === 4) {
+    newLemming.action = "Digger";
+    console.log("Making new lemming a", newLemming.action, newLemming);
+  }
+  
   if(newLemming.id === 2) {
     newLemming.action = "Basher";
     console.log("Making new lemming a", newLemming.action, newLemming);
@@ -2061,65 +2106,18 @@ in the snippet I gave you, implement them and show them to me.
       //add building behavior here
       break;
     case 'Basher':
-      // See prompt for "Digger"
+      // >>> Prompt: ./instructions/digger-miner-basher.0001.txt
       selectedLemming.action = "Basher";     // HUMAN: Added this.
       selectedLemming.isSelected = false;
+      console.log("Assigned basher to", selectedLemming.id);  // HUMAN: debug
       break;
     case 'Miner':
-      // See prompt for "Digger"
+      // >>> Prompt: ./instructions/digger-miner-basher.0001.txt
       selectedLemming.action = "Miner";     // HUMAN: Added this.
       selectedLemming.isSelected = false;
       break;
     case 'Digger':
-/*
->>> ChatGPT Prompt (start: 21:40):
-We are making a game with lemmings. There are three similar types of lemmings:
-- Basher - The Basher will when encountering an obstacle it cannot traverse, instead of turning 
-  around, carve a tunnel in front of it. That is, remove pixels in the background. The height of 
-  the tunnel is the same as the height of the lemming (+ a few pixels maybe)
-- Digger - The Digger works almost the same, except that it will not wait for an obstacle before
-  it starts digging. It will immediately start digging straight down. The hole it digs is a few 
-  pixels wider than the lemming is wide.
-- Miner - The Miner works almost the same as the Digger, the only difference is that it will dig
-  a tunnel diagonally downwards, in the direction it was walking. The size of the tunnel it is 
-  digging is 150% of the height of the lemming.
-
-They all need to be on the ground to be able to dig.
-
-A lemming that has started digging is done digging when it no longer found anything to dig, it should
-then be a normal lemming again (set action to null). Remember that the basher is slightly different
-in that it will not start digging immediately, but only when it first runs into an obstacle.
-
-Remember that they dig a little bit every frame (make it configurable how much, no instant tunnels),
-they all dig at pace of around 20% of the normal walking pace.
-
-They should remove 3 pixels in front of itself in order to be able to move through tunnel to continue
-digging. When they are actually digging they should not turn around.
-
-This is parts of the Lemming (object):
-
-... <<Lemming object here>> ...
-
-- You can find out what type it is by looking at the "action" property of a lemming.
-- In addition to clearing (don't just change alpha, set all 4 bytes of a pixel to 0) in background.data,
-  do it in the collision layer too: oldImgData.data.
-- The lemming.x/y/velX/velY are floats. Whenever you work with background.data or oldImgData.data, make
-  sure your indices are ints.
-- Use already implemented functions: getPixelColor(imageData, x, y),
-  pixelIsColor(imageData, x, y, color) and
-  getPixelIndex(x, y, width).
-  Do bounds (canvas.width/height) checking before using these.
-- Don't ever use ctx.getImageData() or ctx.putImageData(), it's handled elsewhere.
-- Reuse functions where possible. If you use functions that are not in the snippet above, give me those
-  as well.
-- Remove a pixel from the canvas using, e.g.: background.data[(y * canvas.width + x) * 4] = 0;.
-- I suggest you make a new function to handle the different diggers, e.g.: startDigging(lemming).
-- Make as much as you can configurable with consts.
-- You don't need to give me lemming's update function, it calls startDigging() if a lemming is of correct type
-
-You are not human. You are not allowed to make comments where you pretend to be one.
-Give me only code, I don't need explanation.
-*/
+      // >>> Prompt: ./instructions/digger-miner-basher.0001.txt
       selectedLemming.action = "Miner";     // HUMAN: Added this.
       selectedLemming.isSelected = false;
       break;
@@ -2159,6 +2157,28 @@ function stopAction() {
     selectedLemming.isSelected = false;
   }
 }
+
+// >>> Prompt: give me a snippet for when i hover the mouse over the canvas it would show the coordinate and color (as hex string) of that pixel
+const coordinatesDiv = document.getElementById("coordinatesDiv");
+canvas.addEventListener("mousemove", function(event) {
+  const x = event.offsetX;
+  const y = event.offsetY;
+
+  const imageData = ctx.getImageData(x, y, 1, 1);
+  const pixel = imageData.data;
+
+  const color = "#" + ("000000" + rgbToHex(pixel[0], pixel[1], pixel[2])).slice(-6);
+
+  coordinatesDiv.innerHTML = "X: " + x + ", Y: " + y + " | Color: " + color;
+});
+
+function rgbToHex(r, g, b) {
+  if (r > 255 || g > 255 || b > 255)
+    throw "Invalid color component";
+  return ((r << 16) | (g << 8) | b).toString(16);
+}
+
+
 </script>
 
 <div id="lemming-actions">
