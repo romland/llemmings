@@ -86,34 +86,10 @@ to implement something outside of this project for that.
 Once figured out, there should be notes here about how you organize your prompts with the code!  
 
 
-## 🤓 Now we know
-_Human_  
-```
-Write me one of those cute grammatical definitions with phonetics and stuff where you 
-say what "llemming code" is so I can put it on project page on github. The double-l with 
-the m in llemming is a word-play on LLM, btw.
-```
-
-The truth-teller _ChatGPT_
-> Certainly, here you go!
-> 
-> **Title:** Definition of "Llemming Code"
-> 
-> **Phonetics:** /’lɛmɪŋ kəʊd/
-> 
-> **Definition:**
-> 
-> "Llemming code" is a term for any code written with poor practices, often hastily put together and copied from other sources without proper understanding or evaluation. The name is a word-play on the acronym LLM, which stands for “low-level maintenance” and reflects the lack of care given to the codebase.
-> 
-> Despite its whimsical name, Llemming code can have serious consequences for software projects, leading to bugs, vulnerabilities, and decreased performance. Such code may also be difficult to maintain due to its disorderliness, unreliable structure, and tendency to break. Hence, it's considered bad coding practice.
-> 
-> It's important to avoid the writing of llemming code and adopt clean coding practices for the proper functioning and longevity of the software.
-
-
 ## 🔥 Code and quality
 Up til now, quality has not been a big concern. It's one giant steamy pile of spaghetti (llemming code?).
 
-It's been handy to have everything in one file for prompting. The instructions to the LLMs (prompts)
+It's been handy to have everything in one file for prompting. The instructions to the LLMs
 will sadly have to be separated from the code in the near future, it's getting too much.
 
 At some point down the line, probably soon, refactoring needs to be done by the LLM (😱). The `update` function in the `Lemming`
