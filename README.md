@@ -161,7 +161,7 @@ Some thoughts:
 - animations (maybe their green hair should move in the wind, maybe they have legs!),
 - shaders,
 - sound,
-- speach bubbles (Oh no!),
+- speech bubbles (Oh no!),
 - add the missing types of green-blue blocks (the builder looks particularly nasty on paper),
 - the goal of the game,
 - score,
