@@ -14,6 +14,7 @@
         body {
           font-family: Arial, sans-serif;
           background-color: #000;
+          color: #f0f0f0;
           margin: 0;
           padding: 0;
           height: 100vh; /* set the height to 100% of the viewport height */
@@ -707,7 +708,7 @@ const Lemming = {
 // >>> Prompt: ./instructions/digger-miner-basher.0001.txt
 
 const DIGGER_LOOK_AHEAD = 4;
-const DIGGER_SPEED_FACTOR = 0.1;    // HUMAN: Changed my mind; changed from 0.2
+const DIGGER_SPEED_FACTOR = 0.2;    // HUMAN: Changed my mind; changed from 0.2
 
 function startDigging(lemming)
 {
@@ -763,20 +764,22 @@ function bash(lemming)
         clearPixel(j, y + i);
         pixelsDug++;
         lemming.actionStarted = true;
-      } else {
-        console.log("nothing at", j, y+i, getPixelColor(oldImgData, j, y+i), lemming);
       }
     }
   }
-
   lemming.totalDug += pixelsDug;
 
-  if(lemming.actionStarted && !pixelsDug) {
+  // HUMAN: Cheat. I tried conveying the entire concept that it might not have moved, but came up short.
+  //        The easy way out here would be to ask for a very narrow prompt to write the 'previouslyDug'
+  //        code below, but that felt like a cheat too. One day all cheats will llemmingd. One day.
+  if(lemming.previouslyDugAt && lemming.previouslyDugAt.x !== x && lemming.previouslyDugAt.y !== y
+     && lemming.actionStarted && !pixelsDug) {
     console.log(lemming.action, lemming.id, "done after removing", lemming.totalDug, "pixels");    // HUMAN
     lemming.action = null;
     lemming.actionStarted = false;
   }
 
+  lemming.previouslyDugAt = {"x":x,"y":y};
   return pixelsDug > 0;
 }
 
