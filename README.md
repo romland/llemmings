@@ -2,7 +2,6 @@
 
 <img width="30%" align="right" src="./llemming360.png">
 
-**Human**  
 _Give me definition, usage and phonetics of "llemming". Which is a play on the acronym LLM (Large Language Model)_  
 
 **OpenAI's ChatGPT**  
@@ -16,6 +15,7 @@ _Usage:_
 Don't just llemming your writing to the suggestions of a Large Language Model; make sure you double-check for accuracy and context before adopting any changes.
 
 <br clear="right"/>
+
 
 ## 👉 Blindly following comrades: Encouraged
 Llemmings is a game being made by Large Language Models (LLMs), like ChatGPT or GPT-4.
