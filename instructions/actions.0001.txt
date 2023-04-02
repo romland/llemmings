@@ -1,0 +1,133 @@
+>>> Prompt: Let's use ChatGPT to describe our actions first:
+What type of lemmings were there in the game Lemmings?
+
+>>> Prompt: we want actions
+Great. Using our newly selected lemming, we now want some actions we can apply to that lemming.
+Perhaps buttons for these actions should be in plain HTML instead of on the canvas.
+
+The following existing code might be useful:
+
+const Lemming = {
+  id: -49152,
+  age: 0,
+  x: 0,
+  y: 0,
+  width: 10,
+  height: 20,
+  velX: 0,
+  velY: 0,
+  maxVelX: 0.2,
+  deadlyVelY: 3,
+  isSelected: false,
+  onGround: false,
+  isDead: false,
+  update: function() {
+    if(this.y >= (canvas.height - (this.height+this.velY+1))) {
+        this.isDead = true;
+        return;
+    }
+
+    // Check if ground is under us or not
+    let isGroundUnderneath = pixelIsColor(oldImgData, this.x + this.width / 2, this.y + this.height + 1, dirtColorBytes) || 
+                            pixelIsColor(oldImgData, this.x + this.width / 2, this.y + this.height + 1, rockColorBytes);
+
+    let heightAdjustment = 0;
+
+    if (isGroundUnderneath) {
+        let distanceToGround = -(this.height/4);
+
+        // TODO need safety guards for canvas boundary and probably a sanity check to not iterate more than N pixels (N = height?)
+        while (!pixelIsColor(oldImgData, this.x + this.width / 2, this.y + distanceToGround + 1, dirtColorBytes)
+            && !pixelIsColor(oldImgData, this.x + this.width / 2, this.y + distanceToGround + 1, rockColorBytes)) {
+            distanceToGround++;
+        }
+        if(distanceToGround !== 0)
+          heightAdjustment = (this.height) - distanceToGround + 0.1; // subtract half the sprite's height
+    }
+
+    // Check if we hit a wall on the x axis
+    const hitWallOnLeft =
+        pixelIsColor(oldImgData, this.x - 1, this.y + this.height / 2, dirtColorBytes) ||
+        pixelIsColor(oldImgData, this.x - 1, this.y + this.height / 2, rockColorBytes);
+    const hitWallOnRight =
+        pixelIsColor(oldImgData, this.x + this.width + 1, this.y + this.height / 2, dirtColorBytes) ||
+        pixelIsColor(oldImgData, this.x + this.width + 1, this.y + this.height / 2, rockColorBytes); 
+    
+    // Check if we've fallen in water
+    const isWaterBelow =
+        pixelIsColor(oldImgData, this.x + this.width / 2, this.y + this.height + 1, waterColorBytes);
+    
+    // Update velocity according to the collision rules
+    if (!this.onGround) {
+      this.velY += GRAVITY;
+      
+      if (isGroundUnderneath) {
+        // console.log(this.velY);
+        if(this.velY > this.deadlyVelY) {
+          // splat
+          this.isDead = true;
+          return;
+        }
+        this.onGround = true;
+        this.velY = 0;
+      }
+    } else if (this.onGround && !isGroundUnderneath) {
+      // Start falling if there's no ground
+      this.onGround = false;
+    }
+    
+    if (hitWallOnLeft || hitWallOnRight || this.x <= this.width || this.x >= canvas.width-this.width) {
+      this.velX *= -1;
+    }
+    
+    if (isWaterBelow || this.y >= canvas.height-this.height) {
+      this.isDead = true;
+    }
+
+    // Apply height adjustment
+    if (heightAdjustment !== 0) {
+        this.y -= heightAdjustment; // move sprite up
+    }
+    
+    // Move the lemming
+    this.x += this.velX;
+    this.y += this.velY;
+    this.age++;
+  },
+  draw: function() {
+    // Draw the new lemming position
+    ctx.fillStyle = 'rgb(' + blueBox.join(',') + ')';
+    ctx.fillRect(this.x, this.y, this.width, this.height);
+
+    ctx.fillStyle = 'rgb(' + greenBox.join(',') + ')';
+    ctx.fillRect(this.x, this.y, (this.width/3) - 1, (this.height/4) - 1);
+    ctx.fillRect(this.x + this.width - (this.width/3), this.y, (this.width/3) - 1, (this.height/4) - 1);
+
+    // add this to the draw method of the Lemming object
+    if (this.isSelected) {
+      ctx.strokeStyle = 'red';
+      ctx.strokeRect(this.x, this.y, this.width, this.height);
+    }
+
+    // Debug
+    ctx.strokeStyle = "white";
+    ctx.strokeText(this.id, this.x + 1, this.y + 13)
+  }
+};
+
+Add actions for:
+Climber: This lemming can climb vertical surfaces such as walls and cliffs.
+
+Floater: This lemming can use a parachute-like device to float harmlessly down from high places.
+
+Bomber: This lemming self-destructs after a short time delay, creating a hole in the ground that other lemmings may enter.
+
+Blocker: This lemming stops moving and turns into an immovable wall, preventing other lemmings from passing through.
+
+Builder: This lemming can create a diagonal or horizontal bridge over gaps, making it possible for other lemmings to cross.
+
+Basher: This lemming tunnels horizontally through soft terrain such as dirt or snow, allowing others to pass.
+
+Miner: This lemming creates a downward-sloping tunnel, making it possible for other lemmings to descend steep inclines.
+
+Digger: This lemming digs straight down into the ground, creating a vertical pit that other lemmings may use to jump down or climb up.

@@ -1,0 +1,1 @@
+Give me a function that give me all unique colors on a canvas, call it getUniqueColors(canvas)

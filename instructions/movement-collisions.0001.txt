@@ -1,0 +1,34 @@
+We are making a game like Lemmings, there is existing code.
+
+The following are the relevant bits and are already declared in the program:
+const canvas = document.getElementById("canvas");
+const ctx = canvas.getContext("2d");
+variable oldImgData is all pixel data gotten with ctx.getImageData()
+function pixelIsColor(imageData, x, y, color): used to get compare a color of a pixel, x and y is canvas coorindate 
+function getPixelColor(imageData, x, y) is used to get the color of a pixel, x and y is canvas coorindate 
+
+The colors of various pixels are already declared:
+waterColor = '#0077be';
+rockColor = '#888888';
+dirtColor = '#4a2e00';
+
+The pixelIsColor() and getPixelColor() take an array of the four color components as the color argument. Figure it out.
+Declare NEW constants for the colors as bytes like this: for e.g. waterColor; const waterColorBytes = [0x00, 0x77, 0xbe] ...
+
+Using the above:
+Do pixel perfect collision detection for a sprite that looks like a blue lemming with green hair 
+(a blue box and a green box, basically), give it its own structure with position, velocity, etc.
+
+It should move around on a 2d canvas which has gravity (that is, when there is no ground under it, 
+it should fall down). If it runs in to an obstacle on the x axis (or the edge of the canvas) it should
+turn around and walk the other way. The ground (dirt and rock) can be a bit hilly,
+so there should be some fuzziness in the collision, it only stops when it runs into a tall obstacle.
+If it falls into something on the y axis it should stop failling and start walking on the x axis.
+If it falls into the water or went outside of canvas, the lemming is dead. Remember to check against
+canvas bounds so that we don't try to get pixel data that does not exist.
+
+Updates should be done every frame. There will eventually be many lemmings, so do note that they are
+not controlled by keys, they move by themselves and is constrained by the collision rules outlined above.
+
+It is important that you use the declared things I mentioned above. Just give me the code with
+minor comments and be brief, don't explain anything with plain text.

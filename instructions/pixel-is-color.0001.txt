@@ -1,0 +1,20 @@
+Rewrite this function so that I can pass in multiple colors in the color argument, note how 'color' is already an array.
+So, valid arguments would be:
+[ 0xff, 0xff, 0xff ] or [[ 0xff, 0xff, 0xff ], [0xee, 0xee, 0xee]], ...
+
+Use getPixelColor(imageData, x, y) to get the color of the pixel in the data.
+
+function pixelIsColor(imageData, x, y, color, debug) {
+    x = Math.round(x);
+    y = Math.round(y);
+  
+  const [r, g, b, alpha] = getPixelColor(imageData, x, y);
+
+  // if(r === undefined) {
+  //   console.warn("Should not happen:", "lemming:", debug, "len:", lemmings.length, "image:", imageData, r, g, b, alpha, "x:"+x, "y:"+y, "comparing:"+color, "index:"+Math.floor((y * width + x) * 4));
+  //   debug.draw();
+  //   throw "This should not happen"
+  // }
+
+  return r === color[0] && g === color[1] && b === color[2];
+}

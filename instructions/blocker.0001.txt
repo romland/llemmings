@@ -1,0 +1,25 @@
+Can you give me the code for how the blocker should work?
+Remember that the other lemmings should not be able to walk past it, other lemmings should now 
+treat the Blocker like an impenetrable wall -- remember to check whether the lemming is on the 
+same Y as the blocker too -- you should probably check the entire collision box of the lemming 
+instead of a single pixel.
+The Blocker itself should stop moving on the X axis.
+Only one action can be applied to a lemming.
+Deselect the lemming once an action is applied.
+Tell me what I need to add to the lemming.update() method too.
+
+>>>> Update to the result of the above:
+Update the code, which sits in Lemming.update(), instead of checking only a single pixel on x, it 
+should check for two boxes colliding (lemmings),
+width, height, x, y, velX, velY are already defined in the object.
+// force other lemmings to turn around if they hit the blocker
+lemmings.forEach(otherLemming => {
+if (otherLemming !== this && !otherLemming.isDead && otherLemming.action === "Blocker") {
+    if ((otherLemming.x > this.x && otherLemming.velX > 0) || 
+        (otherLemming.x < this.x && otherLemming.velX < 0)) {
+    otherLemming.velX *= -1;
+    console.log("Ran into a blocker?", this.x, this.y)
+    }
+}
+});
+Instead of forEach, use a for(...) loop. Only update the code above.

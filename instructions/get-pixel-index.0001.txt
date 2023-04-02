@@ -1,0 +1,14 @@
+Given this example:
+function getPixelColor(imageData, x, y) {
+    x = Math.round(x);
+    y = Math.round(y);
+  const index = ((y * width) + x) * 4;
+  const r = imageData.data[index];
+  const g = imageData.data[index + 1];
+  const b = imageData.data[index + 2];
+  const a = imageData.data[index + 3];
+
+  return [r, g, b, a];
+}
+
+Give me the function called getPixelIndex 

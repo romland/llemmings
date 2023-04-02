@@ -1,0 +1,123 @@
+>>>>>> Next attempt at prompt:
+Update the map generation below to not only give me platforms, but add steep cliff
+walls here and there, these walls should only be placed on top of platforms and should have
+a bit of randomly generated jagged edges. The cliff walls can be quite tall (a few platforms high)
+and take up quite a bit of width (make this configurable). The cliff walls should not be symmetrical,
+as that looks a bit silly and artificial. Make them look organic (procedural, random). Their peaks 
+should also only extend upwards, never downwards as the cliff base should be the platform they are
+placed on. The cliff base must always be flat.
+
+The cliff walls should be blue (0000ff), for now.
+
+You can picture the cliff walls like this (illustration as ASCII art):
+
+   ./\   /\
+   |  \./  \
+   /   \    \
+   """"""""""
+
+or
+
+/\..
+""
+
+or
+
+ ./\
+ /  \.
+/    \
+""""""
+or
+ |\.
+.| \.
+ |  \
+ /   \
+ """"""
+
+etc. 
+
+They should look a bit jagged and randomly placed but the base of the walls must always be on top of a platform,
+however, no cliffs must be drawn on the top 50 pixels of the canvas.
+
+The code for generating the platforms is below, finish the drawCliffs method to add these cliff walls.
+
+Just give me the new code, no need to explain anything, I just want to paste your new version of drawCliffs in.
+
+
+// Set canvas dimensions and context
+const canvas = document.querySelector('canvas');
+canvas.width = 800;
+canvas.height = 600;
+const ctx = canvas.getContext('2d');
+
+// Set constants for noise generation
+const noiseGenerator = new ImprovedNoise();
+let noiseScale = 0.15; // (hillyness) adjust this to change the amount of detail in the noise
+const frequency = 2.5;
+
+// Set constants for map generation
+const numPlatforms = 10; // adjust this to change the number of platforms
+const platformHeight = canvas.height / numPlatforms;
+const maxPlatformWidth = canvas.width * 0.5; // adjust this to change maximum platform width
+const minPlatformWidth = canvas.width * 0.2; // adjust this to change minimum platform width
+const rockProbability = 0.3; // adjust this to change the chance of generating rocks
+const waterColor = '#0077be';
+const rockColor = '#888888';
+const dirtColor = '#4a2e00';
+
+// Generate list of platforms
+const platforms = [];
+for (let i = 0; i < numPlatforms; i++) {
+  const halfWidth = (Math.random() * (maxPlatformWidth - minPlatformWidth) + minPlatformWidth) / 2;
+  const x = Math.random() * (canvas.width - halfWidth * 2) + halfWidth;
+  const y = (i * platformHeight + platformHeight / 2) + platformHeight;     // add platformHeight so we don't have one at the very top
+  platforms.push({x, y, halfWidth});
+}
+
+function drawMap() {
+  // Create gradient for background color
+  const grd = ctx.createLinearGradient(0, 0, 0, canvas.height);
+  grd.addColorStop(0, '#111111');
+  grd.addColorStop(1, '#444444');
+  ctx.fillStyle = grd;
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  // Draw water at bottom of canvas
+  ctx.fillStyle = waterColor;
+  ctx.fillRect(0, canvas.height - platformHeight, canvas.width, platformHeight);
+  
+  // Generate map using Perlin noise
+  for (let i = platforms.length - 1; i >= 0; i--) {
+    const platform = platforms[i];
+    
+    // Generate noise values for each pixel on the platform
+    ctx.beginPath();
+    ctx.moveTo(platform.x - platform.halfWidth, platform.y);
+    for (let x = platform.x - platform.halfWidth; x <= platform.x + platform.halfWidth; x++) {
+      const noiseValue = noiseGenerator.noise(x * noiseScale * frequency, 0, 0) * 0.5 + 0.5;
+      const height = platform.y - noiseValue * platformHeight / 1.5;    // platform height divisor
+      
+      // Determine whether to draw dirt or rock based on probability
+      if (Math.random() < rockProbability) {
+        ctx.fillStyle = rockColor;
+      } else {
+        ctx.fillStyle = dirtColor;
+      }
+      ctx.lineTo(x, height);
+    }
+    ctx.lineTo(platform.x + platform.halfWidth, platform.y);
+    ctx.closePath();
+    ctx.fill();
+  }
+}
+
+function drawCliffs() {
+  platforms.forEach((platform) => {      
+    // ...
+  });
+}
+
+
+// call drawMap function to generate map
+drawMap();
+drawCliffs();

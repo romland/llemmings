@@ -1,0 +1,4 @@
+Rewrite this whole method to make sure we do not attempt to check pixels that are out of bounds of the canvas:
+Make sure to check bounds so that e.g. getPixelIndex() does not attempt to get out of bounds
+pixels either.
+(and then the full update() method was passed in)

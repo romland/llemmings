@@ -1,0 +1,199 @@
+We are making a game with lemmings. A specific type of lemming is a Climber. A lemming that is a Climber
+will climb up (but not down) steep dirt or rock obstacles. That means it should stick to either pixels on
+the left or right of it. You can find out which direction a lemming is walking in by looking at velX (you really
+only need to check obstacle in the direction it is walking). The surfaces they can climb is rock and dirt. You
+can find out what is what by looking at pixel data in oldImgData.
+
+It will walk like any other lemming, the only difference is that it can also ascend steeper obstacles.
+
+When it is climbing an obstacles, move it upwards along Y axis at the same speed as it would as if
+it was walking. But make sure the lemming move along the pixels it is climbing on (that is, on either side
+of the lemming).
+
+If a climber is currently climbing, we probably don't want to do the heightAdjustment as that only applies
+if the lemming is walking on the ground.
+
+As a hint, since you are struggling, you will want to put the functionality for this inside 
+if(this.action === "Climber") { ... }, in the appropriate place in the update function. You will probably
+also need a flag to check if a lemming is currently climbing.
+
+To illustrate with ASCII:
+
+                         |----------------G
+S           o   c        |
+-------------------------|
+
+"S" is where the lemmings start walking
+"-" is a platform (rock or dirt)
+"|" is either rock or dirt too, but it's very steep and would stop a normal lemming from going further - it should climb up this obstacle at walking speed
+"o" is a normal walking lemming
+"c" is a Climber
+"G" is the goal where the lemmings want to go
+
+The Climber (c) in the above illustration would be able to reach the goal, but the normal lemming (o) would not, 
+it would simply walk back and forth between the steep obstacle and S.
+
+The function pixelIsColor() can take several colors in the color argument, if the pixel at x/y match either of them, the function will return true.
+
+const canvas = document.getElementById("canvas");
+const ctx = canvas.getContext("2d");
+
+const Lemming = {
+  id: -49152,
+  age: 0,
+  x: 0,
+  y: 0,
+  width: 10,
+  height: 20,
+  velX: 0,
+  velY: 0,
+  maxVelX: 0.2,
+  deadlyVelY: 3,
+  isSelected: false,
+  onGround: false,
+  isDead: false,
+  action: null,
+  update: function() {
+  if (this.y >= canvas.height - (this.height + this.velY + 1)) {
+    this.isDead = true;
+    return;
+  }
+
+  // Check if ground is under us or not
+  let isGroundUnderneath =
+    pixelIsColor(oldImgData, this.x + this.width / 2, this.y + this.height + 1, dirtColorBytes) ||
+    pixelIsColor(oldImgData, this.x + this.width / 2, this.y + this.height + 1, rockColorBytes);
+
+  let heightAdjustment = 0;
+
+  if (isGroundUnderneath) {
+    let distanceToGround = -(this.height / 4);
+
+    while (
+      this.y + distanceToGround + 1 >= 0 &&
+      this.y + distanceToGround + 1 < canvas.height &&
+      !pixelIsColor(
+        oldImgData,
+        this.x + this.width / 2,
+        this.y + distanceToGround + 1,
+        dirtColorBytes
+      ) &&
+      !pixelIsColor(
+        oldImgData,
+        this.x + this.width / 2,
+        this.y + distanceToGround + 1,
+        rockColorBytes
+      )
+    ) {
+      distanceToGround++;
+    }
+
+    if (distanceToGround !== 0) {
+      heightAdjustment = this.height - distanceToGround + 0.1; // subtract half the sprite's height
+    }
+  }
+
+  // Check if we hit a wall on the x axis
+  const hitWallOnLeft = pixelIsColor(oldImgData, this.x - 1, this.y + this.height / 2, dirtColorBytes) ||
+                        pixelIsColor(oldImgData, this.x - 1, this.y + this.height / 2, rockColorBytes);
+  const hitWallOnRight =
+    pixelIsColor(oldImgData, this.x + this.width + 1, this.y + this.height / 2, dirtColorBytes) ||
+    pixelIsColor(oldImgData, this.x + this.width + 1, this.y + this.height / 2, rockColorBytes);
+
+  // Check if we've fallen in water
+  const isWaterBelow = pixelIsColor(oldImgData, this.x + this.width / 2, this.y + this.height + 1, waterColorBytes);
+
+  // Update velocity according to the collision rules
+  if (!this.onGround) {
+    if (this.action === "Floater") {
+      this.velY += GRAVITY * 0.1;
+    } else {
+      this.velY += GRAVITY;
+    }
+
+    if (isGroundUnderneath) {
+      // console.log(this.velY);
+      if (this.velY > this.deadlyVelY) {
+        // splat
+        this.isDead = true;
+        return;
+      }
+      this.onGround = true;
+      this.velY = 0;
+    }
+  } else if (this.onGround && !isGroundUnderneath) {
+    // Start falling if there's no ground
+    this.onGround = false;
+  }
+
+  // Check if there are other lemmings that are blockers
+  for (let i = 0; i < lemmings.length; i++) {
+    const otherLemming = lemmings[i];
+
+    if (
+      otherLemming !== this &&
+      !otherLemming.isDead &&
+      otherLemming.action === "Blocker" &&
+      this.x + this.width > otherLemming.x &&
+      this.x < otherLemming.x + otherLemming.width &&
+      this.y + this.height > otherLemming.y &&
+      this.y < otherLemming.y + otherLemming.height
+    ) {
+      console.log("Ran into a blocker?", this.x, this.y);
+      this.velX *= -1;
+    }
+  }
+
+  if (
+    hitWallOnLeft ||
+    hitWallOnRight ||
+    this.x <= this.width ||
+    this.x >= canvas.width - this.width
+  ) {
+    this.velX *= -1;
+  }
+
+  if (isWaterBelow || this.y >= canvas.height - this.height) {
+    this.isDead = true;
+  }
+
+  // Apply height adjustment
+  if (heightAdjustment !== 0) {
+    if (this.y - heightAdjustment >= 0) {
+      this.y -= heightAdjustment; // move sprite up
+    } else {
+      this.isDead = true;
+      return;
+    }
+  }
+
+  // Move the lemming
+  this.x += this.velX;
+  this.y += this.velY;
+  this.age++;
+},
+  draw: function() {
+    // Draw the new lemming position
+    ctx.fillStyle = 'rgb(' + blueBox.join(',') + ')';
+    ctx.fillRect(this.x, this.y, this.width, this.height);
+
+    ctx.fillStyle = 'rgb(' + greenBox.join(',') + ')';
+    ctx.fillRect(this.x, this.y, (this.width/3) - 1, (this.height/4) - 1);
+    ctx.fillRect(this.x + this.width - (this.width/3), this.y, (this.width/3) - 1, (this.height/4) - 1);
+
+    // add this to the draw method of the Lemming object
+    if (this.isSelected) {
+      ctx.strokeStyle = 'red';
+      ctx.strokeRect(this.x, this.y, this.width, this.height);
+    }
+
+    // Debug
+    ctx.strokeStyle = "white";
+    ctx.strokeText(this.id, this.x + 1, this.y + 13)
+  }
+};
+
+I only want to change the update() function in the lemming. Show me the changed update() function, the
+rest of the Lemming you don't have to give me code for.
+
+I don't want pseudo-code, I want real code. If you use a function not mentioned above, give implementation for that.

@@ -1,0 +1,23 @@
+>>> NEW PROMPT: and we need to now make it work... it even hallucinated and called oldImgData newImgData ... hmm
+On a byte representation of a canvas (RGBA), given an x and y position, an explosion creates a hole. It clears
+all pixels (set them to black) in an area of say 50 by 50 pixels. The edges of the hole should look a bit rough
+and random, a bit spikey even -- not just a plain circle.
+
+At your disposal you have a perlin noise class that is global called 'noiseGenerator'.
+It can be used like this, for example:
+noiseValue = noiseGenerator.noise(x * noiseScale * frequency, 0, 0) * 0.5 + 0.5;
+
+You can't use any canvas drawing methods because we only have arrays, so use direct pixel manipulation on the data 
+that you can get with getBackground() which got its data from this: ctx.putImageData(background, ...).
+You can get to the width and height of the data by using the global variables canvas.width and canvas.height.
+
+Since the hole will affect collisions, you also need to clear the same pixels in oldImgData which is
+also originally from ctx.putImageData(oldImgData...).
+
+Don't use any local variables called oldImageData or newImageData as that is very confusing since there are global variables
+with similar names. (that you picked, I might add)
+
+If you want to go fancy, you only update the area that needs updating instead of the entire canvas.
+
+Make it a function like this: createHole(x, y, holeSize = 50). I don't need any explanations, just code.
+Note that the x/y that are passed in might be doubles, make them ints.

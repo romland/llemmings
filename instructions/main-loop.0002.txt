@@ -1,0 +1,2 @@
+ a pause function on mouse click in the update function
+>>> update() code went here

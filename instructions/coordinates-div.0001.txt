@@ -1,0 +1,1 @@
+give me a snippet for when i hover the mouse over the canvas it would show the coordinate and color (as hex string) of that pixel

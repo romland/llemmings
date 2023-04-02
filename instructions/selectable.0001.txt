@@ -1,0 +1,31 @@
+We're making a game. I need to add something.
+
+Given lemmings that looks like this
+const Lemming = {
+  id: -49152,
+  age: 0,
+  x: 0,
+  y: 0,
+  width: 10,
+  height: 20,
+  velX: 0,
+  velY: 0,
+  maxVelX: 0.2,
+  deadlyVelY: 3.5,
+  onGround: false,
+  isDead: false,
+  update: function() { ... }
+  draw: function() { ... }
+}
+
+Additionally, the following is already declared in the game:
+const canvas = document.getElementById("canvas");
+const ctx = canvas.getContext("2d");
+
+
+The lemmings are drawn on the canvas, I want to be able to select them to eventually apply an action
+to them, for instance "stop walking". You can add that action, but know that I will add more actions
+later. Indicate with a square around the lemming that is currently selected.
+
+It is important that you use the declared things I mentioned above and just give me the code with
+minor comments -- be brief, don't explain anything in plain text.

@@ -1,0 +1,7 @@
+>>> New prompt: we need to make it so that a lemming adjusts on Y axis when it moves on X axis (it's hilly!)
+
+In a game, given the below update function of a sprite walking on ground. The sprite should adjust
+itself on the Y axis automatically (both up and down) as it is a bit hilly ground. Right now it just walks in a straight
+line. Note that the ground underneath can be either dirt or rock. 
+
+I don't need explanation of the code, I need you to fix the code.

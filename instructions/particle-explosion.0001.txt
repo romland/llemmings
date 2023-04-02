@@ -1,0 +1,54 @@
+We're making a game. Given the following update loop:
+
+function update() {
+  if (isPaused) {
+    requestAnimationFrame(update);
+    return;
+  }
+  // Restore the background
+  ctx.putImageData(background, 0, 0);
+
+  // Update and draw each lemming
+  lemmings.forEach((lemming) => {
+    lemming.update();
+    lemming.draw();
+    
+    if (lemming.isDead) {
+      // Remove dead lemmings from the array as optimization
+      const index = lemmings.indexOf(lemming);
+      lemmings.splice(index, 1);
+      console.log("removing dead lemming");
+    }
+  });
+
+  // Schedule the next frame
+  requestAnimationFrame(update);
+}
+
+And a Lemming that looks like this:
+
+const Lemming = {
+  id: -49152,
+  age: 0,
+  x: 0,
+  y: 0,
+  width: 10,
+  height: 20,
+  velX: 0,
+  velY: 0,
+  maxVelX: 0.2,
+  deadlyVelY: 3.5,
+  onGround: false,
+  isDead: false,
+  update: function() { ... }
+  draw: function() { ... }
+}
+
+Additionally, the following is already declared in the game:
+const canvas = document.getElementById("canvas");
+const ctx = canvas.getContext("2d");
+
+When the lemming dies, there should be a small explosion of like 50 pixels flying up like fireworks
+in the location it died. Make sure that the explosion is completely disconnected from the lemming
+since it should be removed from the array when it dies. Essentially, we want some kind of particle
+management.

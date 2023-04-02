@@ -1,0 +1,89 @@
+We're making a game (Lemmings), to optmize the drawing, I want to change something...
+
+Instead of clearing entire canvas every frame and redrawing it, just redraw the lemming that moved.
+Before the lemming was drawn, it needs to keep track of the background and restore that. Make sure
+we do not get any memory leaks around keeping track of the previous background.
+
+A lemming structure looks like this:
+const lemming = {
+  id: -49152,
+  x: 0,
+  y: 0,
+  width: 20,
+  height: 20,
+  velX: 0,
+  velY: 0,
+  onGround: false,
+  isDead: false,
+  update: function () {  Do NOT change this function  }
+  draw: function() {
+    // Draw the blue box and green hair
+    ctx.fillStyle = 'rgb(' + blueBox.join(',') + ')';
+    ctx.fillRect(this.x, this.y, this.width, this.height);
+    ctx.fillStyle = 'rgb(' + greenBox.join(',') + ')';
+    ctx.fillRect(this.x, this.y, 5, 5);
+    ctx.fillRect(this.x + 15, this.y, 5, 5);
+  }
+}
+
+And the frame update currently looks like this:
+function update() {
+   ctx.clearRect(0, 0, canvas.width, canvas.height);
+  
+  // Update and draw each lemming
+  lemmings.forEach((lemming) => {
+    lemming.update();
+    lemming.draw();
+    
+    if (lemming.isDead) {
+      // Remove dead lemmings from the array as optimization
+      const index = lemmings.indexOf(lemming);
+      lemmings.splice(index, 1);
+      console.log("removing dead lemming");
+    }
+  });
+  
+  // Schedule the next frame
+  requestAnimationFrame(update);
+}
+
+These variables are already declared, use them.
+const canvas = document.getElementById("canvas");
+const ctx = canvas.getContext("2d");
+
+Do not use ctx.save() and ctx.restore() (you don't understand what they do). In essence, what you 
+want to do is save the pixel data before you draw a lemming. Next frame you want to restore that, 
+then draw the lemming at its new position. You probably should do all saving/restoring for all lemmings 
+in one pass, then draw all lemmings. To avoid getting lemmings that move part of the background.
+You may NOT change the lemming.update() method. 
+
+It is important that you use the declared things I mentioned above and just give me the code with
+minor comments -- be brief, don't explain anything in plain text.
+
+==============
+>>>>>>>>> VERSION 2 -- I had trouble making it understand that it should only update partial blocks -- so do entire canvas...
+==============
+
+Instead of clearing entire canvas every frame, make sure we draw back the background, and then the 
+lemmings on top of that. Fix this method:
+
+function update() {
+   ctx.clearRect(0, 0, canvas.width, canvas.height);
+  
+  // Update and draw each lemming
+  lemmings.forEach((lemming) => {
+    lemming.update();
+    lemming.draw();
+    
+    if (lemming.isDead) {
+      // Remove dead lemmings from the array as optimization
+      const index = lemmings.indexOf(lemming);
+      lemmings.splice(index, 1);
+      console.log("removing dead lemming");
+    }
+  });
+  // Schedule the next frame
+  requestAnimationFrame(update);
+}
+
+Also tell me how I should get the background data before we get to our first update.
