@@ -1,8 +1,26 @@
-<p align="center" width="100%">
-    <img width="15%" src="./llemming360.png">
-</p>
-
 # 💚💙 Llemmings 💙💚
+
+<img width="30%" align="right" src="./llemming360.png">
+
+**Human**  
+_Give me definition, usage and phonetics of "llemming". Which is a play on the acronym LLM (Large Language Model)_  
+
+**OpenAI's ChatGPT**  
+_Phonetics:_  
+/ˈlɛm.ɪŋ/ (LEM-ing)
+
+_Definition:_  
+To mindlessly follow the predictions or suggestions of a language model without considering their validity, similar to how a lemming blindly follows its comrades off a cliff.
+
+_Usage:_  
+Don't just llemming your writing to the suggestions of a Large Language Model; make sure you double-check for accuracy and context before adopting any changes.
+
+<br clear="right"/>
+<br/>
+<br/>
+<br/>
+
+
 Llemmings is a game being made by Large Language Models (LLMs), like ChatGPT or GPT-4.
 The intention is that no code is written by a human.
 
