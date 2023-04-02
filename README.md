@@ -16,15 +16,12 @@ _Usage:_
 Don't just llemming your writing to the suggestions of a Large Language Model; make sure you double-check for accuracy and context before adopting any changes.
 
 <br clear="right"/>
-<br/>
-<br/>
-<br/>
 
-
+## Blindly following comrades: Encouraged
 Llemmings is a game being made by Large Language Models (LLMs), like ChatGPT or GPT-4.
 The intention is that no code is written by a human.
 
-**Your job, as a human, is to copy and paste code.**
+**The job, as a human, is to copy and paste code.**
 
 The latest and greatest version is [here](https://romland.github.io/llemmings)!   
 
