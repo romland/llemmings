@@ -17,7 +17,7 @@ Don't just llemming your writing to the suggestions of a Large Language Model; m
 
 <br clear="right"/>
 
-## Blindly following comrades: Encouraged
+## 👉 Blindly following comrades: Encouraged
 Llemmings is a game being made by Large Language Models (LLMs), like ChatGPT or GPT-4.
 The intention is that no code is written by a human.
 
