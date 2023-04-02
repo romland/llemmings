@@ -476,6 +476,18 @@ function isColorOneOf(needle, haystack) {
   return false;
 }
 
+// Returns an array containing all the color bytes for the terrain colors
+function getTerrainColors() {
+    return [ rockColorBytes, dirtColorBytes ];
+}
+
+// Check if given position contains any of the colors in the "haystack" array
+function isPixelOneOf(imageData, x, y, haystack) {
+    const needle = getPixelColor(imageData, x, y);
+    return isColorOneOf(needle, haystack);
+}
+
+
 // >>> a helper function some implementation of Climber added
 function bound(value, min, max) {
   return Math.min(Math.max(value, min), max);
@@ -520,163 +532,148 @@ const Lemming = {
   actionStarted : false,
   update: function() {
     if (this.y >= canvas.height - (this.height + this.velY + 1)) {
-      this.isDead = true;
-      return;
+        this.isDead = true;
+        return;
     }
 
     // Check if ground is under us or not
-    let isGroundUnderneath =
-      pixelIsColor(oldImgData, this.x + this.width / 2, this.y + this.height + 1, dirtColorBytes) ||
-      pixelIsColor(oldImgData, this.x + this.width / 2, this.y + this.height + 1, rockColorBytes);
+    let isGroundUnderneath = isPixelOneOf(oldImgData, this.x + this.width / 2, this.y + this.height + 1, terrainColorBytes);
 
     let heightAdjustment = 0;
 
     if (isGroundUnderneath) {
-      let distanceToGround = -(this.height / 4);
+        let distanceToGround = -(this.height / 4);
 
-      while (
-        this.y + distanceToGround + 1 >= 0 &&
-        this.y + distanceToGround + 1 < canvas.height &&
-        !pixelIsColor(
-          oldImgData,
-          this.x + this.width / 2,
-          this.y + distanceToGround + 1,
-          dirtColorBytes
-        ) &&
-        !pixelIsColor(
-          oldImgData,
-          this.x + this.width / 2,
-          this.y + distanceToGround + 1,
-          rockColorBytes
-        )
-      ) {
-        distanceToGround++;
-      }
+        while (this.y + distanceToGround + 1 >= 0 && this.y + distanceToGround + 1 < canvas.height &&
+            !isPixelOneOf(oldImgData, this.x + this.width / 2, this.y + distanceToGround + 1, terrainColorBytes)
+        ) {
+            distanceToGround++;
+        }
 
-      if (distanceToGround !== 0) {
-        heightAdjustment = this.height - distanceToGround + 0.1; // subtract half the sprite's height
-      }
+        if (distanceToGround !== 0) {
+            heightAdjustment = this.height - distanceToGround + 0.1; // subtract half the sprite's height
+        }
     }
 
     // Check if we hit a wall on the x axis
-    const hitWallOnLeft = pixelIsColor(oldImgData, this.x - 1, this.y + this.height / 2, dirtColorBytes) ||
-                          pixelIsColor(oldImgData, this.x - 1, this.y + this.height / 2, rockColorBytes);
-    const hitWallOnRight =
-      pixelIsColor(oldImgData, this.x + this.width + 1, this.y + this.height / 2, dirtColorBytes) ||
-      pixelIsColor(oldImgData, this.x + this.width + 1, this.y + this.height / 2, rockColorBytes);
+    const hitWallOnLeft = isPixelOneOf(oldImgData, this.x - 1, this.y + this.height / 2, terrainColorBytes);
+    const hitWallOnRight = isPixelOneOf(oldImgData, this.x + this.width + 1, this.y + this.height / 2, terrainColorBytes);
 
     // Check if we've fallen in water
     const isWaterBelow = pixelIsColor(oldImgData, this.x + this.width / 2, this.y + this.height + 1, waterColorBytes);
 
     // Determine if the lemming should climb
     let shouldClimb = false;
-    if (this.action === "Climber" ) {
-      if ((hitWallOnLeft && this.velX < 0) || (hitWallOnRight && this.velX > 0)) {
-        shouldClimb = true;
-      } else {
-        this.isClimbing = false; // Reset climbing flag
-      }
+
+    if (this.action === "Climber") {
+        if ((hitWallOnLeft && this.velX < 0) || (hitWallOnRight && this.velX > 0)) {
+            shouldClimb = true;
+        } else {
+            this.isClimbing = false; // Reset climbing flag
+        }
     }
 
     // Update velocity according to the collision rules
     if (!this.onGround) {
-      if (this.action === "Floater") {
-        this.velY += GRAVITY * 0.1;
-      } else {
-        this.velY += GRAVITY;
-      }
-
-      if (isGroundUnderneath) {
-        if (this.velY > this.deadlyVelY) {
-          // splat
-          this.isDead = true;
-          return;
+        if (this.action === "Floater") {
+            this.velY += GRAVITY * 0.1;
+        } else {
+            this.velY += GRAVITY;
         }
-        this.onGround = true;
-        this.velY = 0;
-      }
+
+        if (isGroundUnderneath) {
+            if (this.velY > this.deadlyVelY) {
+                // splat
+                this.isDead = true;
+                return;
+            }
+            this.onGround = true;
+            this.velY = 0;
+        }
     } else if (this.onGround && !isGroundUnderneath) {
-      // Start falling if there's no ground
-      this.onGround = false;
+        // Start falling if there's no ground
+        this.onGround = false;
     }
 
     // ============ Digger/Basher/Miner code
-    let digging = false;    // HUMAN
-    if(this.action === "Digger" || this.action === "Miner" || this.action === "Basher") {   // HUMAN: added this if()
-      digging = startDigging(this);   // HUMAN: assign result
+    let digging = false;
+
+    if (this.action === "Digger" || this.action === "Miner" || this.action === "Basher") {
+        digging = startDigging(this);
     }
     // ============ /Digger/Basher/Miner code
 
     // Check if there are other lemmings that are blockers
     for (let i = 0; i < lemmings.length; i++) {
-      const otherLemming = lemmings[i];
+        const otherLemming = lemmings[i];
 
-      if (
-        otherLemming !== this &&
-        !otherLemming.isDead &&
-        otherLemming.action === "Blocker" &&
-        this.x + this.width > otherLemming.x &&
-        this.x < otherLemming.x + otherLemming.width &&
-        this.y + this.height > otherLemming.y &&
-        this.y < otherLemming.y + otherLemming.height
-      ) {
-        console.log("Ran into a blocker?", this.x, this.y);
-        this.velX *= -1;
-      }
+        if (
+            otherLemming !== this &&
+            !otherLemming.isDead &&
+            otherLemming.action === "Blocker" &&
+            this.x + this.width > otherLemming.x &&
+            this.x < otherLemming.x + otherLemming.width &&
+            this.y + this.height > otherLemming.y &&
+            this.y < otherLemming.y + otherLemming.height
+        ) {
+            console.log("Ran into a blocker?", this.x, this.y);
+            this.velX *= -1;
+        }
     }
 
     // Handle climbing
     if (shouldClimb) {
-      this.isClimbing = true;
-      let climbDirection = hitWallOnLeft ? 1 : -1;
-      this.x += climbDirection * this.maxVelX;
-      this.y -= 1;
+        this.isClimbing = true;
+        let climbDirection = hitWallOnLeft ? 1 : -1;
+        this.x += climbDirection * this.maxVelX;
+        this.y -= 1;
 
-      this.velY = -VEL_CLIMB*0.05; // Start going up at climbing velocity
-      this.onGround = false; // We've left the ground
+        this.velY = -VEL_CLIMB*0.05; // Start going up at climbing velocity
+        this.onGround = false; // We've left the ground
     } else {
-      // Not climbing, normal movement applies
-      // HUMAN: added check for 'this.velY === 0' here so that we don't turn when we are falling
-      // HUMAN: don't turn if digging
-      if (!digging && this.velY === 0 && this.action !== "Climber" && (hitWallOnLeft || hitWallOnRight || this.x <= this.width || this.x >= canvas.width - this.width)) {
-        this.velX *= -1;
-      }
-
-      if (isWaterBelow || this.y >= canvas.height - this.height) {
-        this.isDead = true;
-      }
-
-      // Apply height adjustment
-      if (heightAdjustment !== 0 && !this.isClimbing && !digging) { // only adjust if not climbing
-        if (this.y - heightAdjustment >= 0) {
-          this.y -= heightAdjustment; // move sprite up (HUMAN comment: gravity takes care of down)
-        } else {
-          this.isDead = true;
-          return;
+        // Not climbing, normal movement applies
+        // HUMAN: added check for 'this.velY === 0' here so that we don't turn when we are falling
+        // HUMAN: don't turn if digging
+        if (!digging && this.velY === 0 && this.action !== "Climber" && (hitWallOnLeft || hitWallOnRight || this.x <= this.width || this.x >= canvas.width - this.width)) {
+            this.velX *= -1;
         }
-      }
 
-      // Check if this is a Bomber, and if so create a hole
-      // TODO: Need to make nearby aliens die...
-      if (this.action === "Bomber") {
-        createHole(this.x, this.y + this.height);   // HUMAN CHEAT: added + this.height
-        this.isDead = true;                         // HUMAN cheat: added "isDead" flag
-        return;
-      }
+        if (isWaterBelow || this.y >= canvas.height - this.height) {
+            this.isDead = true;
+        }
 
-      // HUMAN: this if block to slow down when digging
-      if (this.actionStarted && (this.action === "Basher" || this.action === "Digger" || this.action === "Miner")) {
-        this.velX = (this.velX > 0 ? this.maxVelX * DIGGER_SPEED_FACTOR : -this.maxVelX * DIGGER_SPEED_FACTOR);
-      } else {
-        this.velX = (this.velX > 0 ? this.maxVelX : -this.maxVelX);
-      }
+        // Apply height adjustment
+        if (heightAdjustment !== 0 && !this.isClimbing && !digging) { // only adjust if not climbing
+            if (this.y - heightAdjustment >= 0) {
+                this.y -= heightAdjustment; // move sprite up (HUMAN comment: gravity takes care of down)
+            } else {
+                this.isDead = true;
+                return;
+            }
+        }
 
-      // Move the lemming
-      this.x += this.velX;
-      this.y += this.velY;
-      this.age++;
+        // Check if this is a Bomber, and if so create a hole
+        // TODO: Need to make nearby aliens die...
+        if (this.action === "Bomber") {
+            createHole(this.x, this.y + this.height);
+            this.isDead = true;
+            return;
+        }
+
+        // HUMAN: this if block to slow down when digging
+        if (this.actionStarted && (this.action === "Basher" || this.action === "Digger" || this.action === "Miner")) {
+            this.velX = (this.velX > 0 ? this.maxVelX * DIGGER_SPEED_FACTOR : -this.maxVelX * DIGGER_SPEED_FACTOR);
+        } else {
+            this.velX = (this.velX > 0 ? this.maxVelX : -this.maxVelX);
+        }
+
+        // Move the lemming
+        this.x += this.velX;
+        this.y += this.velY;
+        this.age++;
     }
-  },
+},
+
   draw: function() {
     // Draw the new lemming position
     ctx.fillStyle = 'rgb(' + blueBox.join(',') + ')';
