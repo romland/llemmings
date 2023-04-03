@@ -4,7 +4,7 @@
 
 _Give me definition, usage and phonetics of "llemming". Which is a play on the acronym LLM (Large Language Model)_  
 
-**OpenAI's ChatGPT**  
+**OpenAI's truth-teller, _ChatGPT_**:  
 _Phonetics:_  
 /ˈlɛm.ɪŋ/ (LEM-ing)
 

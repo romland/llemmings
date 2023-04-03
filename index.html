@@ -733,50 +733,65 @@ function bash(lemming)
   const vx = Math.round(lemming.velX);
   const vy = Math.round(lemming.velY);
 
-  let pixelsDug = 0, startX, facingX, facingY;
+  let pixelsDug = 0, startX, facingX, facingY, prevDugX, prevDugY;
 
+  // HUMAN: Cheat. I tried conveying the entire concept that it might not have moved, but came up short.
+  //        The easy way out here would be to ask for a very narrow prompt to write the 'previouslyDug'
+  //        code below, but that felt like a cheat too. One day all cheats will llemmingd. One day.
   if(lemming.totalDug === undefined) {
     lemming.totalDug = 0;
+    lemming.previouslyDugAt = {
+      x : null,
+      y : null,
+      dug : null
+    }
   }
 
+  prevDugX = lemming.previouslyDugAt.x;
+  prevDugY = lemming.previouslyDugAt.y;
+
   if(lemming.velX > 0) {
-    facingX = x + lemming.width + DIGGER_LOOK_AHEAD;
+    facingX = x + lemming.width + vx + DIGGER_LOOK_AHEAD;
     facingY = y + (lemming.height/2);
     startX = x;
   } else if(lemming.velX < 0) {
     facingX = x;
     facingY = y + (lemming.height/2);
     startX = x - vx - DIGGER_LOOK_AHEAD;
-  } else {
-    return false;
   }
 
-  if(!isColorOneOf(getPixelColor(oldImgData, facingX, facingY), terrainColorBytes)) {
-    return false;
-  }
-
-  for(let i = 0; i < lemming.height + 1; i++) {
-    for(let j = startX - 1; j < facingX; j++) {
-      if(isColorOneOf(getPixelColor(oldImgData, j, y + i), terrainColorBytes)) {
-        clearPixel(j, y + i);
-        pixelsDug++;
-        lemming.actionStarted = true;
+  if(isColorOneOf(getPixelColor(oldImgData, facingX, facingY), terrainColorBytes)) {
+    for(let i = 0; i < lemming.height + 1; i++) {
+      for(let j = startX - 1; j < facingX; j++) {
+        if(isColorOneOf(getPixelColor(oldImgData, j, y + i), terrainColorBytes)) {
+          clearPixel(j, y + i);
+          pixelsDug++;
+          lemming.actionStarted = true;
+        }
       }
     }
-  }
-  lemming.totalDug += pixelsDug;
 
-  // HUMAN: Cheat. I tried conveying the entire concept that it might not have moved, but came up short.
-  //        The easy way out here would be to ask for a very narrow prompt to write the 'previouslyDug'
-  //        code below, but that felt like a cheat too. One day all cheats will llemmingd. One day.
-  if(lemming.previouslyDugAt && lemming.previouslyDugAt.x !== x && lemming.previouslyDugAt.y !== y
-     && lemming.actionStarted && !pixelsDug) {
+    if(pixelsDug > 0) {
+      prevDugX = x;
+      prevDugY = y;
+      lemming.previouslyDugAt.x = x;
+      lemming.previouslyDugAt.y = y;
+      lemming.previouslyDugAt.dug = pixelsDug;
+      lemming.totalDug += pixelsDug;
+    }
+  }
+
+  // If lemming has not moved to a new location, recall how much was dug originally.
+  if(prevDugX === x && prevDugY === y) {
+    pixelsDug = lemming.previouslyDugAt.dug;
+  }
+
+  if(lemming.actionStarted && !pixelsDug) {
     console.log(lemming.action, lemming.id, "done after removing", lemming.totalDug, "pixels");    // HUMAN
     lemming.action = null;
     lemming.actionStarted = false;
   }
-
-  lemming.previouslyDugAt = {"x":x,"y":y};
+  
   return pixelsDug > 0;
 }
 
