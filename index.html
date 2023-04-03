@@ -547,16 +547,13 @@ const Lemming = {
     let heightAdjustment = 0;
 
     if (isGroundUnderneath) {
-        let distanceToGround = -(this.height / 4);
-
-        while (this.y + distanceToGround + 1 >= 0 && this.y + distanceToGround + 1 < canvas.height &&
-            !isPixelOneOf(oldImgData, this.x + this.width / 2, this.y + distanceToGround + 1, terrainColorBytes)
-        ) {
-            distanceToGround++;
-        }
-
-        if (distanceToGround !== 0) {
-            heightAdjustment = this.height - distanceToGround + 0.1; // subtract half the sprite's height
+        heightAdjustment = 0;
+        for(let i = 0; i < 6; i++) {
+          if(isPixelOneOf(oldImgData, this.x + this.width / 2, this.y + this.height - i, terrainColorBytes)) {
+            heightAdjustment--;
+          } else {
+            break;
+          }
         }
     }
 
@@ -650,7 +647,7 @@ const Lemming = {
         // Apply height adjustment
         if (heightAdjustment !== 0 && !this.isClimbing && !digging) { // only adjust if not climbing
             if (this.y - heightAdjustment >= 0) {
-                this.y -= heightAdjustment; // move sprite up (HUMAN comment: gravity takes care of down)
+                this.y += heightAdjustment; // move sprite up (HUMAN comment: gravity takes care of down)
             } else {
                 this.isDead = true;
                 return;
