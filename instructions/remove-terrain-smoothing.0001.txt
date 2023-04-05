@@ -1,0 +1,10 @@
+give me a function that iterates over all pixels on a canvas and if a pixel does not 
+match one of the colors in terrainColorBytes, it should set the pixel to 0,0,0,255. 
+If the pixel is 0,0,0,255 already, you don't have do anything. This is already declared
+globally:
+
+const waterColorBytes = [0x00, 0x77, 0xbe]; // [0, 119, 190];
+const rockColorBytes  = [0x88, 0x88, 0x88]; // [136, 136, 136];
+const dirtColorBytes  = [0x4a, 0x2e, 0x00]; // [74, 46, 0];
+
+const terrainColorBytes = [ rockColorBytes, dirtColorBytes ];

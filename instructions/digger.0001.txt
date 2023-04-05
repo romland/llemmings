@@ -1,0 +1,75 @@
+The function bash(lemming) below lets a lemming clear pixels in front of it along the X axis.
+It does this by checking if a pixel is of a terrain color. I want a new function that does
+exactly the same except that instead of checking and removing pixels in front of it along the
+X axis, it should to it along the Y axis. In short: It should dig downwards (and never upwards,
+so some code might be redundant in this case). Call this new function dig() instead of bash().
+Give me the full function.
+
+function bash(lemming)
+{
+  const x = Math.round(lemming.x);
+  const y = Math.round(lemming.y);
+  const vx = Math.round(lemming.velX);
+  const vy = Math.round(lemming.velY);
+
+  let pixelsDug = 0, startX, facingX, facingY, prevDugX, prevDugY;
+
+  // HUMAN: Cheat. I tried conveying the entire concept that it might not have moved, but came up short.
+  //        The easy way out here would be to ask for a very narrow prompt to write the 'previouslyDug'
+  //        code below, but that felt like a cheat too. One day all cheats will llemmingd. One day.
+  if(lemming.totalDug === undefined) {
+    lemming.totalDug = 0;
+    lemming.previouslyDugAt = {
+      x : null,
+      y : null,
+      dug : null
+    }
+  }
+
+  prevDugX = lemming.previouslyDugAt.x;
+  prevDugY = lemming.previouslyDugAt.y;
+
+  if(lemming.velX > 0) {
+    facingX = x + lemming.width + vx + DIGGER_LOOK_AHEAD;
+    facingY = y + (lemming.height/2);
+    startX = x;
+  } else if(lemming.velX < 0) {
+    facingX = x;
+    facingY = y + (lemming.height/2);
+    startX = x - vx - DIGGER_LOOK_AHEAD;
+  }
+
+  if(isColorOneOf(getPixelColor(oldImgData, facingX, facingY), terrainColorBytes)) {
+    for(let i = 0; i < lemming.height + 1; i++) {
+      for(let j = startX - 1; j < facingX; j++) {
+        if(isColorOneOf(getPixelColor(oldImgData, j, y + i), terrainColorBytes)) {
+          clearPixel(j, y + i);
+          pixelsDug++;
+          lemming.actionStarted = true;
+        }
+      }
+    }
+
+    if(pixelsDug > 0) {
+      prevDugX = x;
+      prevDugY = y;
+      lemming.previouslyDugAt.x = x;
+      lemming.previouslyDugAt.y = y;
+      lemming.previouslyDugAt.dug = pixelsDug;
+      lemming.totalDug += pixelsDug;
+    }
+  }
+
+  // If lemming has not moved to a new location, recall how much was dug originally.
+  if(prevDugX === x && prevDugY === y) {
+    pixelsDug = lemming.previouslyDugAt.dug;
+  }
+
+  if(lemming.actionStarted && !pixelsDug) {
+    console.log(lemming.action, lemming.id, "done after removing", lemming.totalDug, "pixels");    // HUMAN
+    lemming.action = null;
+    lemming.actionStarted = false;
+  }
+  
+  return pixelsDug > 0;
+}

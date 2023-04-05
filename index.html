@@ -5,6 +5,7 @@
     <style type="text/css">
         canvas {
             border: 1px solid black;
+            image-rendering: pixelated; 
         }
         button {
           font-size: 40px;
@@ -40,6 +41,13 @@
         a:hover {
             color: grey;
         }
+        
+        /* >>> Prompt: instructions/css.0001.txt prompt 2 */
+        #coordinatesDiv {
+          position: fixed;
+          bottom: 0;
+          left: 0;
+        }
     </style>
 </head>
 <body>
@@ -74,6 +82,10 @@ const currentSeed = 1680397601417; // Lemming #2 (Basher) survive
 console.log("Current seed: ", currentSeed);
 Math.random = RNG(currentSeed);
 
+const waterColorBytes = [0x00, 0x77, 0xbe]; // [0, 119, 190];
+const rockColorBytes  = [0x88, 0x88, 0x88]; // [136, 136, 136];
+const dirtColorBytes  = [0x4a, 0x2e, 0x00]; // [74, 46, 0];
+const terrainColorBytes = [ rockColorBytes, dirtColorBytes ];
 
 // >>> Prompt: instructions/map-generation.0001.txt
 class ImprovedNoise {
@@ -177,7 +189,7 @@ function getBackground() {
 const canvas = document.querySelector('canvas');
 canvas.width = 800;
 canvas.height = 600;
-const ctx = canvas.getContext('2d');
+const ctx = canvas.getContext('2d', { willReadFrequently: true });  // HUMAN: Added this due to Chrome suggesting it
 
 // Set constants for noise generation
 const noiseGenerator = new ImprovedNoise();
@@ -323,7 +335,6 @@ function drawCliffs() {
 drawMap();
 drawCliffs();
 
-
 // >>> Prompt: instructions/unique-colors.0001.txt
 function getUniqueColors(canvas) {
   const ctx = canvas.getContext("2d");
@@ -348,9 +359,38 @@ function getUniqueColors(canvas) {
   return Object.values(uniqueColors);
 }
 
+// Remove all antialiasing so that we can easily check collisions.
+// >>> Prompt: instructions/remove-terrain-smoothing.0001.txt
+clearSmoothingOfTerrain(canvas, [...terrainColorBytes, waterColorBytes]);
+function clearSmoothingOfTerrain(canvas, keepColors) {
+  const ctx = canvas.getContext('2d');
+  const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+  
+  // Loop through every pixel
+  for (let i = 0; i < imageData.data.length; i += 4) {
+    let r = imageData.data[i];
+    let g = imageData.data[i + 1];
+    let b = imageData.data[i + 2];
+    
+    // Check if the pixel is not one of the terrain colors
+    if (!keepColors.some(color => r === color[0] && g === color[1] && b === color[2])) {
+      // If the pixel is not already black, set it to black
+      if (r !== 0 || g !== 0 || b !== 0) {
+        imageData.data[i] = 0;
+        imageData.data[i + 1] = 0;
+        imageData.data[i + 2] = 0;
+        imageData.data[i + 3] = 255;
+      }
+    }
+  }
+
+  ctx.putImageData(imageData, 0, 0);
+}
+
+// console.log("Unique colors:", getUniqueColors(canvas));
+
 
 // >>> Prompt: Sadly I forgot to save the prompt for generating the "textures". :/
-
 noiseScale = 0.05; // controls zoom level
 const numOctaves = 4;
 const persistence = 0.5; // controls roughness
@@ -502,12 +542,6 @@ const blueBox = [0x00, 0x00, 0xff];
 const greenBox = [0x00, 0xff, 0x00];
 const GRAVITY = 0.03; // Adjust this until falling looks good
 const lemmings = [];
-
-const waterColorBytes = [0x00, 0x77, 0xbe]; // [0, 119, 190];
-const rockColorBytes  = [0x88, 0x88, 0x88]; // [136, 136, 136];
-const dirtColorBytes  = [0x4a, 0x2e, 0x00]; // [74, 46, 0];
-
-const terrainColorBytes = [ rockColorBytes, dirtColorBytes ];
 
 const VEL_CLIMB = 1;    // Cheat. HUMAN added this undeclared variable.
 
@@ -663,8 +697,13 @@ const Lemming = {
         }
 
         // HUMAN: this if block to slow down when digging
-        if (this.actionStarted && (this.action === "Basher" || this.action === "Digger" || this.action === "Miner")) {
+        if (this.actionStarted && this.action === "Basher") {
             this.velX = (this.velX > 0 ? this.maxVelX * DIGGER_SPEED_FACTOR : -this.maxVelX * DIGGER_SPEED_FACTOR);
+        } else if (this.actionStarted && this.action === "Digger") {
+            this.velX = 0;
+            this.velY = this.maxVelX * DIGGER_SPEED_FACTOR;
+        } else if (this.actionStarted && this.action === "Miner") {
+            throw "todo placeholder for miner"
         } else {
             this.velX = (this.velX > 0 ? this.maxVelX : -this.maxVelX);
         }
@@ -705,7 +744,7 @@ const Lemming = {
 // >>> Prompt: ./instructions/digger-miner-basher.0001.txt
 
 const DIGGER_LOOK_AHEAD = 4;
-const DIGGER_SPEED_FACTOR = 0.2;    // HUMAN: Changed my mind; changed from 0.2
+const DIGGER_SPEED_FACTOR = 0.4;    // HUMAN: Changed my mind; changed from 0.2
 
 function startDigging(lemming)
 {
@@ -795,42 +834,68 @@ function bash(lemming)
   return pixelsDug > 0;
 }
 
-// >>> Prompt: ./instructions/digger-miner-basher.0001.txt
-function dig(lemming)
-{
+
+// >>> Prompt: instructions/digger.0001.txt
+function dig(lemming) {
   const x = Math.round(lemming.x);
   const y = Math.round(lemming.y);
   const vx = Math.round(lemming.velX);
   const vy = Math.round(lemming.velY);
 
-  let pixelsDug = 0, startY, facingX, facingY;
+  let pixelsDug = 0, startY, facingX, facingY, prevDugX, prevDugY;
 
-  if(lemming.totalDug === undefined) {
+  // initialize previously dug values if not present already
+  if (lemming.totalDug === undefined) {
     lemming.totalDug = 0;
+    lemming.previouslyDugAt = { x: null, y: null, dug: null };
   }
 
-  facingX = x;
-  facingY = y + lemming.height + DIGGER_LOOK_AHEAD;
-  startY = y + lemming.height;
+  prevDugX = lemming.previouslyDugAt.x;
+  prevDugY = lemming.previouslyDugAt.y;
 
-  for(let i = 0; i < lemming.width; i++) {
-    for(let j = startY - 1; j < facingY; j++) {
-      if(isColorOneOf(getPixelColor(oldImgData, x + i, y + j), terrainColorBytes)) {
-        clearPixel(i, y + j);
-        pixelsDug++;
-        lemming.actionStarted = true;
+  if (vy === 0) {
+    facingY = y + lemming.height + vy + DIGGER_LOOK_AHEAD;
+    facingX = x + (lemming.width / 2);
+    startY = y + lemming.height - DIGGER_LOOK_AHEAD;
+  } else {
+    // case where lemming is moving upwards. we don't need to implement anything for this.
+    return false;
+  }
+
+  if (isColorOneOf(getPixelColor(oldImgData, facingX, facingY), terrainColorBytes)) {
+clearPixel(facingX, facingY, 0xff); // debug
+console.log("found pixel!")
+    for (let i = 0; i < lemming.width + 1; i++) {
+      for (let j = startY - 1; j < facingY; j++) {
+        if (isColorOneOf(getPixelColor(oldImgData, x + i, j), terrainColorBytes)) {
+          clearPixel(x + i, j);
+          pixelsDug++;
+          lemming.actionStarted = true;
+        }
       }
+    }
+
+    if (pixelsDug > 0) {
+      lemming.velX = 0;
+      prevDugX = x;
+      prevDugY = y;
+      lemming.previouslyDugAt.x = x;
+      lemming.previouslyDugAt.y = y;
+      lemming.previouslyDugAt.dug = pixelsDug;
+      lemming.totalDug += pixelsDug;
     }
   }
 
-  lemming.totalDug += pixelsDug;
+  // If lemming has not moved to a new location, recall how much was dug originally.
+  if (prevDugX === x && prevDugY === y) {
+    pixelsDug = lemming.previouslyDugAt.dug;
+  }
 
-  if(lemming.actionStarted && !pixelsDug) {
-    console.log(lemming.action, lemming.id, "done after removing", lemming.totalDug, "pixels");    // HUMAN
+  if (lemming.actionStarted && !pixelsDug) {
+    console.log(lemming.action, lemming.id, "done after removing", lemming.totalDug, "pixels");  // HUMAN
     lemming.action = null;
     lemming.actionStarted = false;
-  } else if(pixelsDug) {
-    lemming.velX = 0;
+    lemming.velX = lemming.maxVelX;
   }
 
   return pixelsDug > 0;
@@ -845,20 +910,20 @@ function dig(lemming)
 // The LLM kept getting tiny parts of this wrong over and over, so I lifted this implementation
 // to make it a bit easier to get something useful.
 // >>> Prompt: digger-miner-basher.0001.txt
-function clearPixel(x, y) {
+function clearPixel(x, y, col = 0) {
   if (x >= canvas.width || y >= canvas.height || x < 0 || y < 0) {
     return;
   }
   
   const pixelIndex = getPixelIndex(x, y, canvas.width);
-  oldImgData.data[pixelIndex] = 0;
-  oldImgData.data[pixelIndex + 1] = 0;
-  oldImgData.data[pixelIndex + 2] = 0;
+  oldImgData.data[pixelIndex] = col;
+  oldImgData.data[pixelIndex + 1] = col;
+  oldImgData.data[pixelIndex + 2] = col;
   oldImgData.data[pixelIndex + 3] = 255;
 
-  background.data[pixelIndex] = 0;
-  background.data[pixelIndex + 1] = 0;
-  background.data[pixelIndex + 2] = 0;
+  background.data[pixelIndex] = col;
+  background.data[pixelIndex + 1] = col;
+  background.data[pixelIndex + 2] = col;
   background.data[pixelIndex + 3] = 255;
 }
 
@@ -1121,7 +1186,7 @@ function applyAction(action) {
       break;
     case 'Digger':
       // >>> Prompt: ./instructions/digger-miner-basher.0001.txt
-      selectedLemming.action = "Miner";     // HUMAN: Added this.
+      selectedLemming.action = "Digger";     // HUMAN: Added this.
       selectedLemming.isSelected = false;
       break;
     default:
