@@ -598,8 +598,8 @@ const Lemming = {
     }
 
     // Check if we hit a wall on the x axis
-    const hitWallOnLeft = isPixelOneOf(oldImgData, this.x - 1, this.y + this.height / 2, terrainColorBytes);
-    const hitWallOnRight = isPixelOneOf(oldImgData, this.x + this.width + 1, this.y + this.height / 2, terrainColorBytes);
+    const hitWallOnLeft = this.velX < 0 && isPixelOneOf(oldImgData, this.x - 1, this.y + this.height / 2, terrainColorBytes);
+    const hitWallOnRight = this.velX > 0 && isPixelOneOf(oldImgData, this.x + this.width + 1, this.y + this.height / 2, terrainColorBytes);
 
     // Check if we've fallen in water
     const isWaterBelow = pixelIsColor(oldImgData, this.x + this.width / 2, this.y + this.height + 1, waterColorBytes);

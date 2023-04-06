@@ -1,0 +1,4 @@
+>>> Prompt (this is really just programming)
+Given these two lines, make it so that they will only betrue if the sprite is heading in the direction of the wall (you can use this.velX to get velocity):
+const hitWallOnLeft = isPixelOneOf(oldImgData, this.x - 1, this.y + this.height / 2, terrainColorBytes);
+const hitWallOnRight = isPixelOneOf(oldImgData, this.x + this.width + 1, this.y + this.height / 2, terrainColorBytes);
