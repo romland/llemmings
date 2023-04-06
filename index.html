@@ -260,7 +260,7 @@ function drawMap() {
 }
 
 function drawCliffs() {
-  const cliffWidth = 100; // The width of the cliff
+  const cliffWidth = 50; // The width of the cliff
 
   platforms.forEach((platform) => {
     let addCliffRight = true;
@@ -284,7 +284,7 @@ function drawCliffs() {
 
     // Draw a cliff to the right and/or left of the platform
     if (addCliffRight) {
-      const x = platform.x + platform.halfWidth - 2;      // HUMAN: 1-off fixed
+      const x = platform.x + platform.halfWidth - 1.5;      // HUMAN: 1-off fixed
       const y = platform.y - platformHeight;
       ctx.beginPath();
       ctx.moveTo(x, y);
@@ -748,10 +748,6 @@ const DIGGER_SPEED_FACTOR = 0.4;    // HUMAN: Changed my mind; changed from 0.2
 
 function startDigging(lemming)
 {
-  if(!lemming.onGround || (lemming.action !== "Basher" && lemming.action !== "Digger" && lemming.action !== "Miner")) {
-    return false;
-  }
-
   switch(lemming.action) {
     case "Basher":
       return bash(lemming);
@@ -767,6 +763,10 @@ function startDigging(lemming)
 // >>> Prompt: ./instructions/digger-miner-basher.0001.txt
 function bash(lemming)
 {
+  if(!lemming.onGround) {
+    return false;
+  }
+
   const x = Math.round(lemming.x);
   const y = Math.round(lemming.y);
   const vx = Math.round(lemming.velX);
@@ -777,7 +777,7 @@ function bash(lemming)
   // HUMAN: Cheat. I tried conveying the entire concept that it might not have moved, but came up short.
   //        The easy way out here would be to ask for a very narrow prompt to write the 'previouslyDug'
   //        code below, but that felt like a cheat too. One day all cheats will llemmingd. One day.
-  if(lemming.totalDug === undefined) {
+  if(!lemming.previouslyDugAt) {
     lemming.totalDug = 0;
     lemming.previouslyDugAt = {
       x : null,
@@ -799,10 +799,148 @@ function bash(lemming)
     startX = x - vx - DIGGER_LOOK_AHEAD;
   }
 
-  if(isColorOneOf(getPixelColor(oldImgData, facingX, facingY), terrainColorBytes)) {
+  if(isColorOneOf(getPixelColor(oldImgData, facingX, facingY), dirtColorBytes)) {
     for(let i = 0; i < lemming.height + 1; i++) {
       for(let j = startX - 1; j < facingX; j++) {
-        if(isColorOneOf(getPixelColor(oldImgData, j, y + i), terrainColorBytes)) {
+        if(isColorOneOf(getPixelColor(oldImgData, j, y + i), dirtColorBytes)) {
+          clearPixel(j, y + i);
+          pixelsDug++;
+          lemming.actionStarted = true;
+        }
+      }
+    }
+
+    if(pixelsDug > 0) {
+      prevDugX = x;
+      prevDugY = y;
+      lemming.previouslyDugAt.x = x;
+      lemming.previouslyDugAt.y = y;
+      lemming.previouslyDugAt.dug = pixelsDug;
+      lemming.totalDug += pixelsDug;
+    }
+  }
+
+  // If lemming has not moved to a new location, recall how much was dug originally.
+  if(prevDugX === x && prevDugY === y) {
+    pixelsDug = lemming.previouslyDugAt.dug;
+  }
+
+  if(lemming.actionStarted && !pixelsDug) {
+    console.log(lemming.action, lemming.id, "done after removing", lemming.totalDug, "pixels");    // HUMAN
+    lemming.action = null;
+    lemming.actionStarted = false;
+    lemming.previouslyDugAt = null;
+  }
+  
+  return pixelsDug > 0;
+}
+
+
+// >>> Prompt: instructions/digger.0001.txt
+// HUMAN: Cheat. A lot of the logic in here was largely hand-written. :/
+function dig(lemming)
+{
+  const x = Math.round(lemming.x);
+  const y = Math.round(lemming.y);
+  const vx = Math.round(lemming.velX);
+  const vy = Math.round(lemming.velY);
+
+  if(!lemming.actionStarted && !lemming.onGround) {
+    return false;
+  }
+
+  let pixelsDug = 0, startY, facingX, facingY, prevDugX, prevDugY;
+
+  // initialize previously dug values if not present already
+  if (!lemming.previouslyDugAt) {
+    lemming.totalDug = 0;
+    lemming.previouslyDugAt = { x: null, y: null, dug: null };
+  }
+
+  prevDugX = lemming.previouslyDugAt.x;
+  prevDugY = lemming.previouslyDugAt.y;
+
+  facingY = y + lemming.height + Math.ceil(DIGGER_LOOK_AHEAD/2);
+  facingX = x + (lemming.width / 2);
+  startY = y + lemming.height - vy - DIGGER_LOOK_AHEAD;
+
+  for (let i = -1; i < lemming.width + 1; i++) {
+    for (let j = startY - 1; j < facingY; j++) {
+      if (isColorOneOf(getPixelColor(oldImgData, x + i, j), dirtColorBytes)) {
+        clearPixel(x + i, j);
+        pixelsDug++;
+        lemming.actionStarted = true;
+      }
+    }
+  }
+
+  if (pixelsDug > 0) {
+    lemming.velX = 0;
+    prevDugX = x;
+    prevDugY = y;
+    lemming.previouslyDugAt.x = x;
+    lemming.previouslyDugAt.y = y;
+    lemming.previouslyDugAt.dug = pixelsDug;
+    lemming.totalDug += pixelsDug;
+  }
+
+  // If lemming has not moved to a new location, recall how much was dug originally.
+  if (prevDugX === x && prevDugY === y) {
+    pixelsDug = lemming.previouslyDugAt.dug;
+  }
+
+  if (lemming.actionStarted && !pixelsDug) {
+    console.log(lemming.action, lemming.id, "done after removing", lemming.totalDug, "pixels");  // HUMAN
+    lemming.action = null;
+    lemming.actionStarted = false;
+    lemming.velX = lemming.maxVelX;
+    lemming.previouslyDugAt = null;
+    return false;
+  }
+
+  return pixelsDug > 0;
+}
+
+
+function mine(lemming)
+{
+  if(!lemming.onGround) {
+    return false;
+  }
+
+  const x = Math.round(lemming.x);
+  const y = Math.round(lemming.y);
+  const vx = Math.round(lemming.velX);
+  const vy = Math.round(lemming.velY);
+
+  let pixelsDug = 0, startX, facingX, facingY, prevDugX, prevDugY;
+
+  if(!lemming.previouslyDugAt) {
+    lemming.totalDug = 0;
+    lemming.previouslyDugAt = {
+      x : null,
+      y : null,
+      dug : null
+    }
+  }
+
+  prevDugX = lemming.previouslyDugAt.x;
+  prevDugY = lemming.previouslyDugAt.y;
+
+  if(lemming.velX > 0) {
+    facingX = x + lemming.width + vx + DIGGER_LOOK_AHEAD;
+    facingY = y + (lemming.height/2);
+    startX = x;
+  } else if(lemming.velX < 0) {
+    facingX = x;
+    facingY = y + (lemming.height/2);
+    startX = x - vx - DIGGER_LOOK_AHEAD;
+  }
+
+  if(isColorOneOf(getPixelColor(oldImgData, facingX, facingY), dirtColorBytes)) {
+    for(let i = 0; i < lemming.height + 1; i++) {
+      for(let j = startX - 1; j < facingX; j++) {
+        if(isColorOneOf(getPixelColor(oldImgData, j, y + i), dirtColorBytes)) {
           clearPixel(j, y + i);
           pixelsDug++;
           lemming.actionStarted = true;
@@ -833,75 +971,6 @@ function bash(lemming)
   
   return pixelsDug > 0;
 }
-
-
-// >>> Prompt: instructions/digger.0001.txt
-function dig(lemming) {
-  const x = Math.round(lemming.x);
-  const y = Math.round(lemming.y);
-  const vx = Math.round(lemming.velX);
-  const vy = Math.round(lemming.velY);
-
-  let pixelsDug = 0, startY, facingX, facingY, prevDugX, prevDugY;
-
-  // initialize previously dug values if not present already
-  if (lemming.totalDug === undefined) {
-    lemming.totalDug = 0;
-    lemming.previouslyDugAt = { x: null, y: null, dug: null };
-  }
-
-  prevDugX = lemming.previouslyDugAt.x;
-  prevDugY = lemming.previouslyDugAt.y;
-
-  if (vy === 0) {
-    facingY = y + lemming.height + vy + DIGGER_LOOK_AHEAD;
-    facingX = x + (lemming.width / 2);
-    startY = y + lemming.height - DIGGER_LOOK_AHEAD;
-  } else {
-    // case where lemming is moving upwards. we don't need to implement anything for this.
-    return false;
-  }
-
-  if (isColorOneOf(getPixelColor(oldImgData, facingX, facingY), terrainColorBytes)) {
-clearPixel(facingX, facingY, 0xff); // debug
-console.log("found pixel!")
-    for (let i = 0; i < lemming.width + 1; i++) {
-      for (let j = startY - 1; j < facingY; j++) {
-        if (isColorOneOf(getPixelColor(oldImgData, x + i, j), terrainColorBytes)) {
-          clearPixel(x + i, j);
-          pixelsDug++;
-          lemming.actionStarted = true;
-        }
-      }
-    }
-
-    if (pixelsDug > 0) {
-      lemming.velX = 0;
-      prevDugX = x;
-      prevDugY = y;
-      lemming.previouslyDugAt.x = x;
-      lemming.previouslyDugAt.y = y;
-      lemming.previouslyDugAt.dug = pixelsDug;
-      lemming.totalDug += pixelsDug;
-    }
-  }
-
-  // If lemming has not moved to a new location, recall how much was dug originally.
-  if (prevDugX === x && prevDugY === y) {
-    pixelsDug = lemming.previouslyDugAt.dug;
-  }
-
-  if (lemming.actionStarted && !pixelsDug) {
-    console.log(lemming.action, lemming.id, "done after removing", lemming.totalDug, "pixels");  // HUMAN
-    lemming.action = null;
-    lemming.actionStarted = false;
-    lemming.velX = lemming.maxVelX;
-  }
-
-  return pixelsDug > 0;
-}
-
-
 
 // === /Digger/Basher/Miner code
 // =========================================================================
