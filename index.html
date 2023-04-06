@@ -507,6 +507,12 @@ if(false) {
 }
 
 function isColorOneOf(needle, haystack) {
+  if(!Array.isArray(haystack[0])) {
+    return (haystack[0] === needle[0] &&
+      haystack[1] === needle[1] &&
+      haystack[2] === needle[2]);
+  }
+
   for (let i = 0; i < haystack.length; i++) {
     const color = haystack[i];
     
