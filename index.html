@@ -598,6 +598,7 @@ const Lemming = {
     }
 
     // Check if we hit a wall on the x axis
+    // >>> Prompt: instructions/wall-hit-fix.0001.txt
     const hitWallOnLeft = this.velX < 0 && isPixelOneOf(oldImgData, this.x - 1, this.y + this.height / 2, terrainColorBytes);
     const hitWallOnRight = this.velX > 0 && isPixelOneOf(oldImgData, this.x + this.width + 1, this.y + this.height / 2, terrainColorBytes);
 
@@ -703,13 +704,12 @@ const Lemming = {
         }
 
         // HUMAN: this if block to slow down when digging
-        if (this.actionStarted && this.action === "Basher") {
+        // HUMAN: tweaked to include basher here
+        if (this.actionStarted && (this.action === "Basher" || this.action === "Miner")) {
             this.velX = (this.velX > 0 ? this.maxVelX * DIGGER_SPEED_FACTOR : -this.maxVelX * DIGGER_SPEED_FACTOR);
         } else if (this.actionStarted && this.action === "Digger") {
             this.velX = 0;
             this.velY = this.maxVelX * DIGGER_SPEED_FACTOR;
-        } else if (this.actionStarted && this.action === "Miner") {
-            throw "todo placeholder for miner"
         } else {
             this.velX = (this.velX > 0 ? this.maxVelX : -this.maxVelX);
         }
@@ -908,6 +908,7 @@ function dig(lemming)
 }
 
 
+// HUMAN: Copy of bash with minor human tweaks below
 function mine(lemming)
 {
   if(!lemming.onGround) {
@@ -935,16 +936,16 @@ function mine(lemming)
 
   if(lemming.velX > 0) {
     facingX = x + lemming.width + vx + DIGGER_LOOK_AHEAD;
-    facingY = y + (lemming.height/2);
+    facingY = y + lemming.height + 1;
     startX = x;
   } else if(lemming.velX < 0) {
     facingX = x;
-    facingY = y + (lemming.height/2);
+    facingY = y + lemming.height + 1;
     startX = x - vx - DIGGER_LOOK_AHEAD;
   }
 
   if(isColorOneOf(getPixelColor(oldImgData, facingX, facingY), dirtColorBytes)) {
-    for(let i = 0; i < lemming.height + 1; i++) {
+    for(let i = 0; i < lemming.height + 2; i++) {
       for(let j = startX - 1; j < facingX; j++) {
         if(isColorOneOf(getPixelColor(oldImgData, j, y + i), dirtColorBytes)) {
           clearPixel(j, y + i);
@@ -1060,16 +1061,21 @@ function spawnLemming() {
     console.log("Making new lemming a", newLemming.action, newLemming);
   }
 
-  if(newLemming.id === 4) {
-    newLemming.action = "Digger";
-    console.log("Making new lemming a", newLemming.action, newLemming);
-  }
-  
   if(newLemming.id === 2) {
     newLemming.action = "Basher";
     console.log("Making new lemming a", newLemming.action, newLemming);
   }
 
+  if(newLemming.id === 3) {
+    newLemming.action = "Miner";
+    console.log("Making new lemming a", newLemming.action, newLemming);
+  }
+
+  if(newLemming.id === 4) {
+    newLemming.action = "Digger";
+    console.log("Making new lemming a", newLemming.action, newLemming);
+  }
+  
   lemmings.push(newLemming);
 }
 
