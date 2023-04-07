@@ -87,6 +87,16 @@ const rockColorBytes  = [0x88, 0x88, 0x88]; // [136, 136, 136];
 const dirtColorBytes  = [0x4a, 0x2e, 0x00]; // [74, 46, 0];
 const terrainColorBytes = [ rockColorBytes, dirtColorBytes ];
 
+const canvas = document.querySelector('canvas');
+canvas.width = 800;
+canvas.height = 600;
+const ctx = canvas.getContext('2d', { willReadFrequently: true });  // HUMAN: Added this due to Chrome suggesting it
+let background; // global variable to store canvas image data (restored in main loop below somewhere)
+function getBackground() {
+  background = ctx.getImageData(0, 0, canvas.width, canvas.height);
+}
+
+
 // >>> Prompt: instructions/map-generation.0001.txt
 class ImprovedNoise {
   constructor() {
@@ -177,19 +187,9 @@ class ImprovedNoise {
   }
 }
 
-let background; // global variable to store canvas image data (restored in main loop below somewhere)
-function getBackground() {
-  background = ctx.getImageData(0, 0, canvas.width, canvas.height);
-}
-
-
 // >>> Prompt: instructions/map-generation.0001.txt
 // >>> Prompt: instructions/map-generation.0002.txt
 // Set canvas dimensions and context
-const canvas = document.querySelector('canvas');
-canvas.width = 800;
-canvas.height = 600;
-const ctx = canvas.getContext('2d', { willReadFrequently: true });  // HUMAN: Added this due to Chrome suggesting it
 
 // Set constants for noise generation
 const noiseGenerator = new ImprovedNoise();
