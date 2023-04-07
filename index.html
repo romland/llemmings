@@ -73,7 +73,8 @@ function RNG(seed) {
 }
 
 // const currentSeed = Date.now();   // "random"
-const currentSeed = 1680878681505;
+// const currentSeed = 1680878681505; // slow
+const currentSeed = 1680905320764;    // action
 
 console.log("Current seed: ", currentSeed);
 Math.random = RNG(currentSeed);
