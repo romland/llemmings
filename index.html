@@ -527,6 +527,13 @@ class Lemming {
   }
 
   handleNormalMovement() {
+    // TODO: Need to make nearby aliens die...
+    if (this.action === "Bomber") {
+        createHole(this.x, this.y + this.height);
+        this.isDead = true;
+        return;
+    }
+    
     if (this.isInWaterOrOffBottomOfScreen()) {
       this.isDead = true;
     } else {
@@ -1343,7 +1350,7 @@ function rgbToHex(r, g, b) {
     <button onclick="applyAction('Bomber')">💣<!-- Bomber--></button>
     <button onclick="applyAction('Blocker')">🚫<!-- Blocker--></button>
     <button onclick="applyAction('Builder')">🏗️<!-- Builder--></button>
-    <button onclick="applyAction('Basher')">🤜💥🤛<!-- Basher--></button>
+    <button onclick="applyAction('Basher')">🤜<!-- Basher--></button>
     <button onclick="applyAction('Miner')">⛏️<!-- Miner--></button>
     <button onclick="applyAction('Digger')">🕳️<!-- Digger--></button>
   </div>
