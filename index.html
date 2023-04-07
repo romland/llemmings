@@ -378,192 +378,233 @@ let lastLemmingId = 0;
 // >>> Prompt: instructions/movement-collisions.0002.txt
 // >>> Prompt: instructions/movement-collisions.0003.txt
 // >>> Prompt: instructions/lemming.update.0001.txt
-const Lemming = {
-  id: -49152,
-  age: 0,
-  x: 0,
-  y: 0,
-  width: 10,
-  height: 20,
-  velX: 0,
-  velY: 0,
-  maxVelX: 0.2,
-  deadlyVelY: 3,
-  isSelected: false,
-  onGround: false,
-  isClimbing: false,
-  isDead: false,
-  action: null,
-  actionStarted : false,
-  update: function() {
-    if (this.y >= canvas.height - (this.height + this.velY + 1)) {
-        this.isDead = true;
-        return;
+// >>> Prompt: instructions/lemming.update.0002.txt
+class Lemming {
+  constructor(x, y) {
+    this.id = -49152;
+    this.age = 0;
+    this.width = 10;
+    this.height = 20;
+    this.maxVelX = 0.2;
+    this.deadlyVelY = 3;
+    this.x = x;
+    this.y = y;
+    this.velX = 0;
+    this.velY = 0;
+    this.isSelected = false;
+    this.onGround = false;
+    this.isClimbing = false;
+    this.isDead = false;
+    this.action = null;
+    this.actionStarted = false;
+  }
+
+  update() {
+    if (this.isFallingOffCanvas()) {
+      this.isDead = true;
+      return;
     }
+    this.detectAndHandleCollisions();
+    this.handleClimbing();
+    this.handleNormalMovement();   
+    this.age++;
+  }
 
-    // Check if ground is under us or not
-    let isGroundUnderneath = isPixelOneOf(oldImgData, this.x + this.width / 2, this.y + this.height + 1, terrainColorBytes);
-
+  detectAndHandleCollisions() {
+    const isGroundUnderneath = isPixelOneOf(oldImgData, this.x + this.width / 2, this.y + this.height + 1, terrainColorBytes);
     let heightAdjustment = 0;
 
     if (isGroundUnderneath) {
-        heightAdjustment = 0;
-        for(let i = 0; i < 6; i++) {
-          if(isPixelOneOf(oldImgData, this.x + this.width / 2, this.y + this.height - i, terrainColorBytes)) {
-            heightAdjustment--;
-          } else {
-            break;
-          }
+      heightAdjustment = 0;
+      for (let i = 0; i < 6; i++) {
+        if (
+          isPixelOneOf(
+            oldImgData,
+            this.x + this.width / 2,
+            this.y + this.height - i,
+            terrainColorBytes
+          )
+        ) {
+          heightAdjustment--;
+        } else {
+          break;
         }
+      }
     }
 
-    // Check if we hit a wall on the x axis
-    // >>> Prompt: instructions/wall-hit-fix.0001.txt
-    const hitWallOnLeft = this.velX < 0 && isPixelOneOf(oldImgData, this.x - 1, this.y + this.height / 2, terrainColorBytes);
-    const hitWallOnRight = this.velX > 0 && isPixelOneOf(oldImgData, this.x + this.width + 1, this.y + this.height / 2, terrainColorBytes);
+    const hitWallOnLeft = this.velX < 0 && isPixelOneOf(oldImgData, this.x - 1,
+    this.y + this.height / 2, terrainColorBytes);
+    const hitWallOnRight = this.velX > 0 && isPixelOneOf(oldImgData, this.x + this.width + 1,
+    this.y + this.height / 2, terrainColorBytes);
 
-    // Check if we've fallen in water
-    const isWaterBelow = pixelIsColor(oldImgData, this.x + this.width / 2, this.y + this.height + 1, waterColorBytes);
+    if (!this.onGround) {
+      if (this.action === "Floater") {
+        this.velY += GRAVITY * 0.1;
+      } else {
+        this.velY += GRAVITY;
+      }
 
-    // Determine if the lemming should climb
+      if (isGroundUnderneath) {
+        if (this.velY > this.deadlyVelY) {
+          this.isDead = true;
+          return;
+        }
+        this.onGround = true;
+        this.velY = 0;
+      }
+    } else if (this.onGround && !isGroundUnderneath) {
+      this.onGround = false;
+    }
+
+    for (let i = 0; i < lemmings.length; i++) {
+      const otherLemming = lemmings[i];
+
+      if (
+        otherLemming !== this &&
+        !otherLemming.isDead &&
+        otherLemming.action === "Blocker" &&
+        this.x + this.width > otherLemming.x &&
+        this.x < otherLemming.x + otherLemming.width &&
+        this.y + this.height > otherLemming.y &&
+        this.y < otherLemming.y + otherLemming.height
+      ) {
+        console.log("Ran into a blocker?", this.x, this.y);
+        this.velX *= -1;
+      }
+    }
+  }
+
+  handleClimbing() {
     let shouldClimb = false;
 
     if (this.action === "Climber") {
-        if ((hitWallOnLeft && this.velX < 0) || (hitWallOnRight && this.velX > 0)) {
-            shouldClimb = true;
-        } else {
-            this.isClimbing = false; // Reset climbing flag
-        }
+      const hitWallOnLeft =
+        this.velX < 0 &&
+        isPixelOneOf(
+          oldImgData,
+          this.x - 1,
+          this.y + this.height / 2,
+          terrainColorBytes
+        );
+      const hitWallOnRight =
+        this.velX > 0 &&
+        isPixelOneOf(
+          oldImgData,
+          this.x + this.width + 1,
+          this.y + this.height / 2,
+          terrainColorBytes
+        );
+      if (hitWallOnLeft || hitWallOnRight) {
+        shouldClimb = true;
+      } else {
+        this.isClimbing = false;
+      }
     }
 
-    // Update velocity according to the collision rules
-    if (!this.onGround) {
-        if (this.action === "Floater") {
-            this.velY += GRAVITY * 0.1;
-        } else {
-            this.velY += GRAVITY;
-        }
-
-        if (isGroundUnderneath) {
-            if (this.velY > this.deadlyVelY) {
-                // splat
-                this.isDead = true;
-                return;
-            }
-            this.onGround = true;
-            this.velY = 0;
-        }
-    } else if (this.onGround && !isGroundUnderneath) {
-        // Start falling if there's no ground
-        this.onGround = false;
-    }
-
-    // ============ Digger/Basher/Miner code
-    let digging = false;
-
-    if (this.action === "Digger" || this.action === "Miner" || this.action === "Basher") {
-        digging = startDigging(this);
-    }
-    // ============ /Digger/Basher/Miner code
-
-    // Check if there are other lemmings that are blockers
-    for (let i = 0; i < lemmings.length; i++) {
-        const otherLemming = lemmings[i];
-
-        if (
-            otherLemming !== this &&
-            !otherLemming.isDead &&
-            otherLemming.action === "Blocker" &&
-            this.x + this.width > otherLemming.x &&
-            this.x < otherLemming.x + otherLemming.width &&
-            this.y + this.height > otherLemming.y &&
-            this.y < otherLemming.y + otherLemming.height
-        ) {
-            console.log("Ran into a blocker?", this.x, this.y);
-            this.velX *= -1;
-        }
-    }
-
-    // Handle climbing
     if (shouldClimb) {
-        this.isClimbing = true;
-        let climbDirection = hitWallOnLeft ? 1 : -1;
-        this.x += climbDirection * this.maxVelX;
-        this.y -= 1;
-
-        this.velY = -VEL_CLIMB*0.05; // Start going up at climbing velocity
-        this.onGround = false; // We've left the ground
-    } else {
-        // Not climbing, normal movement applies
-        // HUMAN: added check for 'this.velY === 0' here so that we don't turn when we are falling
-        // HUMAN: don't turn if digging
-        if (!digging && this.velY === 0 && this.action !== "Climber" && (hitWallOnLeft || hitWallOnRight || this.x <= this.width || this.x >= canvas.width - this.width)) {
-            this.velX *= -1;
-        }
-
-        if (isWaterBelow || this.y >= canvas.height - this.height) {
-            this.isDead = true;
-        }
-
-        // Apply height adjustment
-        if (heightAdjustment !== 0 && !this.isClimbing && !digging) { // only adjust if not climbing
-            if (this.y - heightAdjustment >= 0) {
-                this.y += heightAdjustment; // move sprite up (HUMAN comment: gravity takes care of down)
-            } else {
-                this.isDead = true;
-                return;
-            }
-        }
-
-        // Check if this is a Bomber, and if so create a hole
-        // TODO: Need to make nearby aliens die...
-        if (this.action === "Bomber") {
-            createHole(this.x, this.y + this.height);
-            this.isDead = true;
-            return;
-        }
-
-        // HUMAN: this if block to slow down when digging
-        // HUMAN: tweaked to include basher here
-        if (this.actionStarted && (this.action === "Basher" || this.action === "Miner")) {
-            this.velX = (this.velX > 0 ? this.maxVelX * DIGGER_SPEED_FACTOR : -this.maxVelX * DIGGER_SPEED_FACTOR);
-        } else if (this.actionStarted && this.action === "Digger") {
-            this.velX = 0;
-            this.velY = this.maxVelX * DIGGER_SPEED_FACTOR;
-        } else {
-            this.velX = (this.velX > 0 ? this.maxVelX : -this.maxVelX);
-        }
-
-        // Move the lemming
-        this.x += this.velX;
-        this.y += this.velY;
-        this.age++;
+      this.climb();
     }
-  },
-  draw: function() {
-    // Draw the new lemming position
-    ctx.fillStyle = 'rgb(' + blueBox.join(',') + ')';
+  }
+
+  climb() {
+    const hitWallOnLeft =
+      this.velX < 0 &&
+      isPixelOneOf(
+        oldImgData,
+        this.x - 1,
+        this.y + this.height / 2,
+        terrainColorBytes
+      );
+    let climbDirection = hitWallOnLeft ? 1 : -1;
+    this.isClimbing = true;
+    this.x += climbDirection * this.maxVelX;
+    
+    // Move the lemming up
+    this.y -= 1;
+
+    this.velY = -VEL_CLIMB*0.05; // Start going up at climbing velocity
+    this.onGround = false; // We've left the ground
+  }
+
+  handleNormalMovement() {
+    if (this.isInWaterOrOffBottomOfScreen()) {
+      this.isDead = true;
+    } else {
+      let digging = false;
+
+      if (this.action === "Digger" || this.action === "Miner" || this.action === "Basher") {
+        digging = startDigging(this);
+      }
+
+      if (!digging && this.velY === 0 && this.action !== "Climber") {
+        const hitWallOnLeft = this.velX < 0 && isPixelOneOf(oldImgData, this.x - 1,
+        this.y + this.height / 2, terrainColorBytes);
+        const hitWallOnRight =
+          this.velX > 0 &&
+          isPixelOneOf(
+            oldImgData,
+            this.x + this.width + 1,
+            this.y + this.height / 2,
+            terrainColorBytes
+          );
+        if (
+          (hitWallOnLeft || hitWallOnRight || this.x <= this.width || this.x >= canvas.width - this.width)
+        ) {
+          this.velX *= -1;
+        }
+      }
+
+      // HUMAN: this if block to slow down when digging
+      if (this.actionStarted && (this.action === "Basher" || this.action === "Miner")) {
+        this.velX = (this.velX > 0 ? this.maxVelX * DIGGER_SPEED_FACTOR : -this.maxVelX * DIGGER_SPEED_FACTOR);
+      } else if (this.actionStarted && this.action === "Digger") {
+        this.velX = 0;
+        this.velY = this.maxVelX * DIGGER_SPEED_FACTOR;
+      } else {
+        this.velX = (this.velX > 0 ? this.maxVelX : -this.maxVelX);
+      }
+
+      // Move the Lemming
+      this.x += this.velX;
+      this.y += this.velY;
+    }
+  }
+
+  draw() {
+    ctx.fillStyle = "rgb(" + blueBox.join(",") + ")";
     ctx.fillRect(this.x, this.y, this.width, this.height);
 
-    ctx.fillStyle = 'rgb(' + greenBox.join(',') + ')';
-    ctx.fillRect(this.x, this.y, (this.width/3) - 1, (this.height/4) - 1);
-    ctx.fillRect(this.x + this.width - (this.width/3), this.y, (this.width/3) - 1, (this.height/4) - 1);
+    ctx.fillStyle = "rgb(" + greenBox.join(",") + ")";
+    ctx.fillRect(this.x, this.y, this.width / 3 - 1, this.height / 4 - 1);
+    ctx.fillRect(
+      this.x + this.width - (this.width / 3),
+      this.y,
+      this.width / 3 - 1,
+      this.height / 4 - 1
+    );
 
-    // add this to the draw method of the Lemming object
     if (this.isSelected) {
-      ctx.strokeStyle = 'red';
+      ctx.strokeStyle = "red";
       ctx.strokeRect(this.x, this.y, this.width, this.height);
     }
 
-    // Debug
     ctx.strokeStyle = "white";
     ctx.strokeText(this.id, this.x + 1, this.y + 13);
-    if(this.action) {
+    if (this.action) {
       ctx.font = "7px Arial";
       ctx.strokeText(this.action, this.x - 5, this.y - 5);
     }
   }
-};
+
+  isFallingOffCanvas() {
+    return this.y >= canvas.height - (this.height + this.velY + 1);
+  }
+
+  isInWaterOrOffBottomOfScreen(){
+    return pixelIsColor(oldImgData, this.x + this.width / 2, this.y + this.height + 1, waterColorBytes) ||
+           this.y >= canvas.height - this.height;
+  }
+}
 
 // =========================================================================
 // Digger/Basher/Miner code
@@ -848,7 +889,7 @@ function spawnLemming() {
     return;
   }
 
-  const newLemming = Object.create(Lemming);
+  const newLemming = new Lemming(); //Object.create(Lemming);
   newLemming.id = ++lastLemmingId;
   newLemming.x = Math.random() * canvas.width; // Start at a random x location
   newLemming.y = 0;

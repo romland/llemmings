@@ -1,0 +1,2 @@
+>>> Refactor this object into a class and reduce size of update method into managable methods
+<lemming object here>
