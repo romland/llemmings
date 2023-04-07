@@ -417,14 +417,7 @@ class Lemming {
     if (isGroundUnderneath) {
       heightAdjustment = 0;
       for (let i = 0; i < 6; i++) {
-        if (
-          isPixelOneOf(
-            oldImgData,
-            this.x + this.width / 2,
-            this.y + this.height - i,
-            terrainColorBytes
-          )
-        ) {
+        if (isPixelOneOf(oldImgData, this.x + this.width / 2, this.y + this.height - i, terrainColorBytes)) {
           heightAdjustment--;
         } else {
           break;
@@ -432,10 +425,8 @@ class Lemming {
       }
     }
 
-    const hitWallOnLeft = this.velX < 0 && isPixelOneOf(oldImgData, this.x - 1,
-    this.y + this.height / 2, terrainColorBytes);
-    const hitWallOnRight = this.velX > 0 && isPixelOneOf(oldImgData, this.x + this.width + 1,
-    this.y + this.height / 2, terrainColorBytes);
+    const hitWallOnLeft  = this.velX < 0 && isPixelOneOf(oldImgData, this.x - 1, this.y + this.height / 2, terrainColorBytes);
+    const hitWallOnRight = this.velX > 0 && isPixelOneOf(oldImgData, this.x + this.width + 1, this.y + this.height / 2, terrainColorBytes);
 
     if (!this.onGround) {
       if (this.action === "Floater") {
@@ -459,16 +450,9 @@ class Lemming {
     for (let i = 0; i < lemmings.length; i++) {
       const otherLemming = lemmings[i];
 
-      if (
-        otherLemming !== this &&
-        !otherLemming.isDead &&
-        otherLemming.action === "Blocker" &&
-        this.x + this.width > otherLemming.x &&
-        this.x < otherLemming.x + otherLemming.width &&
-        this.y + this.height > otherLemming.y &&
-        this.y < otherLemming.y + otherLemming.height
-      ) {
-        // console.log("Ran into a blocker?", this.x, this.y);
+      if (otherLemming !== this && !otherLemming.isDead && otherLemming.action === "Blocker"
+        && this.x + this.width > otherLemming.x && this.x < otherLemming.x + otherLemming.width
+        && this.y + this.height > otherLemming.y && this.y < otherLemming.y + otherLemming.height) {
         this.velX *= -1;
       }
     }
@@ -478,22 +462,8 @@ class Lemming {
     let shouldClimb = false;
 
     if (this.action === "Climber") {
-      const hitWallOnLeft =
-        this.velX < 0 &&
-        isPixelOneOf(
-          oldImgData,
-          this.x - 1,
-          this.y + this.height / 2,
-          terrainColorBytes
-        );
-      const hitWallOnRight =
-        this.velX > 0 &&
-        isPixelOneOf(
-          oldImgData,
-          this.x + this.width + 1,
-          this.y + this.height / 2,
-          terrainColorBytes
-        );
+      const hitWallOnLeft  = this.velX < 0 && isPixelOneOf(oldImgData, this.x - 1, this.y + this.height / 2, terrainColorBytes);
+      const hitWallOnRight = this.velX > 0 && isPixelOneOf(oldImgData, this.x + this.width + 1, this.y + this.height / 2, terrainColorBytes);
       if (hitWallOnLeft || hitWallOnRight) {
         shouldClimb = true;
       } else {
@@ -507,14 +477,7 @@ class Lemming {
   }
 
   climb() {
-    const hitWallOnLeft =
-      this.velX < 0 &&
-      isPixelOneOf(
-        oldImgData,
-        this.x - 1,
-        this.y + this.height / 2,
-        terrainColorBytes
-      );
+    const hitWallOnLeft = this.velX < 0 && isPixelOneOf(oldImgData, this.x - 1, this.y + this.height / 2, terrainColorBytes);
     let climbDirection = hitWallOnLeft ? 1 : -1;
     this.isClimbing = true;
     this.x += climbDirection * this.maxVelX;
@@ -544,19 +507,9 @@ class Lemming {
       }
 
       if (!digging && this.velY === 0 && this.action !== "Climber") {
-        const hitWallOnLeft = this.velX < 0 && isPixelOneOf(oldImgData, this.x - 1,
-        this.y + this.height / 2, terrainColorBytes);
-        const hitWallOnRight =
-          this.velX > 0 &&
-          isPixelOneOf(
-            oldImgData,
-            this.x + this.width + 1,
-            this.y + this.height / 2,
-            terrainColorBytes
-          );
-        if (
-          (hitWallOnLeft || hitWallOnRight || this.x <= this.width || this.x >= canvas.width - this.width)
-        ) {
+        const hitWallOnLeft  = this.velX < 0 && isPixelOneOf(oldImgData, this.x - 1, this.y + this.height / 2, terrainColorBytes);
+        const hitWallOnRight = this.velX > 0 && isPixelOneOf(oldImgData, this.x + this.width + 1, this.y + this.height / 2, terrainColorBytes);
+        if ((hitWallOnLeft || hitWallOnRight || this.x <= this.width || this.x >= canvas.width - this.width)) {
           this.velX *= -1;
         }
       }
