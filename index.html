@@ -468,7 +468,7 @@ class Lemming {
         this.y + this.height > otherLemming.y &&
         this.y < otherLemming.y + otherLemming.height
       ) {
-        console.log("Ran into a blocker?", this.x, this.y);
+        // console.log("Ran into a blocker?", this.x, this.y);
         this.velX *= -1;
       }
     }
@@ -572,7 +572,9 @@ class Lemming {
       }
 
       // Move the Lemming
-      this.x += this.velX;
+      if(this.action !== "Blocker") {
+        this.x += this.velX;
+      }
       this.y += this.velY;
     }
   }
@@ -920,6 +922,11 @@ function spawnLemming() {
 
   if(newLemming.id === 4) {
     newLemming.action = "Digger";
+    console.log("Making new lemming a", newLemming.action, newLemming);
+  }
+
+  if(newLemming.id === 6) {
+    newLemming.action = "Blocker";
     console.log("Making new lemming a", newLemming.action, newLemming);
   }
   
