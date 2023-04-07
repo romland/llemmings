@@ -398,8 +398,84 @@ class Lemming {
     this.action = null;
     this.actionStarted = false;
 
-    // Define initial values for multi-frame state variables in 'this'
-    this.legColor = "white"; // initial value for leg color
+    // Initialize these variables in the constructor or wherever appropriate
+    this.legColor = "green";
+    this.footColor = "#888888";
+    this.legAngle = 0;
+    this.legWidth = this.width * 0.4;
+    this.legHeight = this.height * 0.35;
+    this.footWidth = this.legWidth * 1.8;
+    this.footHeight = this.legHeight * 0.4;
+  }
+
+  // >>> Prompt: instructions/lemming-legs.draw.0001.txt
+  draw() {
+    // draw body
+    ctx.fillStyle = "rgb(" + blueBox.join(",") + ")";
+    ctx.fillRect(this.x, this.y, this.width, this.height * 0.75);
+
+    // calculate leg positions based on velocity and direction
+    let leftLegX, leftFootX, rightLegX, rightFootX;
+    if (this.velX > 0) {
+      this.legAngle = Math.sin(this.age / 11) * Math.PI / 4;
+      leftLegX = this.x + this.width * 0.1;
+      leftFootX = -(this.legWidth/2);
+      rightLegX = this.x + this.width * 0.5;
+      rightFootX = -(this.legWidth/2);
+    } else if (this.velX < 0) {
+      this.legAngle = -Math.sin(this.age / 11) * Math.PI / 4;
+      leftLegX = this.x + this.width * 0.5;
+      leftFootX = -this.legWidth ;
+      rightLegX = this.x + this.width * 0.9 - this.legWidth;
+      rightFootX = -this.legWidth ;
+    } else {
+      this.legAngle = 0;
+      leftLegX = this.x + this.width * 0.1;
+      leftFootX = -this.legWidth;
+      rightLegX = this.x + this.width * 0.9 - this.legWidth;
+      rightFootX = -this.legWidth;
+    }
+
+    ctx.fillStyle = this.legColor;
+    ctx.save();
+    // left leg
+    ctx.translate(leftLegX + this.legWidth / 2, this.y + this.height * 0.75);
+    ctx.rotate(this.legAngle);
+    ctx.fillRect(-this.legWidth / 2, 0, this.legWidth, this.legHeight);
+
+    // left foot
+    ctx.fillStyle = this.footColor;
+    ctx.fillRect(leftFootX, this.legHeight - this.footHeight, this.footWidth, this.footHeight);
+    ctx.restore();
+
+    ctx.save();
+    // right leg
+    ctx.translate(rightLegX + this.legWidth / 2, this.y + this.height * 0.75)
+    ctx.rotate(-this.legAngle);
+    ctx.fillRect(-this.legWidth / 2, 0, this.legWidth, this.legHeight);
+
+    // right foot
+    ctx.fillStyle = this.footColor;
+    ctx.fillRect(rightFootX, this.legHeight - this.footHeight, this.footWidth, this.footHeight);
+    ctx.restore();
+
+    // hair
+    ctx.fillStyle = "rgb(" + greenBox.join(",") + ")";
+    ctx.fillRect(this.x, this.y, this.width, this.height / 4);
+
+    // is selected
+    if (this.isSelected) {
+      ctx.strokeStyle = "red";
+      ctx.strokeRect(this.x, this.y, this.width, this.height);
+    }
+
+    // debug
+    ctx.strokeStyle = "white";
+    ctx.strokeText(this.id, this.x + 1, this.y + 13);
+    if (this.action) {
+      ctx.font = "7px Arial";
+      ctx.strokeText(this.action, this.x - 5, this.y - 5);
+    }
   }
 
   update() {
@@ -548,33 +624,6 @@ class Lemming {
         this.age++;
     }
   }
-
-  draw() {
-    ctx.fillStyle = "rgb(" + blueBox.join(",") + ")";
-    ctx.fillRect(this.x, this.y, this.width, this.height);
-
-    ctx.fillStyle = "rgb(" + greenBox.join(",") + ")";
-    ctx.fillRect(this.x, this.y, this.width / 3 - 1, this.height / 4 - 1);
-    ctx.fillRect(
-      this.x + this.width - (this.width / 3),
-      this.y,
-      this.width / 3 - 1,
-      this.height / 4 - 1
-    );
-
-    if (this.isSelected) {
-      ctx.strokeStyle = "red";
-      ctx.strokeRect(this.x, this.y, this.width, this.height);
-    }
-
-    ctx.strokeStyle = "white";
-    ctx.strokeText(this.id, this.x + 1, this.y + 13);
-    if (this.action) {
-      ctx.font = "7px Arial";
-      ctx.strokeText(this.action, this.x - 5, this.y - 5);
-    }
-  }
-
 }
 
 // =========================================================================

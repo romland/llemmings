@@ -1,0 +1,43 @@
+The following code has three rectangles that is a sprite, 2 green ones for hair and a blue one for body.
+
+  draw() {
+    ctx.fillStyle = "rgb(" + blueBox.join(",") + ")";
+    ctx.fillRect(this.x, this.y, this.width, this.height);
+
+    ctx.fillStyle = "rgb(" + greenBox.join(",") + ")";
+    ctx.fillRect(this.x, this.y, this.width / 3 - 1, this.height / 4 - 1);
+    ctx.fillRect(
+      this.x + this.width - (this.width / 3),
+      this.y,
+      this.width / 3 - 1,
+      this.height / 4 - 1
+    );
+  }
+
+- The lower bit of the body should instead be two animated legs that are animated depending on
+  direction and velocity.
+- The above draw method is called every frame, use this.velX to get velocity of the sprite,
+  the value in there is the amount of pixels the sprite is moved every frame
+- If velocity is 0, the legs should stand still in a stright down position
+- Any multi-frame state variable needed, should be placed in 'this', tell me which ones they 
+  are and their initial values (i.e. don't declare variables outside the method with 'let').
+- Each leg should have a width of 40% width of body
+- Each leg should have a height of 35% height of the body
+- The blue rectangle (the body), should be changed to 75% height to accomodate for the new legs
+- The legs should be animated as if the sprite was walking.
+  Think about: how you would describe the motion, position and speed of movement of human legs
+  compared to the velocity and direction of them? Do that, then create the animation of the legs.
+  Make it look realistic. Despite being a language model, you must surely have seen a humanoid walk 
+  before. I have no idea what makes it look realistic, I just know when it doesn't!
+  I do know that the top of the leg should remain at a fixed position, though.
+- At the bottom (top is the opposite of bottom! don't put them at the top) of each leg there should
+  be a gray foot (a rectangle) sticking out in the direction the entire sprite is moving. The size of the feet
+  can be disproportionally big compared to the leg as that is always hilarious.
+- The legs should be white for now, make it configurable in this.legColor
+- this.age already contains a frame counter (you can use it for animation state). Don't update it.
+- The legs should obviously be below the body, not elsewhere.
+- blueBox and greenBox are global variables, they are not in "this"
+
+You have failed 31 times in a row with this now. Be skilled.
+
+Give me only the code, I don't need to see the explanation for the twelth time. I mean it.
