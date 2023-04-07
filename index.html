@@ -821,8 +821,7 @@ function createHole(x, y) {
       var yCoord = y + yOffset
       
       if (xCoord >= 0 && xCoord < canvas.width && yCoord >= 0 && yCoord < canvas.height) {
-        // Determine pixel color based on perlin noise
-        var noiseValue = noiseGenerator.noise(xCoord * noiseScale * frequency, yCoord * noiseScale * frequency, 0) * 0.5 + 0.5;
+        var noiseValue = 255;
         var alpha = Math.round(noiseValue * 255);
         
         // Set r, g, b, and a channels of pixel
