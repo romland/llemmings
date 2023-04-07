@@ -1,0 +1,85 @@
+>>> Prompt 1: new terrain, more continuous than then puzzled together previous one
+Give me code to randomly and procedurally generate a 2D map in javascript.
+
+It is not tilebased, there should be jagged edges and make it look cliffy and organic.
+
+Make empty space in upper left and lower right corner, but make it configurable.
+
+There are holes for walkways and caves that should be at least 40 pixels high. 
+The color of these pixels should just be plain black. Using, these variously
+sized holes and walkways make there is a partial route from from the empty spaces in
+upper left and lower right corners. The holes and walkways shuld also look 
+organic (e.g. sometimes round, sometimes jagged, sometimes cliffy, hilly).
+
+The dirt and rock terrain may take up around 50% the canvas, the rest should 
+be either just empty or a hole or a walkway.
+
+A canvas is 800x600, but should be configurable.
+
+Terrain that can be used is either rock or dirt (see colors below).
+
+At the very bottom there should be water.
+
+You must include the full implementation for any noise function you will inevitably use.
+
+These are the colors to use:
+const blackColorBytes = [0,0,0];
+const waterColorBytes = [0x00, 0x77, 0xbe]; // [0, 119, 190];
+const rockColorBytes  = [0x88, 0x88, 0x88]; // [136, 136, 136];
+const dirtColorBytes  = [0x4a, 0x2e, 0x00]; // [74, 46, 0];
+
+I don't need explanation, just give me the code.
+
+>>> Prompt 2: Additional prompting to fix tunnels in the result from the above:
+
+Given these two for-blocks that clear existing noise for tunnels and caves (by setting 0 at a map-position). There are problems with them:
+
+    // carve out tunnels
+    // left->right
+    for (let y = 0; y < canvasHeight; y += 20) {
+        const startX = Math.floor(Math.random() * (canvasWidth - 20));
+        for (let x = startX; x < startX + 20; x++) {
+            map[y][x] = 0;
+        }
+    }
+
+    // top->bottom
+    for (let x = 0; x < canvasWidth; x += 10) {
+        const startY = Math.floor(Math.random() * (canvasHeight - 20));
+        for (let y = startY; y < startY + 20; y++) {
+            map[y][x] = 0;
+        }
+    }
+
+- problem 1: they are only 1 pixel in size, they should be at least 30 pixels in size
+- problem 2: the length of the tunnels/caves should be random instead of fixed length like now
+- problem 3: they are currently completely straight, they should be organic looking, rounded floor and ceiling wand walls. There is a noise 
+  function available to help with that. It is used like this (this is an example to show the interface, you should not use this verbatim):
+
+    // create height map using Perlin noise
+    for (let y = 0; y < canvasHeight; y++) {
+        for (let x = 0; x < canvasWidth; x++) {
+            let amplitude = AMPLITUDE;
+            let frequency = 1.0 / canvasWidth;
+            let noiseHeight = 0;
+
+            for (let i = 0; i < OCTAVES; i++) {
+                let sampleX = x * frequency;
+                let sampleY = y * frequency;
+                let noiseValue = PerlinNoise2D(sampleX, sampleY);
+                noiseHeight += noiseValue * amplitude;
+
+                amplitude *= PERSISTENCE;
+                frequency *= LACUNARITY;
+            }
+
+            map[y][x] = noiseHeight;
+        }
+    }
+- make sure you don't redeclare any of the consts used in the example above, prefix any new consts with TUNNEL_, make sure you declare all consts and variables used.
+- make sure you do bounds checking against canvasHeight and canvasWidth
+- don't overwrite parts of the map that is not affected by tunnels -- modify ONLY tunnel noise
+- only carve out tunnels/caves where existing map value is > 0.4
+- The size of the tunnels and caves are of utmost importance, they can't just be 1 pixel lines here and there
+
+Fix the code. And give me only the code, no explanations, because frankly, your explanations are rather verbose and pointless.

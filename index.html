@@ -73,11 +73,7 @@ function RNG(seed) {
 }
 
 // const currentSeed = Date.now();   // "random"
-// const currentSeed = 1680052412448;
-// const currentSeed = 1680052705344;
-// const currentSeed = 1680055455055;
-// const currentSeed = 1680197028534; // Cliffy!
-const currentSeed = 1680397601417; // Lemming #2 (Basher) survive
+const currentSeed = 1680878681505;
 
 console.log("Current seed: ", currentSeed);
 Math.random = RNG(currentSeed);
@@ -96,244 +92,207 @@ function getBackground() {
   background = ctx.getImageData(0, 0, canvas.width, canvas.height);
 }
 
+// >>> Prompt: instructions/map-generation.0003.txt (0001-0002 are now obsolete)
+const WATER_HEIGHT = 70;
+const EMPTY_SPACE_TOP_LEFT = 50;
+const EMPTY_SPACE_BOTTOM_RIGHT = 50;
 
-// >>> Prompt: instructions/map-generation.0001.txt
-class ImprovedNoise {
-  constructor() {
-    this.p = [];
-    this.perm = [];
-    this.xOff = 0;
-    this.yOff = 0;
-    this.zOff = 0;
+const emptyColorBytes = [ 0, 0, 0];
+// const waterColorBytes = [0x00, 0x77, 0xbe]; // [0, 119, 190];
+// const rockColorBytes  = [0x88, 0x88, 0x88]; // [136, 136, 136];
+// const dirtColorBytes  = [0x4a, 0x2e, 0x00]; // [74, 46, 0];
 
-    for (let i = 0; i < 256; i++) {
-      this.p[i] = Math.floor(Math.random() * 256);
-    }
+const TILE_SIZE = 1;
 
-    for (let i = 0; i < 512; i++) {
-      this.perm[i] = this.p[i & 255];
-    }
-  }
+// NOISE SETTINGS
+const OCTAVES = 5;
+const PERSISTENCE = 0.5;
+const LACUNARITY = 2.25;
+const AMPLITUDE = 2.0;
+// let canvas;
 
-  perlin(x, y, z) {
-    const X = Math.floor(x) & 255;
-    const Y = Math.floor(y) & 255;
-    const Z = Math.floor(z) & 255;
+function generateMap(canvasWidth, canvasHeight, emptySpaceTopLeft, emptySpaceBottomRight) {
 
-    x -= Math.floor(x);
-    y -= Math.floor(y);
-    z -= Math.floor(z);
-
-    const u = this.fade(x);
-    const v = this.fade(y);
-    const w = this.fade(z);
-
-    const A = this.perm[X] + Y;
-    const AA = this.perm[A] + Z;
-    const AB = this.perm[A + 1] + Z;
-    const B = this.perm[X + 1] + Y;
-    const BA = this.perm[B] + Z;
-    const BB = this.perm[B + 1] + Z;
-
-    return this.lerp(
-      w,
-      this.lerp(v,
-        this.lerp(u,
-          this.grad(this.perm[AA], x, y, z),
-          this.grad(this.perm[BA], x - 1, y, z)),
-        this.lerp(u,
-          this.grad(this.perm[AB], x, y - 1, z),
-          this.grad(this.perm[BB], x - 1, y - 1, z))),
-      this.lerp(v,
-        this.lerp(u,
-          this.grad(this.perm[AA + 1], x, y, z - 1),
-          this.grad(this.perm[BA + 1], x - 1, y, z - 1)),
-        this.lerp(u,
-          this.grad(this.perm[AB + 1], x, y - 1, z - 1),
-          this.grad(this.perm[BB + 1], x - 1, y - 1, z - 1)))
-    );
-  }
-
-  grad(hash, x, y, z) {
-    const h = hash & 15;
-    const u = h < 8 ? x : y;
-    const v = h < 4 ? y : h === 12 || h === 14 ? x : z;
-    return ((h & 1) === 0 ? u : -u) + ((h & 2) === 0 ? v : -v);
-  }
-
-  fade(t) {
-    return t * t * t * (t * (t * 6 - 15) + 10);
-  }
-
-  lerp(t, a, b) {
-    return a + t * (b - a);
-  }
-
-  // Implementing the noise function here
-  noise(x, y, z){
-    // This function uses different frequency values but it can be defined as a paramenter if needed.
-    const frequencyValues = [0.13, 0.16, 0.2, 0.25, 0.32, 0.4];
-    
-    let total = 0;
-    let amplitude = 1;
-    
-    // Make the algorithm more flexible by accepting multiple frequency values
-    for(let f of frequencyValues){
-      total += this.perlin(x * f, y * f, z * f) * amplitude;
-      amplitude *= 0.5; // Incremental frequency lowering.
-    }
-
-    return (total * 0.5) + 0.5; // Return a value between 0 and 1
-  }
-}
-
-// >>> Prompt: instructions/map-generation.0001.txt
-// >>> Prompt: instructions/map-generation.0002.txt
-// Set canvas dimensions and context
-
-// Set constants for noise generation
-const noiseGenerator = new ImprovedNoise();
-let noiseScale = 0.15; // (hillyness) adjust this to change the amount of detail in the noise
-const frequency = 2.5;
-
-// Set constants for map generation
-const numPlatforms = 10; // adjust this to change the number of platforms
-const platformHeight = canvas.height / numPlatforms;
-const maxPlatformWidth = canvas.width * 0.5; // adjust this to change maximum platform width
-const minPlatformWidth = canvas.width * 0.2; // adjust this to change minimum platform width
-const rockProbability = 0.3; // adjust this to change the chance of generating rocks
-const waterColor = '#0077be';
-const rockColor = '#888888';
-const dirtColor = '#4a2e00';
-
-// Generate list of platforms
-const platforms = [];
-for (let i = 0; i < numPlatforms; i++) {
-  const halfWidth = (Math.random() * (maxPlatformWidth - minPlatformWidth) + minPlatformWidth) / 2;
-  const x = Math.random() * (canvas.width - halfWidth * 2) + halfWidth;
-  const y = (i * platformHeight + platformHeight / 2) + platformHeight;     // add platformHeight so we don't have one at the very top
-  platforms.push({x, y, halfWidth});
-}
-
-function drawMap() {
-  if(false) {
-    // Create gradient for background color
-    const grd = ctx.createLinearGradient(0, 0, 0, canvas.height);
-    grd.addColorStop(0, '#111111');
-    grd.addColorStop(1, '#444444');
-    ctx.fillStyle = grd;
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-  } else {
-    // plain black background    
-    ctx.fillStyle = "#000000";
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-  }
-  // Draw water at bottom of canvas
-  ctx.fillStyle = waterColor;
-  ctx.fillRect(0, canvas.height - platformHeight, canvas.width, platformHeight);
-  
-  // Generate map using Perlin noise
-  for (let i = platforms.length - 1; i >= 0; i--) {
-    const platform = platforms[i];
-    
-    // Generate noise values for each pixel on the platform
-    ctx.beginPath();
-    ctx.moveTo(platform.x - platform.halfWidth, platform.y);
-    for (let x = platform.x - platform.halfWidth; x <= platform.x + platform.halfWidth; x++) {
-      const noiseValue = noiseGenerator.noise(x * noiseScale * frequency, 0, 0) * 0.5 + 0.5;
-      const height = platform.y - noiseValue * platformHeight / 1.5;    // platform height divisor
-      
-      // Determine whether to draw dirt or rock based on probability
-      if (Math.random() < rockProbability) {
-        ctx.fillStyle = rockColor;
-      } else {
-        ctx.fillStyle = dirtColor;
-      }
-      platform.color = ctx.fillStyle;
-
-      ctx.lineTo(x, height);
-    }
-    ctx.lineTo(platform.x + platform.halfWidth, platform.y);
-    ctx.closePath();
-    ctx.fill();
-  }
-}
-
-function drawCliffs() {
-  const cliffWidth = 50; // The width of the cliff
-
-  platforms.forEach((platform) => {
-    let addCliffRight = true;
-    let addCliffLeft = true;
-
-    // Check if there is platform to the right/left and closer than the cliff width
-    for (let i = 0; i < platforms.length; i++) {
-      if (i !== platforms.indexOf(platform)) {
-        if (platforms[i].x - platform.x > 0 && platforms[i].x - platform.x < cliffWidth * 2) {
-          addCliffRight = false;
-        } else if (platforms[i].x - platform.x < 0 && platforms[i].x - platform.x > -cliffWidth * 2) {
-          addCliffLeft = false;
+    // create empty map
+    const map = [];
+    for (let y = 0; y < canvasHeight; y++) {
+        map[y] = [];
+        for (let x = 0; x < canvasWidth; x++) {
+            map[y][x] = 0;
         }
-      }
     }
 
-    // Human hack: I want cliffs to test 'climber' on
-    addCliffRight = true;
-    addCliffLeft = true;
+    // create height map using Perlin noise
+    for (let y = 0; y < canvasHeight; y++) {
+        for (let x = 0; x < canvasWidth; x++) {
+            let amplitude = AMPLITUDE;
+            let frequency = 1.0 / canvasWidth;
+            let noiseHeight = 0;
 
+            for (let i = 0; i < OCTAVES; i++) {
+                let sampleX = x * frequency;
+                let sampleY = y * frequency;
+                let noiseValue = PerlinNoise2D(sampleX, sampleY);
+                noiseHeight += noiseValue * amplitude;
 
-    // Draw a cliff to the right and/or left of the platform
-    if (addCliffRight) {
-      const x = platform.x + platform.halfWidth - 1.5;      // HUMAN: 1-off fixed
-      const y = platform.y - platformHeight;
-      ctx.beginPath();
-      ctx.moveTo(x, y);
+                amplitude *= PERSISTENCE;
+                frequency *= LACUNARITY;
+            }
 
-      // Add jagged edges to cliff top
-      let prevPoint = [x, y];
-      for (let i = 1; i <= cliffWidth / 10; i++) {
-        const nextPoint = [x + i * 10, y + Math.random() * platformHeight / 2];
-        const cp1 = [prevPoint[0] + 5, prevPoint[1]];
-        const cp2 = [nextPoint[0] - 5, nextPoint[1]];
-        ctx.bezierCurveTo(cp1[0], cp1[1], cp2[0], cp2[1], nextPoint[0], nextPoint[1]);
-        prevPoint = nextPoint;
-      }
-
-      ctx.lineTo(x + cliffWidth, platform.y);
-      ctx.lineTo(x, platform.y);
-      ctx.closePath();
-      ctx.fillStyle = platform.color;//"#0000ff";
-      ctx.fill();
+            map[y][x] = noiseHeight;
+        }
     }
-    if (addCliffLeft) {
-      const x = platform.x - platform.halfWidth + 2;      // HUMAN: 1-off fixed
-      const y = platform.y - platformHeight;
-      ctx.beginPath();
-      ctx.moveTo(x, y);
 
-      // Add jagged edges to cliff top
-      let prevPoint = [x, y];
-      for (let i = 1; i <= cliffWidth / 10; i++) {
-        const nextPoint = [x - i * 10, y + Math.random() * platformHeight / 2];
-        const cp1 = [prevPoint[0] - 5, prevPoint[1]];
-        const cp2 = [nextPoint[0] + 5, nextPoint[1]];
-        ctx.bezierCurveTo(cp1[0], cp1[1], cp2[0], cp2[1], nextPoint[0], nextPoint[1]);
-        prevPoint = nextPoint;
-      }
+    // ====================== tunnels ======================
+    // constants for tunnel/cave generation
+    const TUNNEL_SIZE = 40;
+    const TUNNEL_MIN_LENGTH = 150;
+    const TUNNEL_MAX_LENGTH = 400;
 
-      ctx.lineTo(x - cliffWidth, platform.y);
-      ctx.lineTo(x, platform.y);
-      ctx.closePath();
-      ctx.fillStyle = platform.color;//"#0000ff";
-      ctx.fill();
+    // carve out tunnels
+    for (let y = 0; y < canvasHeight; y += TUNNEL_SIZE) {
+    let x = 0;
+    while (x < canvasWidth - TUNNEL_SIZE) {
+        if(Math.random() < 0.8) {
+        break;
+        }
+
+        if (map[y][x] > 0.4) {
+        const tunnelLength = Math.floor(Math.random() * (TUNNEL_MAX_LENGTH - TUNNEL_MIN_LENGTH + 1)) + TUNNEL_MIN_LENGTH;
+        let curve = Math.floor(Math.random() * TUNNEL_SIZE) - TUNNEL_SIZE / 2;
+        for (let i = 0; i < tunnelLength && x < canvasWidth - TUNNEL_SIZE; i++) {
+            const startY = Math.max(0, y + curve);
+            const endY = Math.min(canvasHeight, y + TUNNEL_SIZE + curve);
+            for (let j = startY; j < endY; j++) {
+            if (map[j][x] > 0.4) {
+                map[j][x] = 0;
+            }
+            }
+            x++;
+            curve += Math.floor(Math.random() * 3) - 1;
+            curve = Math.max(-TUNNEL_SIZE / 2, Math.min(curve, TUNNEL_SIZE / 2));
+        }
+        }
+        else {
+        x++;
+        }
     }
-  });
+    }
+
+    for (let x = 0; x < canvasWidth; x += TUNNEL_SIZE) {
+    let y = 0;
+    while (y < canvasHeight - TUNNEL_SIZE) {
+        if(Math.random() < 0.8) {
+            break;
+        }
+
+        if (map[y][x] > 0.4) {
+        const tunnelLength = Math.floor(Math.random() * (TUNNEL_MAX_LENGTH - TUNNEL_MIN_LENGTH + 1)) + TUNNEL_MIN_LENGTH;
+        let curve = Math.floor(Math.random() * TUNNEL_SIZE) - TUNNEL_SIZE / 2;
+        for (let i = 0; i < tunnelLength && y < canvasHeight - TUNNEL_SIZE; i++) {
+            const startX = Math.max(0, x + curve);
+            const endX = Math.min(canvasWidth, x + TUNNEL_SIZE + curve);
+            for (let j = startX; j < endX; j++) {
+            if (map[y][j] > 0.4) {
+                map[y][j] = 0;
+            }
+            }
+            y++;
+            curve += Math.floor(Math.random() * 3) - 1;
+            curve = Math.max(-TUNNEL_SIZE / 2, Math.min(curve, TUNNEL_SIZE / 2));
+        }
+        }
+        else {
+        y++;
+        }
+    }
+    }
+    // ====================== /tunnels ======================
+
+    const ctx = canvas.getContext('2d');
+
+    for (let y = 0; y < canvasHeight; y += TILE_SIZE) {
+        for (let x = 0; x < canvasWidth; x += TILE_SIZE) {
+            const height = map[y][x];
+            let color;
+
+            if (height >= 0.7) {
+                // rock
+                color = rockColorBytes;
+            } else if (height >= 0.4) {
+                // dirt
+                color = dirtColorBytes;
+            } else {
+                // background
+                color = emptyColorBytes;
+            }
+
+            ctx.fillStyle = `rgb(${color[0]}, ${color[1]}, ${color[2]})`;
+            ctx.fillRect(x, y, TILE_SIZE, TILE_SIZE);
+        }
+    }
+
+    // add empty space at top left and bottom right
+    ctx.clearRect(0, 0, EMPTY_SPACE_TOP_LEFT, EMPTY_SPACE_TOP_LEFT);
+    // HUMAN: Moved to above water level.
+    ctx.clearRect(canvasWidth - EMPTY_SPACE_BOTTOM_RIGHT, canvasHeight - WATER_HEIGHT - EMPTY_SPACE_BOTTOM_RIGHT, EMPTY_SPACE_BOTTOM_RIGHT, EMPTY_SPACE_BOTTOM_RIGHT);
+
+    // water
+    ctx.fillStyle = `rgb(${waterColorBytes[0]}, ${waterColorBytes[1]}, ${waterColorBytes[2]})`;
+    ctx.fillRect(0, canvasHeight - WATER_HEIGHT, canvasWidth, WATER_HEIGHT);
 }
 
+function PerlinNoise2D(x, y) {
+    const xInt = Math.floor(x);
+    const yInt = Math.floor(y);
 
-// call drawMap function to generate map
-drawMap();
-drawCliffs();
+    const X = xInt & 255;
+    const Y = yInt & 255;
+
+    x -= xInt;
+    y -= yInt;
+
+    const u = fade(x);
+    const v = fade(y);
+
+    const A = noiseHash[X] + Y;
+    const AA = noiseHash[A];
+    const AB = noiseHash[A + 1];
+    const B = noiseHash[X + 1] + Y;
+    const BA = noiseHash[B];
+    const BB = noiseHash[B + 1];
+
+    return lerp(v, lerp(u, grad(noiseHash[AA], x, y), grad(noiseHash[BA], x - 1, y)),
+                   lerp(u, grad(noiseHash[AB], x, y - 1), grad(noiseHash[BB], x - 1, y - 1)));
+}
+
+function fade(t) {
+    return t * t * t * (t * (t * 6 - 15) + 10);
+}
+
+function lerp(t, a, b) {
+    return a + t * (b - a);
+}
+
+function grad(hash, x, y) {
+    const h = hash & 3;
+    const u = h === 0 ? x : h === 1 ? y : x + y;
+    const v = h < 2 ? y : x;
+    return ((hash & 4) === 0 ? 1 : -1) * u + ((hash & 8) === 0 ? 1 : -1) * v;
+}
+
+const noiseHash = [];
+for (let i = 0; i < 256; i++) {
+    noiseHash[i] = Math.floor(Math.random() * 256);
+}
+
+// canvas = document.querySelector('canvas');
+// canvas.width = 800;
+// canvas.height = 600;
+generateMap(canvas.width, canvas.height, EMPTY_SPACE_TOP_LEFT, EMPTY_SPACE_BOTTOM_RIGHT);
+
+// =============================================
+
 
 // >>> Prompt: instructions/unique-colors.0001.txt
 function getUniqueColors(canvas) {
