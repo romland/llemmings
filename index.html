@@ -147,6 +147,11 @@ function spawnLemming() {
   if(newLemming.id === 14) {
     newLemming.action = "Floater";
   }
+
+  if(newLemming.id === 18) {
+    newLemming.action = "Climber";
+  }
+
   console.log("Making new lemming a", newLemming.action, newLemming);
 
   lemmings.push(newLemming);
@@ -564,6 +569,7 @@ class Lemming {
     // >>> Prompt: instructions/wall-hit-fix.0001.txt
     let hitWallOnLeft = this.velX < 0 && isPixelOneOf(oldImgData, this.x - 1, this.y + this.height / 2, terrainColorBytes);
     let hitWallOnRight = this.velX > 0 && isPixelOneOf(oldImgData, this.x + this.width + 1, this.y + this.height / 2, terrainColorBytes);
+    let blockedByBlocker = false;
 
     // Check if there are other lemmings that are blockers
     for (let i = 0; i < lemmings.length; i++) {
@@ -573,6 +579,7 @@ class Lemming {
               otherLemming.onGround && 
               this.x + this.width > otherLemming.x && this.x < otherLemming.x + otherLemming.width &&
               this.y + this.height > otherLemming.y && this.y < otherLemming.y + otherLemming.height) {
+
             if(this.velX > 0) {
               hitWallOnRight = true
               this.x = otherLemming.x - otherLemming.width;
@@ -580,6 +587,7 @@ class Lemming {
               hitWallOnLeft = true;
               this.x = otherLemming.x + otherLemming.width + 1;
             }
+            blockedByBlocker = true;
         }
     }
 
@@ -589,7 +597,7 @@ class Lemming {
     // Determine if the lemming should climb
     let shouldClimb = false;
 
-    if (this.action === "Climber") {
+    if (this.action === "Climber" && blockedByBlocker === false) {
         if ((hitWallOnLeft && this.velX < 0) || (hitWallOnRight && this.velX > 0)) {
             shouldClimb = true;
         } else {
@@ -640,7 +648,7 @@ class Lemming {
         // Not climbing, normal movement applies
         // HUMAN: added check for 'this.velY === 0' here so that we don't turn when we are falling
         // HUMAN: don't turn if digging
-        if (!digging && this.velY === 0 && this.action !== "Climber" && (hitWallOnLeft || hitWallOnRight || this.x <= this.width || this.x >= canvas.width - this.width)) {
+        if (!digging && this.velY === 0 && (hitWallOnLeft || hitWallOnRight || this.x <= this.width || this.x >= canvas.width - this.width)) {
             this.velX *= -1;
         }
 
