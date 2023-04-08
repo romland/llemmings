@@ -465,7 +465,7 @@ class Lemming {
 
     // Initialize these variables in the constructor or wherever appropriate
     this.legColor = "green";
-    this.footColor = "#888888";
+    this.footColor = "#666666";
     this.legAngle = 0;
     this.legWidth = this.width * 0.4;
     this.legHeight = this.height * 0.35;
@@ -477,27 +477,30 @@ class Lemming {
   draw() {
     // draw body
     ctx.fillStyle = "rgb(" + blueBox.join(",") + ")";
-    ctx.fillRect(this.x, this.y, this.width, this.height * 0.75);
+    ctx.fillRect (this.x, this.y, this.width, this.height * 0.75);
 
     // calculate leg positions based on velocity and direction
     let leftLegX, leftFootX, rightLegX, rightFootX;
     if (this.velX > 0) {
-      this.legAngle = Math.sin(this.age * (this.velX/2.5)) * Math.PI / 4;
-      leftLegX = this.x + this.width * 0.1;
+      this.legAngle = Math.sin(this.age * (this.velX/3.0)) * Math.PI / 4;
+      leftLegX = this.x + this.width * 0.2;
+      rightLegX = this.x + this.width * 0.4;
+
       leftFootX = -(this.legWidth/2);
-      rightLegX = this.x + this.width * 0.5;
       rightFootX = -(this.legWidth/2);
     } else if (this.velX < 0) {
-      this.legAngle = -Math.sin(this.age * (this.velX/2.5)) * Math.PI / 4;
+      this.legAngle = -Math.sin(this.age * (this.velX/3.0)) * Math.PI / 4;
       leftLegX = this.x + this.width * 0.5;
+      rightLegX = this.x + this.width * 0.8 - this.legWidth;
+
       leftFootX = -this.legWidth - 1;
-      rightLegX = this.x + this.width * 0.9 - this.legWidth;
       rightFootX = -this.legWidth - 1;
     } else {
       this.legAngle = 0;
       leftLegX = this.x + this.width * 0.1;
-      leftFootX = -this.legWidth + 2;
       rightLegX = this.x + this.width * 0.9 - this.legWidth;
+
+      leftFootX = -this.legWidth + 2;
       rightFootX = -this.legWidth - 1;
     }
 
@@ -935,7 +938,9 @@ function mine(lemming)
     // HUMAN: Dirty hack. Clear a few pixels under the lemming when done.
     for(let i = -1; i < DIGGER_LOOK_AHEAD; i++) {
       for(let j = -2; j < lemming.width + 2; j++) {
-        clearPixel(x + j, y + lemming.height + i);
+        if(isColorOneOf(getPixelColor(oldImgData, x + j, y + lemming.height + i), dirtColorBytes)) {
+          clearPixel(x + j, y + lemming.height + i);
+        }
       }
     }
     console.log(lemming.action, lemming.id, "done after removing", lemming.totalDug, "pixels");    // HUMAN
