@@ -48,6 +48,12 @@
           bottom: 0;
           left: 0;
         }
+
+        #infoDiv {
+          position: fixed;
+          bottom: 0;
+          left: 50%;
+        }
     </style>
 </head>
 <body>
@@ -59,6 +65,7 @@
 
   <canvas id="canvas" width="800" height="600"></canvas>
   <div id="coordinatesDiv"></div>
+  <div id="infoDiv"></div>
 
 
 <script type="text/javascript">
@@ -73,8 +80,8 @@ function RNG(seed) {
 }
 
 // const currentSeed = Date.now();   // "random"
-// const currentSeed = 1680878681505; // slow
-const currentSeed = 1680905320764;    // action
+const currentSeed = 1680878681505; // slow
+// const currentSeed = 1680905320764;    // action
 
 console.log("Current seed: ", currentSeed);
 Math.random = RNG(currentSeed);
@@ -982,6 +989,11 @@ function update() {
     lemming.update();
     lemming.draw();
     
+    // HUMAN: There can be multiple lemmings selected, only the last one will be visible to us
+    if(lemming.isSelected) {
+      updateInfoDiv(lemming);
+    }
+
     if (lemming.isDead) {
       // Remove dead lemmings from the array as optimization
       const index = lemmings.indexOf(lemming);
@@ -993,9 +1005,9 @@ function update() {
         p.color = i < 20 ? "#55ff55" : "#5555ff";
         particles.push(p);
       }
-
     }
   });
+
   particles.forEach((particle) => {
       particle.update();
       particle.draw();
@@ -1072,8 +1084,8 @@ canvas.addEventListener('click', (event) => {
   });
 });
 
-// >>> Prompt: instructions/actions.0001.txt
 
+// >>> Prompt: instructions/actions.0001.txt
 function applyAction(action) {
   // Find the selected lemming
   const selectedLemming = lemmings.find((lemming) => lemming.isSelected);
@@ -1188,6 +1200,18 @@ canvas.addEventListener("mousemove", function(event) {
 
   coordinatesDiv.innerHTML = "X: " + x + ", Y: " + y + " | Color: " + color;
 });
+
+
+const infoDiv = document.getElementById("infoDiv");
+function updateInfoDiv(lem)
+{
+  infoDiv.innerHTML = `ID: ${lem.id} 
+    Act: ${lem.action} 
+    velX: ${lem.velX.toFixed(2)} 
+    velY: ${lem.velY.toFixed(2)} 
+    Started: ${lem.actionStarted}
+    `;
+}
 
 
 // HUMAN: this came from _one_ of the discarded Digger/Miner/Basher implementations.
@@ -1352,6 +1376,7 @@ function clearSmoothingOfTerrain(canvas, keepColors) {
 
   ctx.putImageData(imageData, 0, 0);
 }
+
 
 // >>> Prompt: instructions/coordinates-div.0001.txt
 function rgbToHex(r, g, b) {
