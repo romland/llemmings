@@ -100,6 +100,59 @@ function getBackground() {
   background = ctx.getImageData(0, 0, canvas.width, canvas.height);
 }
 
+
+// Create a new lemming and add it to the array of lemmings
+// HUMAN: This is just for easy testing for now.
+function spawnLemming() {
+  if(isPaused)
+    return;
+  if(lemmings.length > 15) {
+    return;
+  }
+
+  const newLemming = new Lemming(); //Object.create(Lemming);
+  newLemming.id = ++lastLemmingId;
+  newLemming.x = Math.random() * canvas.width; // Start at a random x location
+  newLemming.y = 0;
+  newLemming.velX = newLemming.maxVelX; // Walk to the right by default
+
+  //if(newLemming.id % 2) {
+  if(newLemming.id === 1 || newLemming.id === 5) {
+    newLemming.action = "Climber";
+    console.log("Making new lemming a", newLemming.action, newLemming);
+  }
+
+  if(newLemming.id === 2) {
+    newLemming.action = "Basher";
+    console.log("Making new lemming a", newLemming.action, newLemming);
+  }
+
+  if(newLemming.id === 3) {
+    newLemming.action = "Miner";
+    console.log("Making new lemming a", newLemming.action, newLemming);
+  }
+
+  if(newLemming.id === 4) {
+    newLemming.action = "Digger";
+    console.log("Making new lemming a", newLemming.action, newLemming);
+  }
+
+  if(newLemming.id === 6) {
+    newLemming.action = "Blocker";
+    console.log("Making new lemming a", newLemming.action, newLemming);
+  }
+  
+  if(newLemming.id === 13) {
+    // Test left-walking Basher
+    newLemming.action = "Basher";
+    newLemming.velX = -newLemming.maxVelX;
+    console.log("Making new lemming a", newLemming.action, newLemming);
+  }
+
+  lemmings.push(newLemming);
+}
+
+
 // >>> Prompt: instructions/map-generation.0003.txt (0001-0002 are now obsolete)
 const WATER_HEIGHT = 70;
 const EMPTY_SPACE_TOP_LEFT = 50;
@@ -331,7 +384,6 @@ if(false) {
             continue;
         }
 
-
         // Calculate value of noise at this pixel
         let noiseValue = 0;
         for (let octave = 1; octave <= numOctaves; octave++) {
@@ -424,7 +476,6 @@ class Lemming {
 
     // calculate leg positions based on velocity and direction
     let leftLegX, leftFootX, rightLegX, rightFootX;
-    // this.legAngle = Math.sin(this.age / 12.5) * Math.PI / 4;
     if (this.velX > 0) {
       this.legAngle = Math.sin(this.age * (this.velX/2.5)) * Math.PI / 4;
       leftLegX = this.x + this.width * 0.1;
@@ -695,7 +746,7 @@ function bash(lemming)
     facingY = y + (lemming.height/2);
     startX = x - vx - DIGGER_LOOK_AHEAD;
   }
-
+// BUG: TODO: Basher does not seem to dig leftwards
   if(isColorOneOf(getPixelColor(oldImgData, facingX, facingY), dirtColorBytes)) {
     for(let i = 0; i < lemming.height + 1; i++) {
       for(let j = startX - 1; j < facingX; j++) {
@@ -914,55 +965,7 @@ function createHole(x, y) {
 }
 
 
-// Create a new lemming and add it to the array of lemmings
-function spawnLemming() {
-  if(isPaused)
-    return;
-  if(lemmings.length > 15) {
-    return;
-  }
-
-  const newLemming = new Lemming(); //Object.create(Lemming);
-  newLemming.id = ++lastLemmingId;
-  newLemming.x = Math.random() * canvas.width; // Start at a random x location
-  newLemming.y = 0;
-  newLemming.velX = newLemming.maxVelX; // Walk to the right by default
-
-  //if(newLemming.id % 2) {
-  if(newLemming.id === 1 || newLemming.id === 5) {
-    newLemming.action = "Climber";
-    console.log("Making new lemming a", newLemming.action, newLemming);
-  }
-
-  if(newLemming.id === 2) {
-    newLemming.action = "Basher";
-    console.log("Making new lemming a", newLemming.action, newLemming);
-  }
-
-  if(newLemming.id === 3) {
-    newLemming.action = "Miner";
-    console.log("Making new lemming a", newLemming.action, newLemming);
-  }
-
-  if(newLemming.id === 4) {
-    newLemming.action = "Digger";
-    console.log("Making new lemming a", newLemming.action, newLemming);
-  }
-
-  if(newLemming.id === 6) {
-    newLemming.action = "Blocker";
-    console.log("Making new lemming a", newLemming.action, newLemming);
-  }
-  
-  lemmings.push(newLemming);
-}
-
-// Spawn a new lemming every second
-setInterval(spawnLemming, 100);
-
-
 let particles = [];
-
 
 let isPaused = false;
 
@@ -1032,6 +1035,9 @@ getBackground();
 
 // Start the update loop
 update();
+
+// Spawn a new lemming every interval
+setInterval(spawnLemming, 100);
 
 
 // >>> Prompt: instructions/particle-explosion.0001.txt
