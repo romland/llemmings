@@ -80,8 +80,9 @@ function RNG(seed) {
 }
 
 // const currentSeed = Date.now();   // "random"
-const currentSeed = 1680878681505; // slow
+// const currentSeed = 1680878681505; // slow
 // const currentSeed = 1680905320764;    // action
+const currentSeed = 1680983904827;
 
 console.log("Current seed: ", currentSeed);
 Math.random = RNG(currentSeed);
@@ -133,7 +134,7 @@ function spawnLemming() {
     newLemming.action = "Digger";
   }
 
-  if(newLemming.id === 6) {
+  if(newLemming.id === 10) {
     newLemming.action = "Blocker";
   }
   
@@ -561,8 +562,26 @@ class Lemming {
 
     // Check if we hit a wall on the x axis
     // >>> Prompt: instructions/wall-hit-fix.0001.txt
-    const hitWallOnLeft = this.velX < 0 && isPixelOneOf(oldImgData, this.x - 1, this.y + this.height / 2, terrainColorBytes);
-    const hitWallOnRight = this.velX > 0 && isPixelOneOf(oldImgData, this.x + this.width + 1, this.y + this.height / 2, terrainColorBytes);
+    let hitWallOnLeft = this.velX < 0 && isPixelOneOf(oldImgData, this.x - 1, this.y + this.height / 2, terrainColorBytes);
+    let hitWallOnRight = this.velX > 0 && isPixelOneOf(oldImgData, this.x + this.width + 1, this.y + this.height / 2, terrainColorBytes);
+
+    // Check if there are other lemmings that are blockers
+    for (let i = 0; i < lemmings.length; i++) {
+        const otherLemming = lemmings[i];
+
+        if (otherLemming !== this && !otherLemming.isDead && otherLemming.action === "Blocker" &&
+              otherLemming.onGround && 
+              this.x + this.width > otherLemming.x && this.x < otherLemming.x + otherLemming.width &&
+              this.y + this.height > otherLemming.y && this.y < otherLemming.y + otherLemming.height) {
+            if(this.velX > 0) {
+              hitWallOnRight = true
+              this.x = otherLemming.x - otherLemming.width;
+            } else {
+              hitWallOnLeft = true;
+              this.x = otherLemming.x + otherLemming.width + 1;
+            }
+        }
+    }
 
     // Check if we've fallen in water
     const isWaterBelow = pixelIsColor(oldImgData, this.x + this.width / 2, this.y + this.height + 1, waterColorBytes);
@@ -607,23 +626,6 @@ class Lemming {
         digging = startDigging(this);
     }
     // ============ /Digger/Basher/Miner code
-
-    // Check if there are other lemmings that are blockers
-    for (let i = 0; i < lemmings.length; i++) {
-        const otherLemming = lemmings[i];
-
-        if (
-            otherLemming !== this &&
-            !otherLemming.isDead &&
-            otherLemming.action === "Blocker" &&
-            this.x + this.width > otherLemming.x &&
-            this.x < otherLemming.x + otherLemming.width &&
-            this.y + this.height > otherLemming.y &&
-            this.y < otherLemming.y + otherLemming.height
-        ) {
-            this.velX *= -1;
-        }
-    }
 
     // Handle climbing
     if (shouldClimb) {
@@ -677,9 +679,15 @@ class Lemming {
         }
 
         // Move the lemming
-        if(this.action !== "Blocker") {
+        if(this.action === "Blocker") {
+          this.velX = 0;
+        } else {
           this.x += this.velX;
         }
+
+        this.x = Math.min(this.x, canvas.width - this.width - 2);
+        this.x = Math.max(this.x, 2);
+
         this.y += this.velY;
         this.age++;
     }
