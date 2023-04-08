@@ -119,35 +119,34 @@ function spawnLemming() {
   //if(newLemming.id % 2) {
   if(newLemming.id === 1 || newLemming.id === 5) {
     newLemming.action = "Climber";
-    console.log("Making new lemming a", newLemming.action, newLemming);
   }
 
   if(newLemming.id === 2) {
-    newLemming.action = "Basher";
-    console.log("Making new lemming a", newLemming.action, newLemming);
+    newLemming.action = "Miner";
   }
 
   if(newLemming.id === 3) {
     newLemming.action = "Miner";
-    console.log("Making new lemming a", newLemming.action, newLemming);
   }
 
-  if(newLemming.id === 4) {
+  if(newLemming.id === 12) {
     newLemming.action = "Digger";
-    console.log("Making new lemming a", newLemming.action, newLemming);
   }
 
   if(newLemming.id === 6) {
     newLemming.action = "Blocker";
-    console.log("Making new lemming a", newLemming.action, newLemming);
   }
   
   if(newLemming.id === 13) {
     // Test left-walking Basher
     newLemming.action = "Basher";
     newLemming.velX = -newLemming.maxVelX;
-    console.log("Making new lemming a", newLemming.action, newLemming);
   }
+
+  if(newLemming.id === 14) {
+    newLemming.action = "Floater";
+  }
+  console.log("Making new lemming a", newLemming.action, newLemming);
 
   lemmings.push(newLemming);
 }
@@ -491,9 +490,9 @@ class Lemming {
     } else {
       this.legAngle = 0;
       leftLegX = this.x + this.width * 0.1;
-      leftFootX = -this.legWidth;
+      leftFootX = -this.legWidth + 2;
       rightLegX = this.x + this.width * 0.9 - this.legWidth;
-      rightFootX = -this.legWidth;
+      rightFootX = -this.legWidth - 1;
     }
 
     ctx.fillStyle = this.legColor;
@@ -742,14 +741,15 @@ function bash(lemming)
     facingY = y + (lemming.height/2);
     startX = x;
   } else if(lemming.velX < 0) {
-    facingX = x;
+    // facing and start are reversed
+    facingX = x + 4;
     facingY = y + (lemming.height/2);
     startX = x - vx - DIGGER_LOOK_AHEAD;
   }
-// BUG: TODO: Basher does not seem to dig leftwards
-  if(isColorOneOf(getPixelColor(oldImgData, facingX, facingY), dirtColorBytes)) {
+
+  if(isColorOneOf(getPixelColor(oldImgData, (lemming.velX < 0 ? startX : facingX), facingY), dirtColorBytes)) {
     for(let i = 0; i < lemming.height + 1; i++) {
-      for(let j = startX - 1; j < facingX; j++) {
+      for(let j = startX; j < facingX; j++) {
         if(isColorOneOf(getPixelColor(oldImgData, j, y + i), dirtColorBytes)) {
           clearPixel(j, y + i);
           pixelsDug++;
