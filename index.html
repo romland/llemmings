@@ -117,7 +117,7 @@ function spawnLemming() {
   newLemming.velX = newLemming.maxVelX; // Walk to the right by default
 
   //if(newLemming.id % 2) {
-  if(newLemming.id === 1 || newLemming.id === 5) {
+  if(newLemming.id === 7 || newLemming.id === 5) {
     newLemming.action = "Climber";
   }
 
@@ -651,6 +651,7 @@ class Lemming {
             if (this.y - heightAdjustment >= 0) {
                 this.y += heightAdjustment; // move sprite up (HUMAN comment: gravity takes care of down)
             } else {
+                console.log("Death by heigthAdjustment")
                 this.isDead = true;
                 return;
             }
@@ -815,7 +816,7 @@ function dig(lemming)
   facingX = x + (lemming.width / 2);
   startY = y + lemming.height - vy - DIGGER_LOOK_AHEAD;
 
-  for (let i = -1; i < lemming.width + 1; i++) {
+  for (let i = -3; i < lemming.width + 3; i++) {
     for (let j = startY - 1; j < facingY; j++) {
       if (isColorOneOf(getPixelColor(oldImgData, x + i, j), dirtColorBytes)) {
         clearPixel(x + i, j);
@@ -844,7 +845,6 @@ function dig(lemming)
     console.log(lemming.action, lemming.id, "done after removing", lemming.totalDug, "pixels");  // HUMAN
     lemming.action = null;
     lemming.actionStarted = false;
-    lemming.velX = lemming.maxVelX;
     lemming.previouslyDugAt = null;
     return false;
   }
