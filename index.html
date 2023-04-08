@@ -932,6 +932,12 @@ function mine(lemming)
   }
 
   if(lemming.actionStarted && !pixelsDug) {
+    // HUMAN: Dirty hack. Clear a few pixels under the lemming when done.
+    for(let i = -1; i < DIGGER_LOOK_AHEAD; i++) {
+      for(let j = -2; j < lemming.width + 2; j++) {
+        clearPixel(x + j, y + lemming.height + i);
+      }
+    }
     console.log(lemming.action, lemming.id, "done after removing", lemming.totalDug, "pixels");    // HUMAN
     lemming.action = null;
     lemming.actionStarted = false;
