@@ -424,18 +424,19 @@ class Lemming {
 
     // calculate leg positions based on velocity and direction
     let leftLegX, leftFootX, rightLegX, rightFootX;
+    // this.legAngle = Math.sin(this.age / 12.5) * Math.PI / 4;
     if (this.velX > 0) {
-      this.legAngle = Math.sin(this.age / 11) * Math.PI / 4;
+      this.legAngle = Math.sin(this.age * (this.velX/2.5)) * Math.PI / 4;
       leftLegX = this.x + this.width * 0.1;
       leftFootX = -(this.legWidth/2);
       rightLegX = this.x + this.width * 0.5;
       rightFootX = -(this.legWidth/2);
     } else if (this.velX < 0) {
-      this.legAngle = -Math.sin(this.age / 11) * Math.PI / 4;
+      this.legAngle = -Math.sin(this.age * (this.velX/2.5)) * Math.PI / 4;
       leftLegX = this.x + this.width * 0.5;
-      leftFootX = -this.legWidth ;
+      leftFootX = -this.legWidth - 1;
       rightLegX = this.x + this.width * 0.9 - this.legWidth;
-      rightFootX = -this.legWidth ;
+      rightFootX = -this.legWidth - 1;
     } else {
       this.legAngle = 0;
       leftLegX = this.x + this.width * 0.1;
@@ -625,7 +626,7 @@ class Lemming {
         }
 
         // Move the lemming
-        if(this.action !== "Blocker" && !this.actionStarted) {
+        if(this.action !== "Blocker") {
           this.x += this.velX;
         }
         this.y += this.velY;
@@ -677,7 +678,8 @@ function bash(lemming)
     lemming.previouslyDugAt = {
       x : null,
       y : null,
-      dug : null
+      dug : null,
+      ts : null,
     }
   }
 
@@ -711,12 +713,15 @@ function bash(lemming)
       lemming.previouslyDugAt.x = x;
       lemming.previouslyDugAt.y = y;
       lemming.previouslyDugAt.dug = pixelsDug;
+      lemming.previouslyDugAt.ts = lemming.age;
       lemming.totalDug += pixelsDug;
     }
   }
 
   // If lemming has not moved to a new location, recall how much was dug originally.
-  if(prevDugX === x && prevDugY === y) {
+  // HUMAN: Try to dig in the same spot at most 20 frames 
+  //        (Note: If it moves really slow, the check will not work as it should take velocity into account)
+  if(lemming.totalDug > 0 && prevDugX === x && prevDugY === y && lemming.previouslyDugAt.ts > (lemming.age-20)) {
     pixelsDug = lemming.previouslyDugAt.dug;
   }
 
@@ -1224,15 +1229,15 @@ function clearPixel(x, y, col = 0) {
   }
   
   const pixelIndex = getPixelIndex(x, y, canvas.width);
-  oldImgData.data[pixelIndex] = col;
-  oldImgData.data[pixelIndex + 1] = col;
-  oldImgData.data[pixelIndex + 2] = col;
+  oldImgData.data[pixelIndex] = 0;
+  oldImgData.data[pixelIndex + 1] = 0;
+  oldImgData.data[pixelIndex + 2] = 0;
   oldImgData.data[pixelIndex + 3] = 255;
 
   background.data[pixelIndex] = col;
   background.data[pixelIndex + 1] = col;
   background.data[pixelIndex + 2] = col;
-  background.data[pixelIndex + 3] = 255;
+  background.data[pixelIndex + 3] = (col ? 64 : 255);
 }
 
 
