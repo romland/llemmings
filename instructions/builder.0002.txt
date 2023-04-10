@@ -1,0 +1,55 @@
+The following code builds a bridge upwards correctly when a sprite is moving to the right (e.g. lemming.velX > 0). 
+
+Make it so that this also works the same way when the sprite is moving leftwards:
+
+const BUILDER_LOOK_AHEAD = 4;
+const BUILD_MATERIAL_CARRIED = 75;
+const BUILD_PER_FRAME_MAX = 10;
+
+function build(lemming)
+{
+    if (!lemming.onGround) {
+        return false;
+    }
+
+    const startX = Math.floor(lemming.x + lemming.width + BUILDER_LOOK_AHEAD);
+    const startY = Math.floor(lemming.y + lemming.height);
+
+    if (startX >= canvas.width || startY >= canvas.height) {
+        return false;
+    }
+
+    let pixelsBuilt = 0;
+    if(!lemming.totalPixelsBuilt) {
+      lemming.totalPixelsBuilt = 0;
+    }
+
+    let y = startY
+    // HUMAN: TODO: This should check end of the bridge, not where lemming is?
+    const obstacleOnLeft = lemming.velX < 0 && isPixelOneOf(oldImgData, startX - 1, y - lemming.height / 2, terrainColorBytes);
+    const obstacleOnRight = lemming.velX > 0 && isPixelOneOf(oldImgData, startX + 1, y - lemming.height / 2, terrainColorBytes);
+    
+    if (obstacleOnLeft || obstacleOnRight) {
+      // Do nothing
+    } else {
+      for (let x = startX; x < canvas.width && x < startX + 4 && pixelsBuilt <= BUILD_PER_FRAME_MAX; x++) {
+        // HUMAN: TODO: This will allow for a lemming to build more than totalPixelsBuilt by at most BUILD_PER_FRAME -- need check
+        if (isPixelOneOf(oldImgData, x, y, blackColorBytes)) {
+          setPixel(x, y, dirtColorBytes);
+          pixelsBuilt++;
+          lemming.actionStarted = true;
+        }
+      }
+      lemming.totalPixelsBuilt += pixelsBuilt;
+    }
+
+    if (obstacleOnLeft || obstacleOnRight || lemming.totalPixelsBuilt >= BUILD_MATERIAL_CARRIED) {
+        lemming.totalPixelsBuilt = 0;
+        lemming.standStillUntil = lemming.age + 120;
+        lemming.action = null;
+        lemming.actionStarted = false;
+        return false;
+    }
+
+    return pixelsBuilt > 0;
+}

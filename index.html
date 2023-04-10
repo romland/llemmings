@@ -87,6 +87,7 @@ const currentSeed = 1680983904827;
 console.log("Current seed: ", currentSeed);
 Math.random = RNG(currentSeed);
 
+const blackColorBytes = [0x0, 0x0, 0x0];
 const waterColorBytes = [0x00, 0x77, 0xbe]; // [0, 119, 190];
 const rockColorBytes  = [0x88, 0x88, 0x88]; // [136, 136, 136];
 const dirtColorBytes  = [0x4a, 0x2e, 0x00]; // [74, 46, 0];
@@ -117,6 +118,12 @@ function spawnLemming() {
   newLemming.y = 0;
   newLemming.velX = newLemming.maxVelX; // Walk to the right by default
 
+  if(newLemming.id === 1) {
+    // Builder building leftwards
+    newLemming.velX = -newLemming.maxVelX;
+    newLemming.action = "Builder";
+  }
+
   //if(newLemming.id % 2) {
   if(newLemming.id === 7 || newLemming.id === 5) {
     newLemming.action = "Climber";
@@ -136,6 +143,12 @@ function spawnLemming() {
 
   if(newLemming.id === 10) {
     newLemming.action = "Blocker";
+  }
+  
+  if(newLemming.id === 11) {
+    // Builder building rightwards
+    newLemming.action = "Builder";
+    newLemming.isSelected = true;
   }
   
   if(newLemming.id === 13) {
@@ -352,9 +365,6 @@ for (let i = 0; i < 256; i++) {
     noiseHash[i] = Math.floor(Math.random() * 256);
 }
 
-// canvas = document.querySelector('canvas');
-// canvas.width = 800;
-// canvas.height = 600;
 generateMap(canvas.width, canvas.height, EMPTY_SPACE_TOP_LEFT, EMPTY_SPACE_BOTTOM_RIGHT);
 
 // =============================================
@@ -424,9 +434,7 @@ if(false) {
 
     // Draw final image to canvas
     ctx.putImageData(imgData, 0, 0);
-
 }
-
 
 
 const blueBox = [0x00, 0x00, 0xff];
@@ -552,6 +560,11 @@ class Lemming {
         return;
     }
 
+    if (this.standStillUntil && this.standStillUntil < this.age) {
+      this.standStillUntil = null;
+      this.velX = -this.standStillDirection;
+    }
+
     // Check if ground is under us or not
     let isGroundUnderneath = isPixelOneOf(oldImgData, this.x + this.width / 2, this.y + this.height + 1, terrainColorBytes);
 
@@ -638,6 +651,11 @@ class Lemming {
     }
     // ============ /Digger/Basher/Miner code
 
+    if (this.action === "Builder") {
+      // HUMAN: TODO: Just use 'digging' for now -- same concept
+      digging = build(this);
+    }
+
     // Handle climbing
     if (shouldClimb) {
         this.isClimbing = true;
@@ -680,7 +698,7 @@ class Lemming {
 
         // HUMAN: this if block to slow down when digging
         // HUMAN: tweaked to include basher here
-        if (this.actionStarted && (this.action === "Basher" || this.action === "Miner")) {
+        if (this.actionStarted && (this.action === "Basher" || this.action === "Miner" || this.action === "Builder")) {
             this.velX = (this.velX > 0 ? this.maxVelX * DIGGER_SPEED_FACTOR : -this.maxVelX * DIGGER_SPEED_FACTOR);
         } else if (this.actionStarted && this.action === "Digger") {
             this.velX = 0;
@@ -691,6 +709,9 @@ class Lemming {
 
         // Move the lemming
         if(this.action === "Blocker") {
+          this.velX = 0;
+        } else if (this.standStillUntil && this.standStillUntil > this.age) {
+          // Pause a builder for a little while after it finished building
           this.velX = 0;
         } else {
           this.x += this.velX;
@@ -706,8 +727,70 @@ class Lemming {
 }
 
 // =========================================================================
+// Builder
+// >>> Prompt: instructions/builder.0001.txt
+// >>> Prompt: instructions/builder.0002.txt
+const BUILDER_LOOK_AHEAD = 1;
+const BUILD_MATERIAL_CARRIED = 120;
+const BUILD_PER_FRAME_MAX = 10;
+
+function build(lemming)
+{
+    if (!lemming.onGround) {
+        return false;
+    }
+
+    const startX = Math.floor(
+      lemming.velX < 0
+        ? lemming.x - BUILDER_LOOK_AHEAD
+        : lemming.x + lemming.width + BUILDER_LOOK_AHEAD
+    );
+
+    const startY = Math.floor(lemming.y + lemming.height) + 1;
+
+    if (startX >= canvas.width || startY >= canvas.height) {
+        return false;
+    }
+
+    let pixelsBuilt = 0;
+    if(!lemming.totalPixelsBuilt) {
+      lemming.totalPixelsBuilt = 0;
+    }
+
+    let y = startY
+    // HUMAN: TODO: This should check end of the bridge, not where lemming is?
+    const obstacleOnLeft = lemming.velX < 0 && isPixelOneOf(oldImgData, startX - 1, y - lemming.height / 2, terrainColorBytes);
+    const obstacleOnRight = lemming.velX > 0 && isPixelOneOf(oldImgData, startX + 1, y - lemming.height / 2, terrainColorBytes);
+    
+    if (obstacleOnLeft || obstacleOnRight) {
+      // Do nothing
+    } else {
+      for (let x = startX; x < canvas.width && x < startX + 4 && pixelsBuilt <= BUILD_PER_FRAME_MAX; x++) {
+        // HUMAN: TODO: This will allow for a lemming to build more than totalPixelsBuilt by at most BUILD_PER_FRAME -- need check
+        if (isPixelOneOf(oldImgData, x, y, blackColorBytes)) {
+          setPixel(x, y, dirtColorBytes);
+          pixelsBuilt++;
+          lemming.actionStarted = true;
+        }
+      }
+      lemming.totalPixelsBuilt += pixelsBuilt;
+    }
+
+    if (obstacleOnLeft || obstacleOnRight || lemming.totalPixelsBuilt >= BUILD_MATERIAL_CARRIED) {
+        lemming.totalPixelsBuilt = 0;
+        lemming.standStillUntil = lemming.age + 120;
+        lemming.standStillDirection = lemming.velX;
+        lemming.action = null;
+        lemming.actionStarted = false;
+        return false;
+    }
+
+    return pixelsBuilt > 0;
+}
+
+// =========================================================================
 // Digger/Basher/Miner code
-// >>> Prompt: ./instructions/digger-miner-basher.0001.txt
+// >>> Prompt: /instructions/digger-miner-basher.0001.txt
 
 const DIGGER_LOOK_AHEAD = 4;
 const DIGGER_SPEED_FACTOR = 0.4;    // HUMAN: Changed my mind; changed from 0.2
@@ -1169,6 +1252,11 @@ function applyAction(action) {
       break;
     case 'Builder':
       //add building behavior here
+      selectedLemming.standStillUntil = 0;
+      selectedLemming.standStillDirection = undefined;
+
+      selectedLemming.action = "Builder";     // HUMAN: Added this.
+      // selectedLemming.isSelected = false;  // HUMAN: Let builders remain selected for now
       break;
     case 'Basher':
       // >>> Prompt: ./instructions/digger-miner-basher.0001.txt
@@ -1245,12 +1333,33 @@ function updateInfoDiv(lem)
 {
   infoDiv.innerHTML = `ID: ${lem.id} 
     Act: ${lem.action} 
+    X: ${lem.x.toFixed(1)}
+    Y: ${lem.y.toFixed(1)}
     velX: ${lem.velX.toFixed(2)} 
     velY: ${lem.velY.toFixed(2)} 
     Started: ${lem.actionStarted}
     `;
 }
 
+
+// HUMAN: Added this to make it easier for the LLM
+function setPixel(x, y, colorBytes)
+{
+  if (x >= canvas.width || y >= canvas.height || x < 0 || y < 0) {
+    return;
+  }
+  
+  const pixelIndex = getPixelIndex(x, y, canvas.width);
+  oldImgData.data[pixelIndex] = colorBytes[0];
+  oldImgData.data[pixelIndex + 1] = colorBytes[1];
+  oldImgData.data[pixelIndex + 2] = colorBytes[2];
+  oldImgData.data[pixelIndex + 3] = 255;
+
+  background.data[pixelIndex] = colorBytes[0];
+  background.data[pixelIndex + 1] = colorBytes[1];
+  background.data[pixelIndex + 2] = colorBytes[2];
+  background.data[pixelIndex + 3] = 255;
+}
 
 // HUMAN: this came from _one_ of the discarded Digger/Miner/Basher implementations.
 // The LLM kept getting tiny parts of this wrong over and over, so I lifted this implementation

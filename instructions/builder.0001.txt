@@ -1,0 +1,79 @@
+Prompt note: I had to fix several bugs in the output from this prompt, it was costly 
+in time and after having done it a few times, I just caved in and cheated and fixed
+the bugs instead of the prompt. The prompt got a bit too complex, it should have 
+been simplified for the LLM to be able to do it.
+
+>>> Prompt:
+We're making a game with lemmings of various types, using javascript and canvas.
+
+One type of lemming is the Builder, when activated, it should build a bridge like this:
+
+Here's ASCII to illustrate:
+
+___L_/
+
+Where
+_ = ground
+L = lemming heading to the right
+/ = a segment of bridge at an angle of 30 degrees that the lemming should be building
+
+- the action property is already set to "Builder" you don't need to do anything with that
+- in the direction it is walking (this.velX), it should build a bridge at around
+  30 degrees upwards by coloring pixels on the canvas using the function:
+  setPixel(x, y, color) where color is an array of three bytes [r,g,b], the color
+  to use is in dirtColorBytes
+- the bridge should start at the lemmings feet and BUILDER_LOOK_AHEAD (add a const of 4)
+  pixels in front of lemming, and it should at a maximum build BUILDER_LOOK_AHEAD * height pixels 
+  per frame. That is: x = lemming's x+width and lemming's y+height+BUILDER_LOOK_AHEAD
+- the bridge should be 4 pixels high
+- check bounds of canvas, don't attempt to set change outside it. Check against
+  canvas.height and canvas.width
+- bridges can only be built where the pixel color is black, find the array in the global
+  blackColorBytes
+- if the bridge runs into a wall or another obstacle, lemming should stop building and
+  lose its Builder status
+- implement the Builder in its own function called "build" where a "lemming" is the 
+  only thing being passed in
+- the function should return true if it built something, false otherwise
+- it can only build if the lemming is currently on the ground
+- it cannot build if it is already assigned another action
+- the moment the lemming starts a new bridge (that is, start spending building material),
+  it should set actionStarted to true, and at some point later when it has spent all the 
+  bridge building material, set it to false
+- only a little bit of the bridge is built every frame the function is called, so you need
+  to keep track how how much was built this frame to know when to exit the function.
+- The total pixels must be kept track of to know when it should stop building because it spent
+  all its bridge-building material. After which the lemming should stand still for (pause) 
+  for 120 frames. Set a property called 'standStillUntil' in the lemming for when it should 
+  stand still -- don't use a date for timing, you can get current frame number by looking
+  at Lemming's age.
+- despite lemming moving, between frames it should always just continue building where it 
+  stopped building the previous frame
+
+These things already exist, use them, don't reimplement them:
+A lemming has these properties:
+age = 0;
+width = 10;
+height = 20;
+x = x;
+y = y;
+velX = 0;
+velY = 0;
+onGround = false;
+isClimbing = false;
+isDead = false;
+action = null;
+actionStarted = false;
+
+X/Y/velX/velY in the lemming are doubles, to work with individual pixels make sure you use ints
+
+Check collision with obstacles using this (it checks whether there is an obstacle at waist height):
+let hitWallOnLeft = this.velX < 0 && isPixelOneOf(oldImgData, this.x - 1, this.y + this.height / 2, terrainColorBytes);
+let hitWallOnRight = this.velX > 0 && isPixelOneOf(oldImgData, this.x + this.width + 1, this.y + this.height / 2, terrainColorBytes);
+
+A pixel is just a normal pixel (1x1 pixels -- there are no tiles or blocks).
+For operating on pixels, use isPixelOneOf() and setPixel() which are already implemented. Don't implement them again.
+
+And for the love of god, don't use setTimeout() in a loop. For the pause you just need to set a flag in the lemming.
+
+Give me only code, no need for explanation.
