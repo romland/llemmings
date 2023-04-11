@@ -138,6 +138,15 @@ function spawnLemming() {
     newLemming.action = "Miner";
   }
 
+  if(newLemming.id === 4) {
+    newLemming.actions = [
+      { action: "Builder", x : 727, y : 175, rad : 5, },
+      { action: "Builder", x : 675, y : 158, rad : 3, },
+      // { action: "Builder", x : 727, y : 175, rad : 5, },
+      // { action: "Builder", x : 727, y : 175, rad : 5, },
+    ];
+  }
+
   if(newLemming.id === 12) {
     newLemming.action = "Digger";
   }
@@ -163,12 +172,12 @@ function spawnLemming() {
   }
 
   if(newLemming.id === 17) {
-    newLemming.actions = [{
-      action: "Builder",
-      x : 210,
-      y : 169,
-      rad : 10,
-    }];
+    newLemming.actions = [
+      { action: "Builder", x : 210, y : 169, rad : 10, },
+      { action: "Builder", x : 277, y : 149, rad : 5,  },
+      { action: "Builder", x : 347, y : 137, rad : 5,  },
+      { action: "Builder", x : 414, y : 121, rad : 5,  }
+    ];
   }
 
   if(newLemming.id === 18) {
@@ -779,6 +788,28 @@ function build(lemming)
     if (obstacleOnLeft || obstacleOnRight) {
       // Do nothing
     } else {
+      if(!lemming.actionStarted) {
+        // Find ground within 5 pixels of feet
+        let addY = 0;
+        for(let i = 0; i < 5; i++) {
+          if(!isPixelOneOf(oldImgData, startX, startY + addY, terrainColorBytes)) {
+            addY += 1;
+          } else {
+            break;
+          }
+        }
+
+        if(addY) {
+          // Create a (free) platform straight under the feet since we are on a slope
+          const offset = lemming.velX < 0 ? -1 : 0;
+          for(let i = (lemming.velX < 0 ? -BUILDER_LOOK_AHEAD : 0); i < lemming.width + BUILDER_LOOK_AHEAD; i++) {
+            setPixel(Math.floor(lemming.x) + i, startY + offset, dirtColorBytes);
+            setPixel(Math.floor(lemming.x) + i, startY + (offset+1), dirtColorBytes);
+          }
+          lemming.actionStarted = true;
+        }
+      }
+
       for (let x = startX; x < canvas.width && x < startX + 4 && pixelsBuilt <= BUILD_PER_FRAME_MAX; x++) {
         // HUMAN: TODO: This will allow for a lemming to build more than totalPixelsBuilt by at most BUILD_PER_FRAME -- need check
         if (isPixelOneOf(oldImgData, x, y, blackColorBytes)) {
@@ -1093,7 +1124,7 @@ function createHole(x, y) {
  * Trigger action at position.
  * HUMAN: For easier debugging and demo-purposes.
  */
- function doProgrammedActions(lemming)
+function doProgrammedActions(lemming)
 {
   if (!lemming.actions || lemming.action) {
     return false;
@@ -1103,8 +1134,13 @@ function createHole(x, y) {
   const ly = lemming.y + lemming.height;
 
   for(let i = 0; i < lemming.actions.length; i++) {
+    if(lemming.actions[i].ran) {
+      continue;
+    }
+
     if(isPointWithinCircle(lx, ly, lemming.actions[i].x, lemming.actions[i].y, lemming.actions[i].rad)) {
       lemming.action = lemming.actions[i].action;
+      lemming.actions[i].ran = true;
       return true;
     }
   }
