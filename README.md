@@ -20,7 +20,7 @@ The intention is that no code is written by a human.
 
 **The job, as a human, is to copy and paste code.**
 
-The latest and greatest version is [here](https://romland.github.io/llemmings)!   
+It is (probably) not yet a game. But ... the latest and greatest version is [here](https://romland.github.io/llemmings)!   
 
 ![Alt text](latest.png?raw=true "Screenshot of Llemmings")
 
