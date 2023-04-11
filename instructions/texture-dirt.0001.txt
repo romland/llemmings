@@ -1,0 +1,12 @@
+>>> Prompt: 
+How would you generate a playful, but realistic 2D dirt texture. Use only JavaScript 
+and canvas, without external dependencies or images. The texture must fill the entire canvas.
+
+Use raw pixel manipulation rather than canvas shape-drawing methods.
+
+Don't use too bright colors.
+
+Use the already implemented function PerlinNoise2D(x, y) for noise. There can be no other 
+dependencies except a canvas element with id "canvas".
+
+Give me the code. No need for additional explanation.

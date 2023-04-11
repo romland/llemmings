@@ -403,57 +403,27 @@ let oldImgData = ctx.getImageData(0,0,width,height);    // TODO: This should be 
 let canvasBytes = Uint8ClampedArray.from(oldImgData.data);
 const imgData = new ImageData(canvasBytes, width, height);
 
-// Render "texture" (or not)
-if(false) {
-    // Loop over each pixel in the image
-    for (let y = 0; y < height; y++) {
-    for (let x = 0; x < width; x++) {
-        const pixelOffset = ((y * width) + x) * 4; // x2 for RGBA channels
-
-        const isRock = pixelIsColor(imgData, x, y, [0x88, 0x88, 0x88, 255]);
-        const isDirt = pixelIsColor(imgData, x, y, [0x4a, 0x2e, 0x00, 255]);
-
-        if(!isRock && !isDirt) {
-            // console.log("skipping");
-            continue;
-        }
-
-        // Calculate value of noise at this pixel
-        let noiseValue = 0;
-        for (let octave = 1; octave <= numOctaves; octave++) {
-        const frequency = Math.pow(2, octave);
-        const amplitude = Math.pow(persistence, octave);
-        noiseValue += noiseGenerator.noise(x * noiseScale * frequency,
-                                            y * noiseScale * frequency,
-                                            0) * amplitude;
-        }
-        noiseValue = (noiseValue * 0.5) + 0.5; // normalise between 0 and 1
-
-        // Use noise value to determine pixel color
-        let r, g, b;
-        if (isRock) { // rock color
-        const shade = noiseValue + (Math.random() * 0.2);
-        r = shade * 90;
-        g = shade * 90;
-        b = shade * 90;
-        } else { // dirt color
-        const shade = noiseValue + (Math.random() * 0.2) - 0.4;
-        r = shade * 120;
-        g = shade * 100;
-        b = shade * 80;
-        }
-
-        // Set the pixel color in the image data buffer
-        imgData.data[pixelOffset] = r;   // Red channel
-        imgData.data[pixelOffset+1] = g; // Green channel
-        imgData.data[pixelOffset+2] = b; // Blue channel
-        imgData.data[pixelOffset+3] = 255; // Alpha channel (255 for opaque)
+function renderDirtTexture()
+{
+  const dirtGrainSize = 10;
+  // generate dirt texture
+  for (let x = 0; x < canvas.width; x++) {
+    for (let y = 0; y < canvas.height; y++) {
+      if(!isColorOneOf(getPixelColor(oldImgData, x, y), dirtColorBytes)) {
+        continue;
+      }
+      let noiseValue = PerlinNoise2D(x / dirtGrainSize, y / dirtGrainSize);
+      
+      // darken color according to noise value
+      let shade = Math.floor(noiseValue * 40);
+      ctx.fillStyle = `rgb(${120 - shade}, ${80 - shade}, ${50 - shade})`;
+      
+      // draw pixel
+      ctx.fillRect(x, y, 1, 1);
     }
-    }
-
-    // Draw final image to canvas
-    ctx.putImageData(imgData, 0, 0);
+  }
 }
+renderDirtTexture();
 
 
 const blueBox = [0x00, 0x00, 0xff];
