@@ -2,7 +2,7 @@
 
 <img width="30%" align="right" src="./llemming360.png">
 
-_Give me definition, usage and phonetics of "llemming". Which is a play on the acronym LLM (Large Language Model)_  
+_Give me definition and phonetics of "llemming". Which is a play on the acronym LLM (Large Language Model)_  
 
 **OpenAI's truth-teller, _ChatGPT_**:  
 _Phonetics:_  
@@ -10,9 +10,6 @@ _Phonetics:_
 
 _Definition:_  
 To mindlessly follow the predictions or suggestions of a language model without considering their validity, similar to how a lemming blindly follows its comrades off a cliff.
-
-_Usage:_  
-Don't just llemming your writing to the suggestions of a Large Language Model; make sure you double-check for accuracy and context before adopting any changes.
 
 <br clear="right"/>
 
