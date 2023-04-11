@@ -82,7 +82,8 @@ function RNG(seed) {
 // const currentSeed = Date.now();   // "random"
 // const currentSeed = 1680878681505; // slow
 // const currentSeed = 1680905320764;    // action
-const currentSeed = 1680983904827;
+// const currentSeed = 1680983904827;  // builder test
+const currentSeed = 1681139505452;
 
 console.log("Current seed: ", currentSeed);
 Math.random = RNG(currentSeed);
@@ -159,6 +160,15 @@ function spawnLemming() {
 
   if(newLemming.id === 14) {
     newLemming.action = "Floater";
+  }
+
+  if(newLemming.id === 17) {
+    newLemming.actions = [{
+      action: "Builder",
+      x : 210,
+      y : 169,
+      rad : 10,
+    }];
   }
 
   if(newLemming.id === 18) {
@@ -487,17 +497,19 @@ class Lemming {
     ctx.fillStyle = "rgb(" + blueBox.join(",") + ")";
     ctx.fillRect (this.x, this.y, this.width, this.height * 0.75);
 
+    let legMoveSpeed = this.age * (this.velX/3.0);
+
     // calculate leg positions based on velocity and direction
     let leftLegX, leftFootX, rightLegX, rightFootX;
     if (this.velX > 0) {
-      this.legAngle = Math.sin(this.age * (this.velX/3.0)) * Math.PI / 4;
+      this.legAngle = Math.sin(legMoveSpeed) * Math.PI / 4;
       leftLegX = this.x + this.width * 0.2;
       rightLegX = this.x + this.width * 0.4;
 
       leftFootX = -(this.legWidth/2);
       rightFootX = -(this.legWidth/2);
     } else if (this.velX < 0) {
-      this.legAngle = -Math.sin(this.age * (this.velX/3.0)) * Math.PI / 4;
+      this.legAngle = -Math.sin(legMoveSpeed) * Math.PI / 4;
       leftLegX = this.x + this.width * 0.5;
       rightLegX = this.x + this.width * 0.8 - this.legWidth;
 
@@ -535,7 +547,7 @@ class Lemming {
     ctx.fillRect(rightFootX, this.legHeight - this.footHeight, this.footWidth, this.footHeight);
     ctx.restore();
 
-    // hair
+    // // hair
     ctx.fillStyle = "rgb(" + greenBox.join(",") + ")";
     ctx.fillRect(this.x, this.y, this.width, this.height / 4);
 
@@ -555,6 +567,8 @@ class Lemming {
   }
 
   update() {
+    doProgrammedActions(this);
+
     if (this.y >= canvas.height - (this.height + this.velY + 1)) {
         this.isDead = true;
         return;
@@ -1072,6 +1086,39 @@ function createHole(x, y) {
       }
     }
   }
+}
+
+
+/**
+ * Trigger action at position.
+ * HUMAN: For easier debugging and demo-purposes.
+ */
+ function doProgrammedActions(lemming)
+{
+  if (!lemming.actions || lemming.action) {
+    return false;
+  }
+
+  const lx = lemming.x + (lemming.width/2);
+  const ly = lemming.y + lemming.height;
+
+  for(let i = 0; i < lemming.actions.length; i++) {
+    if(isPointWithinCircle(lx, ly, lemming.actions[i].x, lemming.actions[i].y, lemming.actions[i].rad)) {
+      lemming.action = lemming.actions[i].action;
+      return true;
+    }
+  }
+
+  return false;
+}
+
+// >>> Prompt: instructions/actions-programmed.0001.txt
+function isPointWithinCircle(x,y,a,b,radius) {
+  // calculate the distance between the point (x,y) and the center point (a,b) using Pythagorean theorem
+  let distance = Math.abs(x - a) + Math.abs(y - b); 
+  
+  // compare the distance with the radius of the circle
+  return distance <= radius;
 }
 
 
