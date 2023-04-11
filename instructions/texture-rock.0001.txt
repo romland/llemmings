@@ -1,0 +1,5 @@
+Give me a function similar to the one below, but instead of dirt, it should be 
+sharp rocks and cliffs instead of dirt. Make it less fuzzy and more sharp. 
+It should not look exactly like the dirt, give me something unique.
+
+<dirt texture function here>
