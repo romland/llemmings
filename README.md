@@ -26,8 +26,6 @@ It is (probably) not yet a game. But ... the latest and greatest version is [her
 
 
 ## 🎮 The game
-It is (probably) not yet a game. But ...
-
 Llemmings is based on a game with a similar name by DMA Design. 
 
 In short: green and blue blocks (will be) dropping out of a hatch and the goal is to bring
