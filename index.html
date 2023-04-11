@@ -83,7 +83,7 @@ function RNG(seed) {
 // const currentSeed = 1680878681505; // slow
 // const currentSeed = 1680905320764;    // action
 // const currentSeed = 1680983904827;  // builder test
-const currentSeed = 1681139505452;
+const currentSeed = 1681139505452;    // llemmings.com
 
 console.log("Current seed: ", currentSeed);
 Math.random = RNG(currentSeed);
@@ -116,7 +116,7 @@ function spawnLemming() {
   const newLemming = new Lemming(); //Object.create(Lemming);
   newLemming.id = ++lastLemmingId;
   newLemming.x = Math.random() * canvas.width; // Start at a random x location
-  newLemming.y = 0;
+  newLemming.y = -20;
   newLemming.velX = newLemming.maxVelX; // Walk to the right by default
 
   if(newLemming.id === 1) {
