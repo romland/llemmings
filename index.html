@@ -273,32 +273,32 @@ var llemmings = (function () {
 
       // carve out tunnels
       for (let y = 0; y < canvasHeight; y += TUNNEL_SIZE) {
-      let x = 0;
-      while (x < canvasWidth - TUNNEL_SIZE) {
+        let x = 0;
+        while (x < canvasWidth - TUNNEL_SIZE) {
           if(Math.random() < 0.8) {
-          break;
+            break;
           }
 
           if (map[y][x] > 0.4) {
-          const tunnelLength = Math.floor(Math.random() * (TUNNEL_MAX_LENGTH - TUNNEL_MIN_LENGTH + 1)) + TUNNEL_MIN_LENGTH;
-          let curve = Math.floor(Math.random() * TUNNEL_SIZE) - TUNNEL_SIZE / 2;
-          for (let i = 0; i < tunnelLength && x < canvasWidth - TUNNEL_SIZE; i++) {
-              const startY = Math.max(0, y + curve);
-              const endY = Math.min(canvasHeight, y + TUNNEL_SIZE + curve);
-              for (let j = startY; j < endY; j++) {
-              if (map[j][x] > 0.4) {
-                  map[j][x] = 0;
-              }
-              }
-              x++;
-              curve += Math.floor(Math.random() * 3) - 1;
-              curve = Math.max(-TUNNEL_SIZE / 2, Math.min(curve, TUNNEL_SIZE / 2));
-          }
+            const tunnelLength = Math.floor(Math.random() * (TUNNEL_MAX_LENGTH - TUNNEL_MIN_LENGTH + 1)) + TUNNEL_MIN_LENGTH;
+            let curve = Math.floor(Math.random() * TUNNEL_SIZE) - TUNNEL_SIZE / 2;
+            for (let i = 0; i < tunnelLength && x < canvasWidth - TUNNEL_SIZE; i++) {
+                const startY = Math.max(0, y + curve);
+                const endY = Math.min(canvasHeight, y + TUNNEL_SIZE + curve);
+                for (let j = startY; j < endY; j++) {
+                  if (map[j][x] > 0.4) {
+                      map[j][x] = 0;
+                  }
+                }
+                x++;
+                curve += Math.floor(Math.random() * 3) - 1;
+                curve = Math.max(-TUNNEL_SIZE / 2, Math.min(curve, TUNNEL_SIZE / 2));
+            }
           }
           else {
-          x++;
+            x++;
           }
-      }
+        }
       }
 
       for (let x = 0; x < canvasWidth; x += TUNNEL_SIZE) {
@@ -1644,7 +1644,7 @@ var llemmings = (function () {
   }
 })();
 
-llemmings.init();
+llemmings.init(true);
 llemmings.start();
 
 </script>
