@@ -58,51 +58,88 @@
 </head>
 <body>
 
-<!-- >>> Prompt: instructions/about.0001.txt -->
-<header>
-    <p>What is this? <a href="https://github.com/romland/llemmings">See Github</a>.</p>
-</header>
+  <!-- >>> Prompt: instructions/about.0001.txt -->
+  <header>
+      <p>What is this? <a href="https://github.com/romland/llemmings">See Github</a>.</p>
+  </header>
 
   <canvas id="canvas" width="800" height="600"></canvas>
+
+  <div id="lemming-actions">
+    <button onclick="togglePause()">⏸️</button>
+
+    <button onclick="applyAction('Climber')">🧗<!-- Climber --></button>
+    <button onclick="applyAction('Floater')">🪂<!-- Floater--></button>
+    <button onclick="applyAction('Bomber')">💣<!-- Bomber--></button>
+    <button onclick="applyAction('Blocker')">🚫<!-- Blocker--></button>
+    <button onclick="applyAction('Builder')">🏗️<!-- Builder--></button>
+    <button onclick="applyAction('Basher')">🤜<!-- Basher--></button>
+    <button onclick="applyAction('Miner')">⛏️<!-- Miner--></button>
+    <button onclick="applyAction('Digger')">🕳️<!-- Digger--></button>
+  </div>
+
   <div id="coordinatesDiv"></div>
   <div id="infoDiv"></div>
 
-
 <script type="text/javascript">
-// HUMAN: cheat, I needed a seedable RNG
-function RNG(seed) {
-    var m = 2**35 - 31
-    var a = 185852
-    var s = seed % m
-    return function () {
-        return (s = s * a % m) / m
-    }
-}
-
 // const currentSeed = Date.now();   // "random"
 // const currentSeed = 1680878681505; // slow
 // const currentSeed = 1680905320764;    // action
 // const currentSeed = 1680983904827;  // builder test
 const currentSeed = 1681139505452;    // llemmings.com
 
-console.log("Current seed: ", currentSeed);
-Math.random = RNG(currentSeed);
-
 const blackColorBytes = [0x0, 0x0, 0x0];
 const waterColorBytes = [0x00, 0x77, 0xbe]; // [0, 119, 190];
 const rockColorBytes  = [0x88, 0x88, 0x88]; // [136, 136, 136];
 const dirtColorBytes  = [0x4a, 0x2e, 0x00]; // [74, 46, 0];
 const terrainColorBytes = [ rockColorBytes, dirtColorBytes ];
+const mapNoiseHash = [];
 
 const canvas = document.querySelector('canvas');
 canvas.width = 800;
 canvas.height = 600;
 const ctx = canvas.getContext('2d', { willReadFrequently: true });  // HUMAN: Added this due to Chrome suggesting it
 let background; // global variable to store canvas image data (restored in main loop below somewhere)
-function getBackground() {
-  background = ctx.getImageData(0, 0, canvas.width, canvas.height);
-}
 
+const WATER_HEIGHT = 70;
+const EMPTY_SPACE_TOP_LEFT = 50;
+const EMPTY_SPACE_BOTTOM_RIGHT = 50;
+
+const emptyColorBytes = [ 0, 0, 0];
+
+const TILE_SIZE = 1;
+
+// NOISE SETTINGS
+const OCTAVES = 5;
+const PERSISTENCE = 0.5;
+const LACUNARITY = 2.25;
+const AMPLITUDE = 2.0;
+// let canvas;
+
+
+const blueBox = [0x00, 0x00, 0xff];
+const greenBox = [0x00, 0xff, 0x00];
+const GRAVITY = 0.03; // Adjust this until falling looks good
+const lemmings = [];
+
+const VEL_CLIMB = 1;    // Cheat. HUMAN added this undeclared variable.
+
+let lastLemmingId = 0;
+
+const BUILDER_LOOK_AHEAD = 1;
+const BUILD_MATERIAL_CARRIED = 120;
+const BUILD_PER_FRAME_MAX = 10;
+
+const DIGGER_LOOK_AHEAD = 4;
+const DIGGER_SPEED_FACTOR = 0.4;    // HUMAN: Changed my mind; changed from 0.2
+
+let particles = [];
+
+let isPaused = false;
+
+const coordinatesDiv = document.getElementById("coordinatesDiv");
+const infoDiv = document.getElementById("infoDiv");
+let oldImgData;
 
 // Create a new lemming and add it to the array of lemmings
 // HUMAN: This is just for easy testing for now.
@@ -191,26 +228,15 @@ function spawnLemming() {
 
 
 // >>> Prompt: instructions/map-generation.0003.txt (0001-0002 are now obsolete)
-const WATER_HEIGHT = 70;
-const EMPTY_SPACE_TOP_LEFT = 50;
-const EMPTY_SPACE_BOTTOM_RIGHT = 50;
+function generateMapNoiseHash()
+{
+  for (let i = 0; i < 256; i++) {
+      mapNoiseHash[i] = Math.floor(Math.random() * 256);
+  }
+}
 
-const emptyColorBytes = [ 0, 0, 0];
-// const waterColorBytes = [0x00, 0x77, 0xbe]; // [0, 119, 190];
-// const rockColorBytes  = [0x88, 0x88, 0x88]; // [136, 136, 136];
-// const dirtColorBytes  = [0x4a, 0x2e, 0x00]; // [74, 46, 0];
-
-const TILE_SIZE = 1;
-
-// NOISE SETTINGS
-const OCTAVES = 5;
-const PERSISTENCE = 0.5;
-const LACUNARITY = 2.25;
-const AMPLITUDE = 2.0;
-// let canvas;
-
-function generateMap(canvasWidth, canvasHeight, emptySpaceTopLeft, emptySpaceBottomRight) {
-
+function generateMap(canvasWidth, canvasHeight, emptySpaceTopLeft, emptySpaceBottomRight)
+{
     // create empty map
     const map = [];
     for (let y = 0; y < canvasHeight; y++) {
@@ -278,36 +304,34 @@ function generateMap(canvasWidth, canvasHeight, emptySpaceTopLeft, emptySpaceBot
     }
 
     for (let x = 0; x < canvasWidth; x += TUNNEL_SIZE) {
-    let y = 0;
-    while (y < canvasHeight - TUNNEL_SIZE) {
-        if(Math.random() < 0.8) {
-            break;
-        }
+      let y = 0;
+      while (y < canvasHeight - TUNNEL_SIZE) {
+          if(Math.random() < 0.8) {
+              break;
+          }
 
-        if (map[y][x] > 0.4) {
-        const tunnelLength = Math.floor(Math.random() * (TUNNEL_MAX_LENGTH - TUNNEL_MIN_LENGTH + 1)) + TUNNEL_MIN_LENGTH;
-        let curve = Math.floor(Math.random() * TUNNEL_SIZE) - TUNNEL_SIZE / 2;
-        for (let i = 0; i < tunnelLength && y < canvasHeight - TUNNEL_SIZE; i++) {
-            const startX = Math.max(0, x + curve);
-            const endX = Math.min(canvasWidth, x + TUNNEL_SIZE + curve);
-            for (let j = startX; j < endX; j++) {
-            if (map[y][j] > 0.4) {
-                map[y][j] = 0;
+          if (map[y][x] > 0.4) {
+            const tunnelLength = Math.floor(Math.random() * (TUNNEL_MAX_LENGTH - TUNNEL_MIN_LENGTH + 1)) + TUNNEL_MIN_LENGTH;
+            let curve = Math.floor(Math.random() * TUNNEL_SIZE) - TUNNEL_SIZE / 2;
+            for (let i = 0; i < tunnelLength && y < canvasHeight - TUNNEL_SIZE; i++) {
+                const startX = Math.max(0, x + curve);
+                const endX = Math.min(canvasWidth, x + TUNNEL_SIZE + curve);
+                for (let j = startX; j < endX; j++) {
+                  if (map[y][j] > 0.4) {
+                      map[y][j] = 0;
+                  }
+                }
+                y++;
+                curve += Math.floor(Math.random() * 3) - 1;
+                curve = Math.max(-TUNNEL_SIZE / 2, Math.min(curve, TUNNEL_SIZE / 2));
             }
-            }
+          }
+          else {
             y++;
-            curve += Math.floor(Math.random() * 3) - 1;
-            curve = Math.max(-TUNNEL_SIZE / 2, Math.min(curve, TUNNEL_SIZE / 2));
-        }
-        }
-        else {
-        y++;
-        }
-    }
+          }
+      }
     }
     // ====================== /tunnels ======================
-
-    const ctx = canvas.getContext('2d');
 
     for (let y = 0; y < canvasHeight; y += TILE_SIZE) {
         for (let x = 0; x < canvasWidth; x += TILE_SIZE) {
@@ -340,6 +364,7 @@ function generateMap(canvasWidth, canvasHeight, emptySpaceTopLeft, emptySpaceBot
     ctx.fillRect(0, canvasHeight - WATER_HEIGHT, canvasWidth, WATER_HEIGHT);
 }
 
+
 function PerlinNoise2D(x, y) {
     const xInt = Math.floor(x);
     const yInt = Math.floor(y);
@@ -353,15 +378,15 @@ function PerlinNoise2D(x, y) {
     const u = fade(x);
     const v = fade(y);
 
-    const A = noiseHash[X] + Y;
-    const AA = noiseHash[A];
-    const AB = noiseHash[A + 1];
-    const B = noiseHash[X + 1] + Y;
-    const BA = noiseHash[B];
-    const BB = noiseHash[B + 1];
+    const A = mapNoiseHash[X] + Y;
+    const AA = mapNoiseHash[A];
+    const AB = mapNoiseHash[A + 1];
+    const B = mapNoiseHash[X + 1] + Y;
+    const BA = mapNoiseHash[B];
+    const BB = mapNoiseHash[B + 1];
 
-    return lerp(v, lerp(u, grad(noiseHash[AA], x, y), grad(noiseHash[BA], x - 1, y)),
-                   lerp(u, grad(noiseHash[AB], x, y - 1), grad(noiseHash[BB], x - 1, y - 1)));
+    return lerp(v, lerp(u, grad(mapNoiseHash[AA], x, y), grad(mapNoiseHash[BA], x - 1, y)),
+                   lerp(u, grad(mapNoiseHash[AB], x, y - 1), grad(mapNoiseHash[BB], x - 1, y - 1)));
 }
 
 function fade(t) {
@@ -378,30 +403,10 @@ function grad(hash, x, y) {
     const v = h < 2 ? y : x;
     return ((hash & 4) === 0 ? 1 : -1) * u + ((hash & 8) === 0 ? 1 : -1) * v;
 }
-
-const noiseHash = [];
-for (let i = 0; i < 256; i++) {
-    noiseHash[i] = Math.floor(Math.random() * 256);
-}
-
-generateMap(canvas.width, canvas.height, EMPTY_SPACE_TOP_LEFT, EMPTY_SPACE_BOTTOM_RIGHT);
-
-// =============================================
-
-// console.log("Unique colors:", getUniqueColors(canvas));
+// ============== /map
 
 
-// >>> Prompt: Sadly I forgot to save the prompt for generating the "textures". :/
-noiseScale = 0.05; // controls zoom level
-const numOctaves = 4;
-const persistence = 0.5; // controls roughness
-const width = canvas.width;
-const height = canvas.height;
-
-// Create a blank image to draw onto (HUMAN: actually, copy existing image ...)
-let oldImgData = ctx.getImageData(0,0,width,height);    // TODO: This should be renamed, but I don't want to do it now since it would make some prompts invalid (for demonstration purposes). It does nicely illustrate the example of the need to keep track of these things.
-let canvasBytes = Uint8ClampedArray.from(oldImgData.data);
-const imgData = new ImageData(canvasBytes, width, height);
+// ======================== textures
 
 function renderDirtTexture()
 {
@@ -458,19 +463,6 @@ function renderRockTexture() {
     }
   }
 }
-
-renderDirtTexture();
-renderRockTexture();
-
-
-const blueBox = [0x00, 0x00, 0xff];
-const greenBox = [0x00, 0xff, 0x00];
-const GRAVITY = 0.03; // Adjust this until falling looks good
-const lemmings = [];
-
-const VEL_CLIMB = 1;    // Cheat. HUMAN added this undeclared variable.
-
-let lastLemmingId = 0;
 
 // ============== lemming sprite
 // >>> Prompt: instructions/movement-collisions.0001.txt
@@ -756,13 +748,11 @@ class Lemming {
   }
 }
 
+
 // =========================================================================
 // Builder
 // >>> Prompt: instructions/builder.0001.txt
 // >>> Prompt: instructions/builder.0002.txt
-const BUILDER_LOOK_AHEAD = 1;
-const BUILD_MATERIAL_CARRIED = 120;
-const BUILD_PER_FRAME_MAX = 10;
 
 function build(lemming)
 {
@@ -840,12 +830,10 @@ function build(lemming)
     return pixelsBuilt > 0;
 }
 
+
 // =========================================================================
 // Digger/Basher/Miner code
 // >>> Prompt: /instructions/digger-miner-basher.0001.txt
-
-const DIGGER_LOOK_AHEAD = 4;
-const DIGGER_SPEED_FACTOR = 0.4;    // HUMAN: Changed my mind; changed from 0.2
 
 function startDigging(lemming)
 {
@@ -1165,10 +1153,6 @@ function isPointWithinCircle(x,y,a,b,radius) {
 }
 
 
-let particles = [];
-
-let isPaused = false;
-
 // >>> Prompt: instructions/main-loop.0002.txt
 function togglePause()
 {
@@ -1181,64 +1165,6 @@ function togglePause()
     );
   });
 }
-
-
-// >>> Prompt: instructions/main-loop.0001.txt
-function update() {
-  if (isPaused) {
-    requestAnimationFrame(update);
-    return;
-  }
-  // Restore the background
-  ctx.putImageData(background, 0, 0);
-
-  // Update and draw each lemming
-  lemmings.forEach((lemming) => {
-    lemming.update();
-    lemming.draw();
-    
-    // HUMAN: There can be multiple lemmings selected, only the last one will be visible to us
-    if(lemming.isSelected) {
-      updateInfoDiv(lemming);
-    }
-
-    if (lemming.isDead) {
-      // Remove dead lemmings from the array as optimization
-      const index = lemmings.indexOf(lemming);
-      lemmings.splice(index, 1);
-      console.log("removing dead lemming");
-      for(let i = 0; i < 50; i++) {
-        // I cheated and added this color variation myself. :/ 
-        const p = new Particle(lemming.x + Math.random() * 20 - 10, lemming.y + Math.random() * 20 - 10);
-        p.color = i < 20 ? "#55ff55" : "#5555ff";
-        particles.push(p);
-      }
-    }
-  });
-
-  particles.forEach((particle) => {
-      particle.update();
-      particle.draw();
-
-      // Remove dead particles from the array
-      if (particle.life <= 0) {
-        const index = particles.indexOf(particle);
-        particles.splice(index, 1);
-      }
-    });
-
-  // Schedule the next frame
-  requestAnimationFrame(update);
-}
-
-getBackground();
-
-// Start the update loop
-update();
-
-// Spawn a new lemming every interval
-setInterval(spawnLemming, 100);
-
 
 // >>> Prompt: instructions/particle-explosion.0001.txt
 function Particle(x, y) {
@@ -1272,28 +1198,6 @@ Particle.prototype.draw = function() {
   ctx.fillStyle = this.color;
   ctx.fillRect(this.x, this.y, 2, 2);
 };
-
-
-// >>> Prompt: instructions/selectable.0001.txt
-// add this after declaring canvas and ctx
-canvas.addEventListener('click', (event) => {
-  const rect = canvas.getBoundingClientRect();
-  const mouseX = event.clientX - rect.left;
-  const mouseY = event.clientY - rect.top;
-
-  lemmings.forEach((lemming) => {
-    if (
-      mouseX >= lemming.x &&
-      mouseX <= lemming.x + lemming.width &&
-      mouseY >= lemming.y &&
-      mouseY <= lemming.y + lemming.height
-    ) {
-      lemming.isSelected = true;
-    } else {
-      lemming.isSelected = false;
-    }
-  });
-});
 
 
 // >>> Prompt: instructions/actions.0001.txt
@@ -1403,22 +1307,7 @@ function stopAction() {
   }
 }
 
-// >>> Prompt: instructions/coordinates-div.0001.txt
-const coordinatesDiv = document.getElementById("coordinatesDiv");
-canvas.addEventListener("mousemove", function(event) {
-  const x = event.offsetX;
-  const y = event.offsetY;
 
-  const imageData = ctx.getImageData(x, y, 1, 1);
-  const pixel = imageData.data;
-
-  const color = "#" + ("000000" + rgbToHex(pixel[0], pixel[1], pixel[2])).slice(-6);
-
-  coordinatesDiv.innerHTML = "X: " + x + ", Y: " + y + " | Color: " + color;
-});
-
-
-const infoDiv = document.getElementById("infoDiv");
 function updateInfoDiv(lem)
 {
   infoDiv.innerHTML = `ID: ${lem.id} 
@@ -1502,7 +1391,7 @@ function getUniqueColors(canvas) {
 function getPixelColor(imageData, x, y) {
     x = Math.round(x);
     y = Math.round(y);
-  const index = ((y * width) + x) * 4;
+  const index = ((y * canvas.width) + x) * 4;
   const r = imageData.data[index];
   const g = imageData.data[index + 1];
   const b = imageData.data[index + 2];
@@ -1522,7 +1411,7 @@ function pixelIsColor(imageData, x, y, color, debug) {
   const [r, g, b, alpha] = getPixelColor(imageData, x, y);
 
   if(r === undefined) {
-    console.warn("Should not happen:", "lemming:", debug, "len:", lemmings.length, "image:", imageData, r, g, b, alpha, "x:"+x, "y:"+y, "comparing:"+color, "index:"+Math.floor((y * width + x) * 4));
+    console.warn("Should not happen:", "lemming:", debug, "len:", lemmings.length, "image:", imageData, r, g, b, alpha, "x:"+x, "y:"+y, "comparing:"+color, "index:"+Math.floor((y * canvas.width + x) * 4));
     throw "This should not happen";
   }
 
@@ -1578,17 +1467,13 @@ function isPixelOneOf(imageData, x, y, haystack) {
     return isColorOneOf(needle, haystack);
 }
 
-
 // >>> a helper function some implementation of Climber added
 function bound(value, min, max) {
   return Math.min(Math.max(value, min), max);
 }
 
-
-
 // Remove all antialiasing so that we can easily check collisions.
 // >>> Prompt: instructions/remove-terrain-smoothing.0001.txt
-clearSmoothingOfTerrain(canvas, [...terrainColorBytes, waterColorBytes]);
 function clearSmoothingOfTerrain(canvas, keepColors) {
   const ctx = canvas.getContext('2d');
   const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
@@ -1614,27 +1499,139 @@ function clearSmoothingOfTerrain(canvas, keepColors) {
   ctx.putImageData(imageData, 0, 0);
 }
 
-
 // >>> Prompt: instructions/coordinates-div.0001.txt
 function rgbToHex(r, g, b) {
   if (r > 255 || g > 255 || b > 255)
     throw "Invalid color component";
   return ((r << 16) | (g << 8) | b).toString(16);
 }
+
+// HUMAN: cheat, I needed a seedable RNG
+function RNG(seed) {
+    var m = 2**35 - 31
+    var a = 185852
+    var s = seed % m
+    return function () {
+        return (s = s * a % m) / m
+    }
+}
+
+function getBackground() {
+  background = ctx.getImageData(0, 0, canvas.width, canvas.height);
+}
+
+// >>> Prompt: instructions/main-loop.0001.txt
+function update() {
+  if (isPaused) {
+    requestAnimationFrame(update);
+    return;
+  }
+  // Restore the background
+  ctx.putImageData(background, 0, 0);
+
+  // Update and draw each lemming
+  lemmings.forEach((lemming) => {
+    lemming.update();
+    lemming.draw();
+    
+    // HUMAN: There can be multiple lemmings selected, only the last one will be visible to us
+    if(lemming.isSelected) {
+      updateInfoDiv(lemming);
+    }
+
+    if (lemming.isDead) {
+      // Remove dead lemmings from the array as optimization
+      const index = lemmings.indexOf(lemming);
+      lemmings.splice(index, 1);
+      console.log("removing dead lemming");
+      for(let i = 0; i < 50; i++) {
+        // I cheated and added this color variation myself. :/ 
+        const p = new Particle(lemming.x + Math.random() * 20 - 10, lemming.y + Math.random() * 20 - 10);
+        p.color = i < 20 ? "#55ff55" : "#5555ff";
+        particles.push(p);
+      }
+    }
+  });
+
+  particles.forEach((particle) => {
+      particle.update();
+      particle.draw();
+
+      // Remove dead particles from the array
+      if (particle.life <= 0) {
+        const index = particles.indexOf(particle);
+        particles.splice(index, 1);
+      }
+    });
+
+  // Schedule the next frame
+  requestAnimationFrame(update);
+}
+
+
+function init()
+{
+  console.log("Current seed: ", currentSeed);
+  Math.random = RNG(currentSeed);
+
+  generateMapNoiseHash();
+  generateMap(canvas.width, canvas.height, EMPTY_SPACE_TOP_LEFT, EMPTY_SPACE_BOTTOM_RIGHT);
+  // console.log("Unique colors:", getUniqueColors(canvas));
+  clearSmoothingOfTerrain(canvas, [...terrainColorBytes, waterColorBytes]);
+
+  // Create a blank image to draw onto (HUMAN: actually, copy existing image ...)
+  oldImgData = ctx.getImageData(0,0,canvas.width,canvas.height);    // TODO: This should be renamed, but I don't want to do it now since it would make some prompts invalid (for demonstration purposes). It does nicely illustrate the example of the need to keep track of these things.
+  let canvasBytes = Uint8ClampedArray.from(oldImgData.data);
+  const imgData = new ImageData(canvasBytes, canvas.width, canvas.height);
+
+  renderDirtTexture();
+  renderRockTexture();
+
+  getBackground();
+
+  // Start the update loop
+  update();
+
+  // Spawn a new lemming every interval
+  setInterval(spawnLemming, 100);
+
+  // >>> Prompt: instructions/selectable.0001.txt
+  // add this after declaring canvas and ctx
+  canvas.addEventListener('click', (event) => {
+    const rect = canvas.getBoundingClientRect();
+    const mouseX = event.clientX - rect.left;
+    const mouseY = event.clientY - rect.top;
+
+    lemmings.forEach((lemming) => {
+      if (
+        mouseX >= lemming.x &&
+        mouseX <= lemming.x + lemming.width &&
+        mouseY >= lemming.y &&
+        mouseY <= lemming.y + lemming.height
+      ) {
+        lemming.isSelected = true;
+      } else {
+        lemming.isSelected = false;
+      }
+    });
+  });
+
+  // >>> Prompt: instructions/coordinates-div.0001.txt
+  canvas.addEventListener("mousemove", function(event) {
+    const x = event.offsetX;
+    const y = event.offsetY;
+
+    const imageData = ctx.getImageData(x, y, 1, 1);
+    const pixel = imageData.data;
+
+    const color = "#" + ("000000" + rgbToHex(pixel[0], pixel[1], pixel[2])).slice(-6);
+
+    coordinatesDiv.innerHTML = "X: " + x + ", Y: " + y + " | Color: " + color;
+  });
+}
+
+init();
+
 </script>
-
-  <div id="lemming-actions">
-    <button onclick="togglePause()">⏸️</button>
-
-    <button onclick="applyAction('Climber')">🧗<!-- Climber --></button>
-    <button onclick="applyAction('Floater')">🪂<!-- Floater--></button>
-    <button onclick="applyAction('Bomber')">💣<!-- Bomber--></button>
-    <button onclick="applyAction('Blocker')">🚫<!-- Blocker--></button>
-    <button onclick="applyAction('Builder')">🏗️<!-- Builder--></button>
-    <button onclick="applyAction('Basher')">🤜<!-- Basher--></button>
-    <button onclick="applyAction('Miner')">⛏️<!-- Miner--></button>
-    <button onclick="applyAction('Digger')">🕳️<!-- Digger--></button>
-  </div>
-
 </body>
 </html>
