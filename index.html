@@ -1198,42 +1198,42 @@ Particle.prototype.draw = function() {
 
 
 // >>> Prompt: instructions/actions.0001.txt
-function applyAction(action) {
-  // Find the selected lemming
+function applyAction(action)
+{
   const selectedLemming = lemmings.find((lemming) => lemming.isSelected);
 
-  // Note: I had to add this myself
+  // HUMAN: I had to add this myself
   if(!selectedLemming) {
     console.log("no selected lemming");
     return;
   }
 
-  // Note: I had to add this myself
+  // HUMAN: I had to add this myself
   if(action !== "Bomber" && selectedLemming.action) {
     console.log("lemming already had an action");
     return;
   }
-  // Apply the action to the selected lemming
+
   switch (action) {
     case 'Climber':
       // >>> Prompt: instructions/climber.0001.txt
       selectedLemming.action = "Climber";
       selectedLemming.isSelected = false;
       break;
+
     case 'Floater':
-      //add floating behavior here
       // >>> Prompt: instructions/floater.0001.txt
       selectedLemming.action = "Floater";
       selectedLemming.isSelected = false;
       break;
+
     case 'Bomber':
-      //add bombing behavior here
       // >>> Prompt: instructions/bomber.0001.txt
       selectedLemming.action = "Bomber";
       selectedLemming.isSelected = false;
       break;
+
     case 'Blocker':
-      //add blocking behavior here
       // >>> Prompt: instructions/blocker.0001.txt
       // >>> Prompt: instructions/blocker.0002.txt
       selectedLemming.action = "Blocker";
@@ -1241,30 +1241,34 @@ function applyAction(action) {
       moveOverlappingLemmingsToRandomSideOfBlocker(selectedLemming);
       selectedLemming.isSelected = false;
       break;
+
     case 'Builder':
-      //add building behavior here
       selectedLemming.standStillUntil = 0;
       selectedLemming.standStillDirection = undefined;
 
       selectedLemming.action = "Builder";     // HUMAN: Added this.
       // selectedLemming.isSelected = false;  // HUMAN: Let builders remain selected for now
       break;
+
     case 'Basher':
       // >>> Prompt: ./instructions/digger-miner-basher.0001.txt
       selectedLemming.action = "Basher";     // HUMAN: Added this.
       selectedLemming.isSelected = false;
       console.log("Assigned basher to", selectedLemming.id);  // HUMAN: debug
       break;
+
     case 'Miner':
       // >>> Prompt: ./instructions/digger-miner-basher.0001.txt
       selectedLemming.action = "Miner";     // HUMAN: Added this.
       selectedLemming.isSelected = false;
       break;
+
     case 'Digger':
       // >>> Prompt: ./instructions/digger-miner-basher.0001.txt
       selectedLemming.action = "Digger";     // HUMAN: Added this.
       selectedLemming.isSelected = false;
       break;
+
     default:
       console.log(`Invalid action: ${action}`);
       break;
