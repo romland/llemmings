@@ -483,11 +483,13 @@ var Llemmings = (function () {
         }
   
         // debug
-        ctx.strokeStyle = "white";
-        ctx.strokeText(this.id, this.x + 1, this.y + 13);
-        if (this.action) {
-          ctx.font = "7px Arial";
-          ctx.strokeText(this.action, this.x - 5, this.y - 5);
+        if (__DEBUG__) {
+            ctx.strokeStyle = "white";
+            ctx.strokeText(this.id, this.x + 1, this.y + 13);
+            if (this.action) {
+            ctx.font = "7px Arial";
+            ctx.strokeText(this.action, this.x - 5, this.y - 5);
+            }
         }
       }
   
