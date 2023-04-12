@@ -126,6 +126,11 @@ var llemmings = (function () {
   const EMPTY_SPACE_BOTTOM_RIGHT = 50;
   const mapNoiseHash = [];
 
+  // constants for tunnel/cave generation
+  const TUNNEL_SIZE = 40;
+  const TUNNEL_MIN_LENGTH = 150;
+  const TUNNEL_MAX_LENGTH = 400;
+
   // Lemming settings
   const VEL_CLIMB = 1;    // Cheat. HUMAN added this undeclared variable.
   const BUILDER_LOOK_AHEAD = 1;
@@ -134,11 +139,14 @@ var llemmings = (function () {
   const DIGGER_LOOK_AHEAD = 4;
   const DIGGER_SPEED_FACTOR = 0.4;    // HUMAN: Changed my mind; changed from 0.2
 
+  // Debug
+  let __DEBUG__ = false;
+
   // Game-play related
   let isPaused = false;
   const lemmings = [];
 
-
+  
   // Create a new lemming and add it to the array of lemmings
   // HUMAN: This is just for easy testing for now.
   function spawnLemming() {
@@ -266,11 +274,6 @@ var llemmings = (function () {
       }
 
       // ====================== tunnels ======================
-      // constants for tunnel/cave generation
-      const TUNNEL_SIZE = 40;
-      const TUNNEL_MIN_LENGTH = 150;
-      const TUNNEL_MAX_LENGTH = 400;
-
       // carve out tunnels
       for (let y = 0; y < canvasHeight; y += TUNNEL_SIZE) {
         let x = 0;
@@ -1537,8 +1540,10 @@ var llemmings = (function () {
       lemming.draw();
       
       // HUMAN: There can be multiple lemmings selected, only the last one will be visible to us
-      if(lemming.isSelected) {
-        updateInfoDiv(lemming);
+      if (__DEBUG__) {
+        if(lemming.isSelected) {
+          updateInfoDiv(lemming);
+        }
       }
 
       if (lemming.isDead) {
@@ -1573,6 +1578,8 @@ var llemmings = (function () {
 
   function init(debug = false)
   {
+    __DEBUG__ = debug;
+
     console.log("Current seed: ", currentSeed);
     Math.random = RNG(currentSeed);
 
@@ -1611,7 +1618,7 @@ var llemmings = (function () {
       });
     });
 
-    if(debug) {
+    if (__DEBUG__) {
       // >>> Prompt: instructions/coordinates-div.0001.txt
       canvas.addEventListener("mousemove", function(event) {
         const x = event.offsetX;
