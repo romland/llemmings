@@ -82,64 +82,61 @@
   <div id="infoDiv"></div>
 
 <script type="text/javascript">
+// Get relevant DOM elements
+const coordinatesDiv = document.getElementById("coordinatesDiv");
+const infoDiv = document.getElementById("infoDiv");
+const canvas = document.querySelector('canvas');
+
 // const currentSeed = Date.now();   // "random"
 // const currentSeed = 1680878681505; // slow
 // const currentSeed = 1680905320764;    // action
 // const currentSeed = 1680983904827;  // builder test
 const currentSeed = 1681139505452;    // llemmings.com
 
+// Colors
 const blackColorBytes = [0x0, 0x0, 0x0];
 const waterColorBytes = [0x00, 0x77, 0xbe]; // [0, 119, 190];
 const rockColorBytes  = [0x88, 0x88, 0x88]; // [136, 136, 136];
 const dirtColorBytes  = [0x4a, 0x2e, 0x00]; // [74, 46, 0];
+const lemmingBodyColor = [0x00, 0x00, 0xff];
+const lemmingHairColor = [0x00, 0xff, 0x00];
 const terrainColorBytes = [ rockColorBytes, dirtColorBytes ];
-const mapNoiseHash = [];
 
-const canvas = document.querySelector('canvas');
+// Set up canvas (+related)
 canvas.width = 800;
 canvas.height = 600;
 const ctx = canvas.getContext('2d', { willReadFrequently: true });  // HUMAN: Added this due to Chrome suggesting it
 let background; // global variable to store canvas image data (restored in main loop below somewhere)
+let oldImgData; // check collisions against this (array of 4 bytes / pixel)
 
+// World settings
+const GRAVITY = 0.03; // Adjust this until falling looks good
+let particles = [];
+let lastLemmingId = 0;
+
+// Map variables and settings (noise and otherwise)
+const MAP_TILE_SIZE = 1;
+const MAP_OCTAVES = 5;
+const MAP_PERSISTENCE = 0.5;
+const MAP_LACUNARITY = 2.25;
+const MAP_AMPLITUDE = 2.0;
 const WATER_HEIGHT = 70;
 const EMPTY_SPACE_TOP_LEFT = 50;
 const EMPTY_SPACE_BOTTOM_RIGHT = 50;
+const mapNoiseHash = [];
 
-const emptyColorBytes = [ 0, 0, 0];
-
-const TILE_SIZE = 1;
-
-// NOISE SETTINGS
-const OCTAVES = 5;
-const PERSISTENCE = 0.5;
-const LACUNARITY = 2.25;
-const AMPLITUDE = 2.0;
-// let canvas;
-
-
-const blueBox = [0x00, 0x00, 0xff];
-const greenBox = [0x00, 0xff, 0x00];
-const GRAVITY = 0.03; // Adjust this until falling looks good
-const lemmings = [];
-
+// Lemming settings
 const VEL_CLIMB = 1;    // Cheat. HUMAN added this undeclared variable.
-
-let lastLemmingId = 0;
-
 const BUILDER_LOOK_AHEAD = 1;
 const BUILD_MATERIAL_CARRIED = 120;
 const BUILD_PER_FRAME_MAX = 10;
-
 const DIGGER_LOOK_AHEAD = 4;
 const DIGGER_SPEED_FACTOR = 0.4;    // HUMAN: Changed my mind; changed from 0.2
 
-let particles = [];
-
+// Game-play related
 let isPaused = false;
+const lemmings = [];
 
-const coordinatesDiv = document.getElementById("coordinatesDiv");
-const infoDiv = document.getElementById("infoDiv");
-let oldImgData;
 
 // Create a new lemming and add it to the array of lemmings
 // HUMAN: This is just for easy testing for now.
@@ -249,18 +246,18 @@ function generateMap(canvasWidth, canvasHeight, emptySpaceTopLeft, emptySpaceBot
     // create height map using Perlin noise
     for (let y = 0; y < canvasHeight; y++) {
         for (let x = 0; x < canvasWidth; x++) {
-            let amplitude = AMPLITUDE;
+            let amplitude = MAP_AMPLITUDE;
             let frequency = 1.0 / canvasWidth;
             let noiseHeight = 0;
 
-            for (let i = 0; i < OCTAVES; i++) {
+            for (let i = 0; i < MAP_OCTAVES; i++) {
                 let sampleX = x * frequency;
                 let sampleY = y * frequency;
                 let noiseValue = PerlinNoise2D(sampleX, sampleY);
                 noiseHeight += noiseValue * amplitude;
 
-                amplitude *= PERSISTENCE;
-                frequency *= LACUNARITY;
+                amplitude *= MAP_PERSISTENCE;
+                frequency *= MAP_LACUNARITY;
             }
 
             map[y][x] = noiseHeight;
@@ -333,8 +330,8 @@ function generateMap(canvasWidth, canvasHeight, emptySpaceTopLeft, emptySpaceBot
     }
     // ====================== /tunnels ======================
 
-    for (let y = 0; y < canvasHeight; y += TILE_SIZE) {
-        for (let x = 0; x < canvasWidth; x += TILE_SIZE) {
+    for (let y = 0; y < canvasHeight; y += MAP_TILE_SIZE) {
+        for (let x = 0; x < canvasWidth; x += MAP_TILE_SIZE) {
             const height = map[y][x];
             let color;
 
@@ -346,11 +343,11 @@ function generateMap(canvasWidth, canvasHeight, emptySpaceTopLeft, emptySpaceBot
                 color = dirtColorBytes;
             } else {
                 // background
-                color = emptyColorBytes;
+                color = blackColorBytes;
             }
 
             ctx.fillStyle = `rgb(${color[0]}, ${color[1]}, ${color[2]})`;
-            ctx.fillRect(x, y, TILE_SIZE, TILE_SIZE);
+            ctx.fillRect(x, y, MAP_TILE_SIZE, MAP_TILE_SIZE);
         }
     }
 
@@ -502,7 +499,7 @@ class Lemming {
   // >>> Prompt: instructions/lemming-legs.draw.0001.txt
   draw() {
     // draw body
-    ctx.fillStyle = "rgb(" + blueBox.join(",") + ")";
+    ctx.fillStyle = "rgb(" + lemmingBodyColor.join(",") + ")";
     ctx.fillRect (this.x, this.y, this.width, this.height * 0.75);
 
     let legMoveSpeed = this.age * (this.velX/3.0);
@@ -556,7 +553,7 @@ class Lemming {
     ctx.restore();
 
     // // hair
-    ctx.fillStyle = "rgb(" + greenBox.join(",") + ")";
+    ctx.fillStyle = "rgb(" + lemmingHairColor.join(",") + ")";
     ctx.fillRect(this.x, this.y, this.width, this.height / 4);
 
     // is selected
