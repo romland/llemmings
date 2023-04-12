@@ -1,6 +1,6 @@
 # 💚💙 Llemmings 💙💚
 
-<img width="30%" align="right" src="./llemming360.png">
+<img width="30%" align="right" src="./github/llemming360.png">
 
 _Give me definition and phonetics of "llemming". Which is a play on the acronym LLM (Large Language Model)_  
 
@@ -22,7 +22,7 @@ The intention is that no code is written by a human.
 
 It is (probably) not yet a game. But ... the latest and greatest version is [here](https://romland.github.io/llemmings)!   
 
-![Alt text](latest.png?raw=true "Screenshot of Llemmings")
+![Alt text](github/latest.png?raw=true "Screenshot of Llemmings")
 
 
 ## 🎮 The game
