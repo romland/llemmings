@@ -379,6 +379,91 @@ var Llemmings = (function () {
       }
     }
   
+    // This method originally comes from the level editor
+    // >>> Prompt: editor/instructions/shapes-drawing.0001.txt
+    // >>> Prompt: editor/instructions/shapes-drawing.0002.txt
+    // and most likely: etc.
+    function drawShapes(context, shapesArr)
+    {
+      // Draw existing shapes
+      for (let i = 0; i < shapesArr.length; i++) {
+        const shape = shapesArr[i];
+
+        context.lineWidth = shape.lineWidth || 1;
+
+        if(shape.filled) {
+          context.fillStyle = shape.color;
+        }
+        context.strokeStyle = shape.color;
+        
+        context.beginPath();
+
+        switch (shape.type) {
+          case "rectangle":
+            if (shape.filled) {
+              context.fillRect(shape.x1, shape.y1, shape.x2 - shape.x1, shape.y2 - shape.y1);
+            } else {
+              context.strokeRect(shape.x1, shape.y1, shape.x2 - shape.x1, shape.y2 - shape.y1);
+            }
+            break;
+            
+          case "ellipse":
+            context.ellipse((shape.x1 + shape.x2) / 2, (shape.y1 + shape.y2) / 2, Math.abs(shape.x2 - shape.x1) / 2, Math.abs(shape.y2 - shape.y1) / 2, 0, 0, 2 * Math.PI);
+            if (shape.filled) {
+              context.fill();
+            } else {
+              context.stroke();
+            }
+            break;
+            
+          case "line":
+            context.moveTo(shape.x1, shape.y1);
+            context.lineTo(shape.x2, shape.y2);
+            context.stroke();
+            break;
+
+          case "draw":
+            if(!shape.points) {
+              break;
+            }
+            if (shape.filled) {
+              context.beginPath();
+            }
+            context.moveTo(shape.points[0].x, shape.points[0].y);
+            for (let j = 1; j < shape.points.length; j++) {
+              context.lineTo(shape.points[j].x, shape.points[j].y);
+            }
+
+            if (shape.filled) {
+              context.closePath();
+              context.fill();
+            } else {
+              context.stroke();
+            }
+            break;
+
+          case "triangle":
+            if (shape.filled) {
+              context.beginPath();
+              context.moveTo(shape.x1, shape.y1);
+              context.lineTo(shape.x2, shape.y2);
+              context.lineTo(shape.x3, shape.y3);
+              context.closePath();
+              context.fill();
+            } else {
+              context.beginPath();
+              context.moveTo(shape.x1, shape.y1);
+              context.lineTo(shape.x2, shape.y2);
+              context.lineTo(shape.x3, shape.y3);
+              context.closePath();
+              context.stroke();
+            }
+            break;
+        }
+      }
+    }
+
+
     // ============== lemming sprite
     // >>> Prompt: instructions/movement-collisions.0001.txt
     // >>> Prompt: instructions/movement-collisions.0002.txt
@@ -1571,7 +1656,7 @@ var Llemmings = (function () {
     }
     
     
-    function init(canvasElt, seed = null, debug = false)
+    function init(canvasElt, levelData = {}, debug = false)
     {
       __DEBUG__ = debug;
   
@@ -1581,10 +1666,10 @@ var Llemmings = (function () {
         mapGenSeed = 1680983904827;  // builder test
         mapGenSeed = 1681139505452;  // llemmings.com
       */
-      if (!seed) {
+      if (!levelData.seed) {
         mapGenSeed = Date.now();   // "random" seed
       } else {
-        mapGenSeed = seed;
+        mapGenSeed = levelData.seed;
       }
 
       console.log("Current seed: ", mapGenSeed);
@@ -1610,6 +1695,11 @@ var Llemmings = (function () {
 
       generateMapNoiseHash();
       generateMap(canvas.width, canvas.height, EMPTY_SPACE_TOP_LEFT, EMPTY_SPACE_BOTTOM_RIGHT);
+
+      if (levelData.shapes) {
+        drawShapes(ctx, levelData.shapes);
+      }
+
       clearSmoothingOfTerrain(canvas, [...terrainColorBytes, waterColorBytes]);
       // console.log("Unique colors:", getUniqueColors(canvas));
   
@@ -1644,6 +1734,7 @@ var Llemmings = (function () {
       togglePause : togglePause,
       applyAction : applyAction,
       reset : reset,
+      drawShapes : drawShapes,
     }
   })();
   
