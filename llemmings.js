@@ -1,13 +1,14 @@
+"use strict";
 var Llemmings = (function () {
     // Get debug DOM elements
     const coordinatesDiv = document.getElementById("coordinatesDiv");
     const infoDiv = document.getElementById("infoDiv");
   
-    // const currentSeed = Date.now();   // "random"
-    // const currentSeed = 1680878681505; // slow
-    // const currentSeed = 1680905320764;    // action
-    // const currentSeed = 1680983904827;  // builder test
-    const currentSeed = 1681139505452;    // llemmings.com
+    // let currentSeed = Date.now();   // "random"
+    // let currentSeed = 1680878681505; // slow
+    // let currentSeed = 1680905320764;    // action
+    // let currentSeed = 1680983904827;  // builder test
+    let currentSeed = 1681139505452;    // llemmings.com
   
     // Colors
     const blackColorBytes = [0x0, 0x0, 0x0];
@@ -22,7 +23,11 @@ var Llemmings = (function () {
     let canvas, ctx;        // set by init().
     let background; // global variable to store canvas image data (restored in main loop below somewhere)
     let oldImgData; // check collisions against this (array of 4 bytes / pixel)
-    let canvasEventsListening = false; 
+
+    // Kept around for clean-up reasons
+    let reqAnimFrameId = null;
+    let canvasEventsListening = false;
+    const gameIntervals = {};
 
     // World settings
     const GRAVITY = 0.03; // Adjust this until falling looks good
@@ -1444,7 +1449,7 @@ var Llemmings = (function () {
     // >>> Prompt: instructions/main-loop.0001.txt
     function update() {
       if (isPaused) {
-        requestAnimationFrame(update);
+        reqAnimFrameId = requestAnimationFrame(update);
         return;
       }
       // Restore the background
@@ -1488,10 +1493,9 @@ var Llemmings = (function () {
         });
   
       // Schedule the next frame
-      requestAnimationFrame(update);
+      reqAnimFrameId = requestAnimationFrame(update);
     }
 
-    
     function startCanvasEventListeners()
     {
       // >>> Prompt: instructions/selectable.0001.txt
@@ -1528,7 +1532,50 @@ var Llemmings = (function () {
       canvasEventsListening = true;
     }
 
-  
+
+    function reset()
+    {
+        // Stop requestAnimationFrame
+        cancelAnimationFrame(reqAnimFrameId);
+        reqAnimFrameId = null;
+
+        // Clear all intervals.
+        const intervals = Object.values(gameIntervals);
+        for(let i = 0; i < intervals.length; i++) {
+            clearInterval(intervals[i]);
+        }
+
+        // clear particles
+        particles = [];
+
+        // remove all lemmings
+        lemmings.length = 0;
+        lastLemmingId = 0;
+
+        // clear map noise
+        mapNoiseHash.length = 0;
+        
+        // clear canvas
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        // Unpause
+        isPaused = false;
+
+        // Clear some debug divs
+        if(coordinatesDiv) {
+          coordinatesDiv.innerHTML = "";
+        }
+        if(infoDiv) {
+          infoDiv.innerHTML = "";
+        }
+              
+        // for clarity
+        background = undefined;
+        oldImgData = undefined;
+        console.log("Reset done.");
+    }
+    
+    
     function init(canvasElt, debug = false)
     {
       __DEBUG__ = debug;
@@ -1536,9 +1583,14 @@ var Llemmings = (function () {
       console.log("Current seed: ", currentSeed);
       Math.random = RNG(currentSeed);
   
-      canvas = canvasElt;
-      canvas.width = 800;
-      canvas.height = 600;
+      if(!canvas && !canvasElt) {
+        throw "no existing canvas and no element given";
+      } else if(canvasElt) {
+        canvas = canvasElt;
+        canvas.width = 800;
+        canvas.height = 600;
+      }
+
       ctx = canvas.getContext('2d', { willReadFrequently: true });  // HUMAN: Added wRF due to Chrome suggesting it
   
       generateMapNoiseHash();
@@ -1565,10 +1617,10 @@ var Llemmings = (function () {
     function start()
     {
       // Start the update loop
-      update();
+      reqAnimFrameId = update();
   
       // Spawn a new lemming every interval
-      setInterval(spawnLemming, 100);
+      gameIntervals["debugLemmingSpawner"] = setInterval(spawnLemming, 100);
     }
   
     return {
@@ -1576,6 +1628,8 @@ var Llemmings = (function () {
       start : start,
       togglePause : togglePause,
       applyAction : applyAction,
+      reset : reset,
+      // reset : () => { reset(); init(null, true); start(); },
     }
   })();
   
