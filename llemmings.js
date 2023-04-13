@@ -1596,10 +1596,18 @@ var Llemmings = (function () {
         canvas = canvasElt;
         canvas.width = 800;
         canvas.height = 600;
+        ctx = canvas.getContext('2d', { willReadFrequently: true });
+
+        /*
+        Human note: TOOD: Map-generation on mobile devices
+        const dpr = window.devicePixelRatio;
+        canvas.width = Math.floor(canvas.width * dpr);
+        canvas.height = Math.floor(canvas.height * dpr);
+        ctx = canvas.getContext('2d', { willReadFrequently: true });
+        ctx.scale(dpr, dpr);
+        */
       }
 
-      ctx = canvas.getContext('2d', { willReadFrequently: true });  // HUMAN: Added wRF due to Chrome suggesting it
-  
       generateMapNoiseHash();
       generateMap(canvas.width, canvas.height, EMPTY_SPACE_TOP_LEFT, EMPTY_SPACE_BOTTOM_RIGHT);
       clearSmoothingOfTerrain(canvas, [...terrainColorBytes, waterColorBytes]);

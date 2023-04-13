@@ -20,7 +20,7 @@ The intention is that no code is written by a human.
 
 **The job, as a human, is to copy and paste code.**
 
-It is (probably) not yet a game. But ... the latest and greatest version is [here](https://romland.github.io/llemmings)!   
+It is (probably) not yet a game. But ... for **non-mobile devices**, the latest and greatest version is [here](https://romland.github.io/llemmings)   
 
 ![Alt text](github/latest.png?raw=true "Screenshot of Llemmings")
 
@@ -146,6 +146,7 @@ There is a lot. It would be nice if there was a list somewhere. There isn't. Jus
 
 Some thoughts:
 - make it pretty,
+- make it work properly on mobile devices (seems to be map-gen related)
 - animations (maybe their green hair should move in the wind, maybe they have legs!),
 - shaders,
 - sound,
