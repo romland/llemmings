@@ -84,6 +84,8 @@ Once figured out, there should be notes here about how you organize your prompts
 ## 🔥 Code and quality
 Up til now, quality has not been a big concern. It's one giant steamy pile of spaghetti (llemming code?).
 
+No external dependencies, it is all plain old Javascript.
+
 It's been handy to have everything in one file for prompting. The instructions to the LLMs
 will sadly have to be separated from the code in the near future, it's getting too much.
 
