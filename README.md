@@ -141,7 +141,7 @@ Just open `index.html` in your favorite web-browser.
 
 
 ## 🆙 Level editor
-The beginnings of a [level Editor](https://romland.github.io/llemmings/editor/) can also be tested.
+There is also the beginnings of a [level editor](https://romland.github.io/llemmings/editor/).
 
 
 ## 🚧 TODO
