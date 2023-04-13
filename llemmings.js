@@ -273,10 +273,6 @@ var Llemmings = (function () {
         ctx.clearRect(0, 0, EMPTY_SPACE_TOP_LEFT, EMPTY_SPACE_TOP_LEFT);
         // HUMAN: Moved to above water level.
         ctx.clearRect(canvasWidth - EMPTY_SPACE_BOTTOM_RIGHT, canvasHeight - WATER_HEIGHT - EMPTY_SPACE_BOTTOM_RIGHT, EMPTY_SPACE_BOTTOM_RIGHT, EMPTY_SPACE_BOTTOM_RIGHT);
-  
-        // water
-        ctx.fillStyle = `rgb(${waterColorBytes[0]}, ${waterColorBytes[1]}, ${waterColorBytes[2]})`;
-        ctx.fillRect(0, canvasHeight - WATER_HEIGHT, canvasWidth, WATER_HEIGHT);
     }
   
   
@@ -1659,7 +1655,7 @@ var Llemmings = (function () {
     function init(canvasElt, levelData = {}, debug = false)
     {
       __DEBUG__ = debug;
-  
+    
       /* Some seeds used in the past:
         mapGenSeed = 1680878681505;  // slow
         mapGenSeed = 1680905320764;  // action
@@ -1693,6 +1689,24 @@ var Llemmings = (function () {
         */
       }
 
+      if (!levelData.shapes) {
+        // If there are no shapes, at least add water
+        levelData.shapes = [
+          {
+            "type": "rectangle",
+            "filled": true,
+            "color": `rgb(${waterColorBytes.join(",")})`,
+            "lineWidth": 1,
+            "x1": 0,
+            "y1": canvas.height - WATER_HEIGHT,
+
+            "x2": canvas.width,
+            "y2": canvas.height 
+          }
+        ];
+        console.warn("Added a default shape for water");
+      }
+
       generateMapNoiseHash();
       generateMap(canvas.width, canvas.height, EMPTY_SPACE_TOP_LEFT, EMPTY_SPACE_BOTTOM_RIGHT);
 
@@ -1702,7 +1716,7 @@ var Llemmings = (function () {
 
       clearSmoothingOfTerrain(canvas, [...terrainColorBytes, waterColorBytes]);
       // console.log("Unique colors:", getUniqueColors(canvas));
-  
+
       // Human notes:
       // 1. oldImgData will be used for collision checking
       // 2. This should be renamed, but I don't want to do it now since it would make some 
