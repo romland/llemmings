@@ -466,6 +466,10 @@ var Llemmings = (function () {
     //        slap->forehead
     function setGradients(context, gradients)
     {
+      if(!context || !gradients) {
+        return;
+      }
+      
       for(let g of gradients) {
         switch(g.type) {
           case "linear" :
@@ -473,8 +477,8 @@ var Llemmings = (function () {
             for(let i = 0; i < g.stops.length; i++) {
               grd.addColorStop(g.stops[i].offset, g.stops[i].color);
             }
-            ctx.fillStyle = grd;
-            ctx.fillRect(g.x0, g.y0, g.x1, g.y1);
+            context.fillStyle = grd;
+            context.fillRect(g.x0, g.y0, g.x1, g.y1);
             break;
           default :
             console.warn("unknown gradient", g.type);
