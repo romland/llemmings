@@ -83,6 +83,8 @@
       
       <button id="undo">↶</button>
       <button id="redo">↷</button>
+
+      <button id="preview" onclick="preview()">👀</button>
     </div>
 
     <script>
@@ -111,6 +113,8 @@
       let startX, startY;
       let isDrawing = false;
       let shapes = [];
+      let previewing = false;
+      let levelData = { };
 
 
       function draw()
@@ -434,6 +438,25 @@
         draw();
       }
 
+      function preview()
+      {
+        if(previewing) {
+          selectionDiv.style.display = "block";
+          canvas.style.display = "block";
+          levelData.shapes = [];
+          Llemmings.reset();
+          Llemmings.init(document.querySelector('#seededCanvas'), levelData, false);
+        } else {
+          selectionDiv.style.display = "none";
+          canvas.style.display = "none";
+          levelData.shapes = shapes;
+          Llemmings.init(document.querySelector('#seededCanvas'), levelData, false);
+          Llemmings.start();
+        }
+
+        previewing = !previewing;
+      }
+
       // Set up events.
       function initEditor()
       {
@@ -617,22 +640,15 @@
         });
       }
 
+      levelData = {
+        seed : 1681139505452,
+        shapes : [],
+      }
+
       initEditor();
       initSelectionDiv();
 
-      // Note 1: This is only for testing "preview" to see if textures gets rendered on shapes.
-      // Note 2: It's delayed because fetching shapes from localStorage is async and may
-      //         take a little while.
-      if(false) {
-        setTimeout(() => {
-          // Hide editor canvas:
-          canvas.style.display = "none";
-          // 1681139505452 llemmings.com
-          Llemmings.init(document.querySelector('#seededCanvas'), { seed : 1681139505452, shapes : shapes }, false);
-        }, 150);
-      } else {
-        Llemmings.init(document.querySelector('#seededCanvas'), { seed : 1681139505452, shapes : [] }, false);
-      }
+      Llemmings.init(document.querySelector('#seededCanvas'), levelData, false);
     </script>
   </body>
 </html>
