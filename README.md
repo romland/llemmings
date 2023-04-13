@@ -5,14 +5,13 @@
 _Give me definition and phonetics of "llemming". Which is a play on the acronym LLM (Large Language Model)_  
 
 **OpenAI's truth-teller, _ChatGPT_**:  
+_Definition:_  
+To mindlessly follow the predictions or suggestions of a large language model, similar to how a lemming blindly follows its comrades off a cliff.
+
 _Phonetics:_  
 /ˈlɛm.ɪŋ/ (LEM-ing) or (El-el-em-ing)
 
-_Definition:_  
-To mindlessly follow the predictions or suggestions of a language model without considering their validity, similar to how a lemming blindly follows its comrades off a cliff.
-
 <br clear="right"/>
-
 
 ## 👉 Blindly following comrades: Encouraged
 Llemmings is a game being made by Large Language Models (LLMs), like ChatGPT or GPT-4.
@@ -20,7 +19,7 @@ The intention is that no code is written by a human.
 
 **The job, as a human, is to copy and paste code.**
 
-It is (probably) not yet a game. But ... for **non-mobile devices**, the latest and greatest version is [here](https://romland.github.io/llemmings)   
+It is (probably) not yet a game. But ... for **non-mobile devices**, the latest and greatest version is [here](https://romland.github.io/llemmings).   
 
 ![Alt text](github/latest.png?raw=true "Screenshot of Llemmings")
 
@@ -139,6 +138,10 @@ Maybe the commit history will be the most interesting part of this project.
 
 ## 🏃‍♀️ Compiling, installing, running
 Just open `index.html` in your favorite web-browser.
+
+
+## 🆙 Level editor
+The beginnings of a [level Editor](https://romland.github.io/llemmings/editor/) can also be tested.
 
 
 ## 🚧 TODO
