@@ -29,7 +29,6 @@ var Llemmings = (function () {
     let lastLemmingId = 0;
   
     // Map variables and settings (noise and otherwise)
-    let mapGenSeed;
     const MAP_TILE_SIZE = 1;
     const MAP_OCTAVES = 5;
     const MAP_PERSISTENCE = 0.5;
@@ -59,6 +58,7 @@ var Llemmings = (function () {
     // Game-play related
     let isPaused = false;
     const lemmings = [];
+    let levelData;
   
     
     // Create a new lemming and add it to the array of lemmings
@@ -128,7 +128,7 @@ var Llemmings = (function () {
         newLemming.action = "Floater";
       }
   
-      if(newLemming.id === 17) {
+      if(newLemming.id === 21) {
         newLemming.actions = [
           { action: "Builder", x : 210, y : 169, rad : 10, },
           { action: "Builder", x : 277, y : 149, rad : 5,  },
@@ -454,6 +454,30 @@ var Llemmings = (function () {
               context.closePath();
               context.stroke();
             }
+            break;
+        }
+      }
+    }
+
+
+    // >>> Prompt: editor/instructions/gradient-serialize.0001.txt
+    // HUMAN: Crivens, I forgot I had an LLM to ask to implement this function,
+    //        despite asking it to generate a serialization structure for me.
+    //        slap->forehead
+    function setGradients(context, gradients)
+    {
+      for(let g of gradients) {
+        switch(g.type) {
+          case "linear" :
+            let grd = context.createLinearGradient(g.x0, g.y0, g.x1, g.y1);
+            for(let i = 0; i < g.stops.length; i++) {
+              grd.addColorStop(g.stops[i].offset, g.stops[i].color);
+            }
+            ctx.fillStyle = grd;
+            ctx.fillRect(g.x0, g.y0, g.x1, g.y1);
+            break;
+          default :
+            console.warn("unknown gradient", g.type);
             break;
         }
       }
@@ -1652,24 +1676,41 @@ var Llemmings = (function () {
     }
     
     
-    function init(canvasElt, levelData = {}, debug = false)
+    function init(canvasElt, givenLevel = {}, debug = false)
     {
       __DEBUG__ = debug;
     
       /* Some seeds used in the past:
-        mapGenSeed = 1680878681505;  // slow
-        mapGenSeed = 1680905320764;  // action
-        mapGenSeed = 1680983904827;  // builder test
-        mapGenSeed = 1681139505452;  // llemmings.com
+        1680878681505;  // slow
+        1680905320764;  // action
+        1680983904827;  // builder test
+        1681139505452;  // llemmings.com
       */
-      if (!levelData.seed) {
-        mapGenSeed = Date.now();   // "random" seed
-      } else {
-        mapGenSeed = levelData.seed;
+
+      // levelData defaults
+      levelData = {
+        level : givenLevel.level || -1,
+        name : givenLevel.name || "Noname",
+        seed : givenLevel.seed || Date.now(),
+        gradients : givenLevel.gradients || [ ],
+        shapes : givenLevel.shapes || [
+          {
+            "type": "rectangle",
+            "filled": true,
+            "color": `rgb(${waterColorBytes.join(",")})`,
+            "lineWidth": 1,
+            "x1": 0,
+            "y1": 600 - WATER_HEIGHT,
+            "x2": 800,
+            "y2": 600 
+          }
+        ],
+        objects : givenLevel.objects || [],
+        start : givenLevel.start || { x : 25, y : -20 },
       }
 
-      console.log("Current seed: ", mapGenSeed);
-      Math.random = RNG(mapGenSeed);
+      console.log("Current seed: ", levelData.seed);
+      Math.random = RNG(levelData.seed);
   
       if(!canvas && !canvasElt) {
         throw "no existing canvas and no element given";
@@ -1689,29 +1730,11 @@ var Llemmings = (function () {
         */
       }
 
-      if (!levelData.shapes) {
-        // If there are no shapes, at least add water
-        levelData.shapes = [
-          {
-            "type": "rectangle",
-            "filled": true,
-            "color": `rgb(${waterColorBytes.join(",")})`,
-            "lineWidth": 1,
-            "x1": 0,
-            "y1": canvas.height - WATER_HEIGHT,
-
-            "x2": canvas.width,
-            "y2": canvas.height 
-          }
-        ];
-        console.warn("Added a default shape for water");
-      }
-
       generateMapNoiseHash();
       generateMap(canvas.width, canvas.height, EMPTY_SPACE_TOP_LEFT, EMPTY_SPACE_BOTTOM_RIGHT);
 
-      if (levelData.shapes) {
-        drawShapes(ctx, levelData.shapes);
+      if (givenLevel.shapes) {
+        drawShapes(ctx, givenLevel.shapes);
       }
 
       clearSmoothingOfTerrain(canvas, [...terrainColorBytes, waterColorBytes]);
@@ -1723,11 +1746,14 @@ var Llemmings = (function () {
       //    prompts invalid (for demonstration purposes). It does nicely to illustrate the 
       //    example of the need to keep track of these things.
       oldImgData = ctx.getImageData(0,0,canvas.width,canvas.height);
-  
+
+      setGradients(ctx, givenLevel.gradients);
+      
       renderDirtTexture();
       renderRockTexture();
       setBackground();
-  
+
+
       if(!canvasEventsListening) {
         startCanvasEventListeners();
       }
@@ -1743,6 +1769,7 @@ var Llemmings = (function () {
     }
 
     return {
+      getSeed : () => { return levelData.seed; },
       init : init,
       start : start,
       togglePause : togglePause,

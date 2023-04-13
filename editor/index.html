@@ -441,6 +441,7 @@
       function preview()
       {
         if(previewing) {
+          // TODO: Only set selectionDiv to visible if it was actually visible before
           selectionDiv.style.display = "block";
           canvas.style.display = "block";
           levelData.shapes = [];
@@ -450,7 +451,8 @@
           selectionDiv.style.display = "none";
           canvas.style.display = "none";
           levelData.shapes = shapes;
-          Llemmings.init(document.querySelector('#seededCanvas'), levelData, false);
+          // It's very jarring if you switch to preview and get a new seed because it was random before
+          Llemmings.init(document.querySelector('#seededCanvas'), {...levelData, seed : Llemmings.getSeed() }, false);
           Llemmings.start();
         }
 
@@ -640,15 +642,35 @@
         });
       }
 
+      // >>> Prompt: editor/instructions/gradient-serialize.0001.txt
       levelData = {
+        level : 1,
+        name : "El-el-em-ing",
         seed : 1681139505452,
+        gradients : [
+          {
+            type: 'linear',
+            x0: 0,
+            y0: 0,
+            x1: 800,
+            y1: 600,
+            stops: [
+              { offset: 0, color: 'black' },
+              { offset: 1, color: 'red' }
+            ]
+          }
+        ],
         shapes : [],
+        objects : [],
+        start : { x : 25, y : -20 },
       }
 
       initEditor();
       initSelectionDiv();
 
+      // Render the seeded elements/background
       Llemmings.init(document.querySelector('#seededCanvas'), levelData, false);
+
     </script>
   </body>
 </html>
