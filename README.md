@@ -6,7 +6,7 @@ _Give me definition and phonetics of "llemming". Which is a play on the acronym 
 
 **OpenAI's truth-teller, _ChatGPT_**:  
 _Phonetics:_  
-/ˈlɛm.ɪŋ/ (LEM-ing)
+/ˈlɛm.ɪŋ/ (LEM-ing) or (El-el-em-ing)
 
 _Definition:_  
 To mindlessly follow the predictions or suggestions of a language model without considering their validity, similar to how a lemming blindly follows its comrades off a cliff.
