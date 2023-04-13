@@ -22,7 +22,8 @@ var Llemmings = (function () {
     let canvas, ctx;        // set by init().
     let background; // global variable to store canvas image data (restored in main loop below somewhere)
     let oldImgData; // check collisions against this (array of 4 bytes / pixel)
-  
+    let canvasEventsListening = false; 
+
     // World settings
     const GRAVITY = 0.03; // Adjust this until falling looks good
     let particles = [];
@@ -1489,34 +1490,10 @@ var Llemmings = (function () {
       // Schedule the next frame
       requestAnimationFrame(update);
     }
-  
-  
-    function init(canvasElt, debug = false)
+
+    
+    function startCanvasEventListeners()
     {
-      __DEBUG__ = debug;
-  
-      console.log("Current seed: ", currentSeed);
-      Math.random = RNG(currentSeed);
-  
-      canvas = canvasElt;
-      canvas.width = 800;
-      canvas.height = 600;
-      ctx = canvas.getContext('2d', { willReadFrequently: true });  // HUMAN: Added wRF due to Chrome suggesting it
-  
-      generateMapNoiseHash();
-      generateMap(canvas.width, canvas.height, EMPTY_SPACE_TOP_LEFT, EMPTY_SPACE_BOTTOM_RIGHT);
-      // console.log("Unique colors:", getUniqueColors(canvas));
-      clearSmoothingOfTerrain(canvas, [...terrainColorBytes, waterColorBytes]);
-  
-      // Create a blank image to draw onto (HUMAN: actually, copy existing image ...)
-      oldImgData = ctx.getImageData(0,0,canvas.width,canvas.height);    // TODO: This should be renamed, but I don't want to do it now since it would make some prompts invalid (for demonstration purposes). It does nicely illustrate the example of the need to keep track of these things.
-      let canvasBytes = Uint8ClampedArray.from(oldImgData.data);
-      const imgData = new ImageData(canvasBytes, canvas.width, canvas.height);
-  
-      renderDirtTexture();
-      renderRockTexture();
-      setBackground();
-  
       // >>> Prompt: instructions/selectable.0001.txt
       // add this after declaring canvas and ctx
       canvas.addEventListener('click', (event) => {
@@ -1525,12 +1502,7 @@ var Llemmings = (function () {
         const mouseY = event.clientY - rect.top;
   
         lemmings.forEach((lemming) => {
-          if (
-            mouseX >= lemming.x &&
-            mouseX <= lemming.x + lemming.width &&
-            mouseY >= lemming.y &&
-            mouseY <= lemming.y + lemming.height
-          ) {
+          if (mouseX >= lemming.x && mouseX <= lemming.x + lemming.width && mouseY >= lemming.y && mouseY <= lemming.y + lemming.height) {
             lemming.isSelected = true;
           } else {
             lemming.isSelected = false;
@@ -1551,6 +1523,42 @@ var Llemmings = (function () {
   
           coordinatesDiv.innerHTML = "X: " + x + ", Y: " + y + " | Color: " + color;
         });
+      }
+
+      canvasEventsListening = true;
+    }
+
+  
+    function init(canvasElt, debug = false)
+    {
+      __DEBUG__ = debug;
+  
+      console.log("Current seed: ", currentSeed);
+      Math.random = RNG(currentSeed);
+  
+      canvas = canvasElt;
+      canvas.width = 800;
+      canvas.height = 600;
+      ctx = canvas.getContext('2d', { willReadFrequently: true });  // HUMAN: Added wRF due to Chrome suggesting it
+  
+      generateMapNoiseHash();
+      generateMap(canvas.width, canvas.height, EMPTY_SPACE_TOP_LEFT, EMPTY_SPACE_BOTTOM_RIGHT);
+      clearSmoothingOfTerrain(canvas, [...terrainColorBytes, waterColorBytes]);
+      // console.log("Unique colors:", getUniqueColors(canvas));
+  
+      // Human notes:
+      // 1. oldImgData will be used for collision checking
+      // 2. This should be renamed, but I don't want to do it now since it would make some 
+      //    prompts invalid (for demonstration purposes). It does nicely to illustrate the 
+      //    example of the need to keep track of these things.
+      oldImgData = ctx.getImageData(0,0,canvas.width,canvas.height);
+  
+      renderDirtTexture();
+      renderRockTexture();
+      setBackground();
+  
+      if(!canvasEventsListening) {
+        startCanvasEventListeners();
       }
     }
   
