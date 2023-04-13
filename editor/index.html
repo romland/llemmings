@@ -1,0 +1,703 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <title>Llemmings Level Editor</title>
+    <style>
+      html {
+        background-color: #222;
+        color: #ccc;
+      }
+      body {
+        margin: 0;
+        padding: 50px;
+      }
+      .colorButton {
+        width: 30px;
+        height: 30px;
+        border-radius: 50px;
+      }
+      #selectionDiv {
+        z-index: 5;
+        display: none;
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100px;
+        height: 100px;
+        border-style: dotted;
+        border-color: yellow;
+        border-width: 1px;
+        box-sizing: border-box;
+        animation: animateBorder 2s ease-in-out infinite;
+      }
+
+      @keyframes animateBorder {
+        0% {
+          border-width: 1px;
+        }
+        50% {
+          border-width: 5px;
+        }
+        100% {
+          border-width: 1px;
+        }
+      }
+      #viewDiv {
+      }
+      #toolDiv {
+        margin-top: -50px;
+      }
+    </style>
+
+    <script type="text/javascript" src="../llemmings.js"></script>
+  </head>
+  
+  <body>
+    <div id="selectionDiv"></div>
+    <div id="viewDiv">
+      <canvas id="canvas" width="800" height="600" style="position: absolute; z-index: 2;"></canvas>
+      <canvas id="seededCanvas" width="800" height="600" style="position: absolute; z-index: 1;"></canvas>
+    </div>
+
+    <div id="toolDiv">
+      <div id="colDiv" class="dashed"></div>
+
+      <button id="select">↖</button>
+      <button id="shape-ellipse">O</button>
+      <button id="shape-rectangle">▯</button>
+      <button id="shape-line">/</button>
+      <button id="shape-draw">∿</button>
+      <button id="shape-triangle">⊿</button>
+  
+      <input type="checkbox" id="fill"/>Fill
+
+      <select id="line-width">
+        <option>1</option>
+        <option>2</option>
+        <option>3</option>
+        <option>4</option>
+        <option>5</option>
+        <option>10</option>
+        <option>20</option>
+        <option>30</option>
+      </select>
+      
+      <button id="undo">↶</button>
+      <button id="redo">↷</button>
+    </div>
+
+    <script>
+      function getById(id)
+      {
+        return document.getElementById(id);
+      }
+
+      const c = getById("canvas");
+      const ctx = c.getContext("2d");
+      ctx.globalAlpha = true
+      const fill = getById("fill");
+      const redoStack = [];
+      const availableCols = [
+        {name:"Void", col: "rgb(0, 0, 0)"},
+        {name:"Water", col: "rgb(0, 119, 190)"},
+        {name:"Rock",  col: "rgb(136, 136, 136)"},
+        {name:"Dirt",  col: "rgb(74, 46, 0)"}
+      ];
+      let currColor = availableCols[0].col;
+      let currToolType = "select";
+      let currLineWidth = 1;
+      let currSelectedShapeIndex = null;
+      let selectionDiv = getById("selectionDiv");
+      let lastX, lastY;
+      let startX, startY;
+      let isDrawing = false;
+      let shapes = [];
+
+      function draw()
+      {
+        // Clear the canvas
+        ctx.clearRect(0, 0, c.width, c.height);
+
+        // Draw existing shapes
+        for (let i = 0; i < shapes.length; i++) {
+          const shape = shapes[i];
+
+          ctx.lineWidth = shape.lineWidth || 1;
+
+          if(shape.filled) {
+            ctx.fillStyle = shape.color;
+          }
+          ctx.strokeStyle = shape.color;
+          
+          ctx.beginPath();
+
+          switch (shape.type) {
+            case "rectangle":
+              if (shape.filled) {
+                ctx.fillRect(shape.x1, shape.y1, shape.x2 - shape.x1, shape.y2 - shape.y1);
+              } else {
+                ctx.strokeRect(shape.x1, shape.y1, shape.x2 - shape.x1, shape.y2 - shape.y1);
+              }
+              break;
+              
+            case "ellipse":
+              ctx.ellipse((shape.x1 + shape.x2) / 2, (shape.y1 + shape.y2) / 2, Math.abs(shape.x2 - shape.x1) / 2, Math.abs(shape.y2 - shape.y1) / 2, 0, 0, 2 * Math.PI);
+              if (shape.filled) {
+                ctx.fill();
+              } else {
+                ctx.stroke();
+              }
+              break;
+              
+            case "line":
+              ctx.moveTo(shape.x1, shape.y1);
+              ctx.lineTo(shape.x2, shape.y2);
+              ctx.stroke();
+              break;
+
+            case "draw":
+              if(!shape.points) {
+                break;
+              }
+              if (shape.filled) {
+                ctx.beginPath();
+              }
+              ctx.moveTo(shape.points[0].x, shape.points[0].y);
+              for (let j = 1; j < shape.points.length; j++) {
+                ctx.lineTo(shape.points[j].x, shape.points[j].y);
+              }
+
+              if (shape.filled) {
+                ctx.closePath();
+                ctx.fill();
+              } else {
+                ctx.stroke();
+              }
+              break;
+
+            case "triangle":
+              if (shape.filled) {
+                ctx.beginPath();
+                ctx.moveTo(shape.x1, shape.y1);
+                ctx.lineTo(shape.x2, shape.y2);
+                ctx.lineTo(shape.x3, shape.y3);
+                ctx.closePath();
+                ctx.fill();
+              } else {
+                ctx.beginPath();
+                ctx.moveTo(shape.x1, shape.y1);
+                ctx.lineTo(shape.x2, shape.y2);
+                ctx.lineTo(shape.x3, shape.y3);
+                ctx.closePath();
+                ctx.stroke();
+              }
+              break;
+
+          }
+        }
+
+        // Draw preview of current shape
+        if (isDrawing) {
+          switch (currToolType) {
+            case "ellipse":
+              ctx.beginPath();
+              
+              const halfWidth = (lastX - startX) / 2;
+              const halfHeight = (lastY - startY) / 2;
+              const x = startX + halfWidth;
+              const y = startY + halfHeight;
+
+              ctx.ellipse(x, y, Math.abs(halfWidth), Math.abs(halfHeight), 0, 0, 2 * Math.PI);
+
+              if (fill.checked) {
+                ctx.fill();
+              } else {
+                ctx.stroke();
+              }
+              break;
+
+            case "rectangle":
+              ctx.beginPath();
+
+              if (fill.checked) {
+                ctx.fillRect(startX, startY, lastX - startX, lastY - startY);
+              } else {
+                ctx.strokeRect(startX, startY, lastX - startX, lastY - startY);
+              }
+              break;
+
+            case "line":
+              ctx.beginPath();
+              
+              ctx.moveTo(startX, startY);
+              ctx.lineTo(lastX, lastY);
+
+              ctx.stroke();
+              break;
+
+            case "draw":
+              const shape = shapes[shapes.length - 1];
+              if(!shape.points) {
+                shape.points = [{x:startX, y:startY}];
+              } else {
+                shape.points.push({x:lastX, y:lastY});
+              }
+              break;
+
+            case "triangle":
+              ctx.beginPath();
+              
+              const x1 = startX;
+              const y1 = startY;
+              const x2 = lastX;
+              const y2 = lastY;
+              const x3 = startX - (lastX - startX);
+              const y3 = lastY;
+
+              ctx.moveTo(x1, y1);
+              ctx.lineTo(x2, y2);
+              ctx.lineTo(x3, y3);
+              ctx.closePath();
+
+              if (fill.checked) {
+                ctx.fill();
+              } else {
+                ctx.stroke();
+              }
+              break;
+
+          }
+        }
+      }
+
+      function startDrawing(x, y)
+      {
+        // A new shape resets redo stack
+        if(redoStack.length) {
+          redoStack.length = 0;
+        }
+
+        isDrawing = true;
+        startX = x;
+        startY = y;
+
+        const filled = fill.checked;
+        shapes.push({ type: currToolType, filled, color: currColor, lineWidth: currLineWidth });
+      }
+
+      function finishDrawing(x, y)
+      {
+        isDrawing = false;
+
+        const shape = shapes[shapes.length - 1];
+        switch (currToolType) {
+          case "ellipse":
+            const halfWidth = (x - startX) / 2;
+            const halfHeight = (y - startY) / 2;
+            const cx = startX + halfWidth;
+            const cy = startY + halfHeight;
+
+            shape.x1 = cx - Math.abs(halfWidth);
+            shape.y1 = cy - Math.abs(halfHeight);
+            shape.x2 = cx + Math.abs(halfWidth);
+            shape.y2 = cy + Math.abs(halfHeight);
+            break;
+
+          case "rectangle":
+            shape.x1 = startX;
+            shape.y1 = startY;
+            shape.x2 = x;
+            shape.y2 = y;
+            break;
+
+          case "line":
+            shape.x1 = startX;
+            shape.y1 = startY;
+            shape.x2 = x;
+            shape.y2 = y;
+            break;
+
+          case "draw" :
+            shape.points.push({x:lastX, y:lastY});
+            break;
+
+          case "triangle" :
+            shape.x1 = startX;
+            shape.y1 = startY;
+            shape.x2 = lastX;
+            shape.y2 = lastY;
+            shape.x3 = startX - (lastX - startX);
+            shape.y3 = lastY;
+            break;
+
+        }
+      }
+
+
+      function getShapeBounds(shape)
+      {
+        let minX, minY, maxX, maxY;
+        
+        switch (shape.type) {
+          case 'ellipse':
+            minX = Math.min(shape.x1, shape.x2);
+            minY = Math.min(shape.y1, shape.y2);
+            maxX = Math.max(shape.x1, shape.x2);
+            maxY = Math.max(shape.y1, shape.y2);
+            break;
+          case 'rectangle':
+            minX = shape.x1;
+            minY = shape.y1;
+            maxX = shape.x2;
+            maxY = shape.y2;
+            break;
+          case 'triangle':
+            minX = Math.min(shape.x1, shape.x2, shape.x3);
+            minY = Math.min(shape.y1, shape.y2, shape.y3);
+            maxX = Math.max(shape.x1, shape.x2, shape.x3);
+            maxY = Math.max(shape.y1, shape.y2, shape.y3);
+            break;
+          case 'line':
+            minX = Math.min(shape.x1, shape.x2);
+            minY = Math.min(shape.y1, shape.y2);
+            maxX = Math.max(shape.x1, shape.x2);
+            maxY = Math.max(shape.y1, shape.y2);
+            break;
+          case 'draw':
+            let xs = shape.points.map(p => p.x);
+            let ys = shape.points.map(p => p.y);
+            minX = Math.min(...xs);
+            minY = Math.min(...ys);
+            maxX = Math.max(...xs);
+            maxY = Math.max(...ys);
+            break;
+          default:
+            throw `unknown shape type ${shape.type}`
+        }
+
+        return { minX, minY, maxX, maxY };
+      }
+
+      function findSmallestShape(x, y, haystack)
+      {
+        let smallest = null;
+        let minDistance = Infinity;
+        let smallestIndex = null;
+
+        let index = 0;
+        for (const shape of haystack) {
+          let {minX, minY, maxX, maxY} = getShapeBounds(shape);
+          
+          if (minX <= x && x <= maxX && minY <= y && y <= maxY) {
+            let cx = (minX + maxX) / 2;
+            let cy = (minY + maxY) / 2;
+            let distance = Math.sqrt((x - cx) ** 2 + (y - cy) ** 2);
+            
+            if (distance < minDistance) {
+              smallest = shape;
+              smallestIndex = index;
+              minDistance = distance;
+            }
+          }
+          index++;
+        }
+        
+        return smallestIndex;//smallest;
+      }
+
+      function selectShape(x, y)
+      {
+        currSelectedShapeIndex = findSmallestShape(x, y, shapes);
+
+        if(currSelectedShapeIndex === null) {
+          deselectSelected();
+          return;
+        }
+
+        const shape = shapes[currSelectedShapeIndex];
+        const bounds = getShapeBounds(shape);
+        bounds.minX += c.offsetLeft;
+        bounds.minY += c.offsetTop;
+        bounds.maxX += c.offsetLeft;
+        bounds.maxY += c.offsetTop;
+        selectionDiv.style.left = `${bounds.minX}px`;
+        selectionDiv.style.top = `${bounds.minY}px`;
+        selectionDiv.style.width = `${bounds.maxX-bounds.minX}px`;
+        selectionDiv.style.height = `${bounds.maxY-bounds.minY}px`;
+        selectionDiv.style.display = "block";
+      }
+
+      function deselectSelected()
+      {
+        currSelectedShapeIndex = null;
+        selectionDiv.style.display = "none";
+      }
+
+      function translateShape(shape, x, y)
+      {
+          switch (shape.type) {
+            case "ellipse":
+              shape.x1 += x;
+              shape.y1 += y;
+              shape.x2 += x;
+              shape.y2 += y;
+              break;
+            case "rectangle":
+              shape.x1 += x;
+              shape.y1 += y;
+              shape.x2 += x;
+              shape.y2 += y;
+              break;
+            case "triangle":
+              shape.x1 += x;
+              shape.y1 += y;
+              shape.x2 += x;
+              shape.y2 += y;
+              shape.x3 += x;
+              shape.y3 += y;
+              break;
+            case "line":
+              shape.x1 += x;
+              shape.y1 += y;
+              shape.x2 += x;
+              shape.y2 += y;
+              break;
+            case "draw":
+              shape.points.forEach(point => {
+                point.x += x;
+                point.y += y;
+              });
+              break;
+            default:
+              console.log("Unknown shape type.");
+              break;
+          }
+      }
+
+      function serialize()
+      {
+        const data = JSON.stringify({ shapes, currColor });
+        localStorage.setItem("data", data);
+      }
+
+      function deserialize()
+      {
+        const data = localStorage.getItem("data");
+        if (!data) {
+          return;
+        }
+
+        const { shapes: loadedShapes, currentColor: loadedColor } = JSON.parse(data);
+        shapes = loadedShapes;
+        if(!shapes) {
+          shapes = [];
+        }
+        console.log("Loaded shapes:", shapes);
+        draw();
+      }
+
+      function undo()
+      {
+        if(!shapes.length) return;
+        redoStack.push(shapes.pop());
+        draw();
+      }
+
+      function redo()
+      {
+        if(!redoStack.length) return;
+        shapes.push(redoStack.pop());
+        draw();
+      }
+
+      // Set up events.
+      function initEditor()
+      {
+        c.addEventListener('contextmenu', e => e.preventDefault());
+
+        // HUMAN: TODO:
+        //       If a shape is already selected and you want to select
+        //       another, this will fail as we are clicking the select
+        //       div instead. This can be solved in a number of ways,
+        //       I'm not sure which I prefer. Yet.
+        c.addEventListener("mousedown", function(e) {
+          startX = e.offsetX;
+          startY = e.offsetY;
+
+          if(currToolType === "select") {
+            selectShape(startX, startY);
+          } else {
+            startDrawing(startX, startY);
+          }
+        });
+
+        c.addEventListener("mousemove", function(e) {
+          if (!isDrawing) {
+            return;
+          }
+
+          lastX = e.offsetX;
+          lastY = e.offsetY;
+
+          draw();
+        });
+
+        c.addEventListener("mouseup", function(e) {
+          const x = e.offsetX;
+          const y = e.offsetY;
+
+          finishDrawing(x, y);
+
+          draw();
+        });
+
+        for(let i = 0; i < availableCols.length; i++) {
+          let acol = availableCols[i];
+          let elt = document.createElement("button");
+
+          elt.setAttribute("class", "colorButton");
+          elt.setAttribute("col", acol.col);
+          elt.setAttribute("colName", acol.name);
+          elt.style.backgroundColor = acol.col;
+
+          elt.addEventListener("click", (evt) => {
+            currColor = evt.target.getAttribute("col");
+          });
+
+          getById("colDiv").appendChild(elt);
+        }
+
+        getById("line-width").addEventListener("click", function(evt) {
+          currLineWidth = parseInt(evt.target.selectedOptions[0].text, 10);
+        });
+
+        getById("select").addEventListener("click", function() {
+          currToolType = "select";
+        });
+
+        getById("shape-ellipse").addEventListener("click", function() {
+          deselectSelected();
+          currToolType = "ellipse";
+        });
+
+        getById("shape-rectangle").addEventListener("click", function() {
+          deselectSelected();
+          currToolType = "rectangle";
+        });
+
+        getById("shape-line").addEventListener("click", function() {
+          deselectSelected();
+          currToolType = "line";
+        });
+
+        getById("shape-draw").addEventListener("click", function() {
+          deselectSelected();
+          currToolType = "draw";
+        });
+
+        getById("shape-triangle").addEventListener("click", function() {
+          deselectSelected();
+          currToolType = "triangle";
+        });
+
+        getById("undo").addEventListener("click", function() {
+          deselectSelected();
+          undo();
+        });
+
+        getById("redo").addEventListener("click", function() {
+          deselectSelected();
+          redo();
+        });
+
+        window.addEventListener("load", function() {
+          // Load saved data
+          deserialize();
+        });
+
+        window.addEventListener("beforeunload", function() {
+          // Save data before user leaves the page
+          serialize();
+        });
+
+        // I really want ctrl+z/y
+        window.addEventListener('keydown', (evt) => {
+          if(evt.ctrlKey) {
+            switch(evt.key) {
+              case "z": undo(); break;
+              case "y": redo(); break;
+            }
+          } else {
+            switch(evt.key) {
+              case "Delete" : 
+                console.log("delete");
+                if(currSelectedShapeIndex) {
+                  // HUMAN: TODO: This needs to be handled in undo logic:
+                  // - need to keep index available in shapes array
+                  // - un redo array, store whether it was a delete action and which index the shape was in
+                  shapes.splice(currSelectedShapeIndex, 1);
+                  draw();
+                  deselectSelected();
+                }
+                break;
+            }
+          }
+        });
+      }
+
+      function initSelectionDiv()
+      {
+        let isDragging = false;
+        let mouseX, mouseY;
+        let offsetX = 0, offsetY = 0;
+        let orgX, orgY;
+
+        const canvas = document.querySelector('#canvas');
+        const selectionDiv = document.querySelector('#selectionDiv');
+
+        selectionDiv.addEventListener('mousedown', e => {
+          isDragging = true;
+          mouseX = e.clientX;
+          mouseY = e.clientY;
+          const bounds = canvas.getBoundingClientRect();
+          offsetX = bounds.left + window.scrollX;
+          offsetY = bounds.top + window.scrollY;
+
+          orgX = mouseX;
+          orgY = mouseY;
+        });
+
+        selectionDiv.addEventListener('mousemove', e => {
+          if (isDragging) {
+            const dx = e.clientX - mouseX;
+            const dy = e.clientY - mouseY;
+            selectionDiv.style.left = Math.min(Math.max(selectionDiv.offsetLeft + dx, offsetX), offsetX + canvas.offsetWidth - selectionDiv.offsetWidth) + 'px';
+            selectionDiv.style.top = Math.min(Math.max(selectionDiv.offsetTop + dy, offsetY), offsetY + canvas.offsetHeight - selectionDiv.offsetHeight) + 'px';
+            mouseX = e.clientX;
+            mouseY = e.clientY;
+
+            // Translate selected shape
+            if(currSelectedShapeIndex !== null) {
+              const shape = shapes[currSelectedShapeIndex];
+              translateShape(shape, mouseX - orgX, mouseY - orgY);
+              draw();
+            }
+
+            orgX = mouseX;
+            orgY = mouseY;
+          }
+        });
+
+        selectionDiv.addEventListener('mouseup', () => {
+          isDragging = false;
+        });
+      }
+
+      Llemmings.init(document.querySelector('#seededCanvas'), false);
+
+      initEditor();
+      initSelectionDiv();
+    </script>
+  </body>
+</html>

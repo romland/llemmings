@@ -1,0 +1,40 @@
+Using JS and a 800x600 canvas. I need a simple drawing program with the following:
+
+Buttons to select color/shape can be in plain HTML
+
+- set a current color to 1 of 5 colors
+- using mouse, ability to select and then draw a shape:
+    - ellipse
+    - rectangle
+    - line
+    - free draw
+
+- When creating a shape, and user is moving the mouse, give visual
+  feedback on what the shape looks like at that moment -- note that you still 
+  need to keep other shapes on canvas when the current shape finishes
+
+- all shapes should be able to be drawn as filled or not filled
+
+- When a new shape is added to canvas, all parameters (including coordinates, color, fill-status) 
+  to create that shape should be printed with console.log().
+
+- Finished shapes should remain on canvas even when new shapes are added That is: don't remove
+  any shapes from canvas. Not even during 'preview' when you are drawing a shape. Whether you solve 
+  this by drawing all shapes every frame during drawing of a new shape (or with a double-buffer) ... up to you.
+
+- Add serialization and deserialization of the shapes (shapes, not bitmap data), include current color and whether
+  filled or not. E.g. Serialize shapes like this: { "type" : "rect", "filled": true, "color":"green", "x1" : 1, "y" : 1, "x2" : 100, "y2" : 100 } etc for each shape.
+
+- With serialization/deserialization it should be easy to add infinite undo/redo of canvas changes, so add that
+
+- Obviously, shapes that are created during preview/drawing should not be pushed into undo history nor into 
+  serialization. Only finalized shapes should be there.
+
+- Background is #444
+
+- be brief, less is more, make helper functions for e.g. document.getElementById(), document.querySelector(), etc
+  name context 'ctx', document 'doc', canvas 'c', color as 'col', and similar short variable names for everything.
+
+- to make it less verbose, just do one event listener for buttons and check which id was clicked and dispatch from there
+
+No external depenencies. Give me full HTML+javascript and no explanation.

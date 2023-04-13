@@ -1,0 +1,100 @@
+Given an x and y, I want the smallest shape in 'shapes' that enclose that exact coordinate.
+Comparing minX, minY, maxX, maxY is enough, it does not need to be exact area size.
+Name the function findSmallestShape(x, y, haystack).
+
+Shapes [
+{
+    "type": "ellipse",
+    "filled": false,
+    "color": "#000000",
+    "x1": 148,
+    "y1": 113,
+    "x2": 395,
+    "y2": 393
+},
+{
+    "type": "rectangle",
+    "filled": true,
+    "color": "#000000",
+    "x1": 389,
+    "y1": 150,
+    "x2": 519,
+    "y2": 212
+},
+{
+    "type": "triangle",
+    "filled": false,
+    "color": "#FF0000",
+    "x1": 629,
+    "y1": 70,
+    "x2": 697,
+    "y2": 160,
+    "x3": 561,
+    "y3": 160
+},
+{
+    "type": "line",
+    "filled": false,
+    "color": "#FF0000",
+    "x1": 453,
+    "y1": 485,
+    "x2": 596,
+    "y2": 308
+},
+{
+    "type": "draw",
+    "filled": false,
+    "color": "#0000FF",
+    "lineWidth": 1,
+    "points": [
+        {
+            "x": 262,
+            "y": 32
+        },
+        {
+            "x": 264,
+            "y": 32
+        },
+        {
+            "x": 266,
+            "y": 31
+        },
+        {
+            "x": 268,
+            "y": 31
+        },
+        {
+            "x": 269,
+            "y": 30
+        },
+        {
+            "x": 270,
+            "y": 30
+        },
+        {
+            "x": 272,
+            "y": 30
+        },
+        {
+            "x": 273,
+            "y": 30
+        },
+        {
+            "x": 274,
+            "y": 30
+        },
+        {
+            "x": 275,
+            "y": 30
+        },
+        {
+            "x": 276,
+            "y": 30
+        },
+        {
+            "x": 276,
+            "y": 30
+        }
+    ]
+}
+]

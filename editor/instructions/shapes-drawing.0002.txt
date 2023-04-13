@@ -1,0 +1,11 @@
+The following functions draws all drawn shapes on a canvas,
+the second half of draw() draws a preview of a current shape being drawn by mouse
+movement during mouse button being pressed.
+
+Add a shape for Triangle too -- just give me the new code needed for (no need for full functions):
+- existing shapes drawing
+- preview shape
+- shape done
+
+<<< code for draw/finishDrawing here >>>
+

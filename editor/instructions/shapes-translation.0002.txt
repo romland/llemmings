@@ -1,0 +1,12 @@
+#selectionDiv { ... }
+
+Given the CSS for that, give me a minimal amount of javascript code to move that div
+(already declared variable is called selectionDiv) with the mouse within the boundary
+of a DOM element in the variable 'canvas'. Note that the canvas element can be at
+an arbitrary position, so you need to use offsets (scroll too). The dragging-point (where
+mouse goes down) should remain the same in relation to the div when the div is moved
+with the mouse (don't make that dragging point 0,0).
+
+Enclose all the functionality for this in a function called initSelectionDiv()
+
+Give me only the code, no need for extra explanation.
