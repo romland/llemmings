@@ -4,12 +4,6 @@ var Llemmings = (function () {
     const coordinatesDiv = document.getElementById("coordinatesDiv");
     const infoDiv = document.getElementById("infoDiv");
   
-    // let currentSeed = Date.now();   // "random"
-    // let currentSeed = 1680878681505; // slow
-    // let currentSeed = 1680905320764;    // action
-    // let currentSeed = 1680983904827;  // builder test
-    let currentSeed = 1681139505452;    // llemmings.com
-  
     // Colors
     const blackColorBytes = [0x0, 0x0, 0x0];
     const waterColorBytes = [0x00, 0x77, 0xbe]; // [0, 119, 190];
@@ -35,6 +29,7 @@ var Llemmings = (function () {
     let lastLemmingId = 0;
   
     // Map variables and settings (noise and otherwise)
+    let mapGenSeed;
     const MAP_TILE_SIZE = 1;
     const MAP_OCTAVES = 5;
     const MAP_PERSISTENCE = 0.5;
@@ -1576,12 +1571,24 @@ var Llemmings = (function () {
     }
     
     
-    function init(canvasElt, debug = false)
+    function init(canvasElt, seed = null, debug = false)
     {
       __DEBUG__ = debug;
   
-      console.log("Current seed: ", currentSeed);
-      Math.random = RNG(currentSeed);
+      /* Some seeds used in the past:
+        mapGenSeed = 1680878681505;  // slow
+        mapGenSeed = 1680905320764;  // action
+        mapGenSeed = 1680983904827;  // builder test
+        mapGenSeed = 1681139505452;  // llemmings.com
+      */
+      if (!seed) {
+        mapGenSeed = Date.now();   // "random" seed
+      } else {
+        mapGenSeed = seed;
+      }
+
+      console.log("Current seed: ", mapGenSeed);
+      Math.random = RNG(mapGenSeed);
   
       if(!canvas && !canvasElt) {
         throw "no existing canvas and no element given";
@@ -1622,14 +1629,13 @@ var Llemmings = (function () {
       // Spawn a new lemming every interval
       gameIntervals["debugLemmingSpawner"] = setInterval(spawnLemming, 100);
     }
-  
+
     return {
       init : init,
       start : start,
       togglePause : togglePause,
       applyAction : applyAction,
       reset : reset,
-      // reset : () => { reset(); init(null, true); start(); },
     }
   })();
   
