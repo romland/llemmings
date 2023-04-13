@@ -1,8 +1,7 @@
 var Llemmings = (function () {
-    // Get relevant DOM elements
+    // Get debug DOM elements
     const coordinatesDiv = document.getElementById("coordinatesDiv");
     const infoDiv = document.getElementById("infoDiv");
-    const canvas = document.querySelector('canvas');
   
     // const currentSeed = Date.now();   // "random"
     // const currentSeed = 1680878681505; // slow
@@ -20,9 +19,7 @@ var Llemmings = (function () {
     const terrainColorBytes = [ rockColorBytes, dirtColorBytes ];
   
     // Set up canvas (+related)
-    canvas.width = 800;
-    canvas.height = 600;
-    const ctx = canvas.getContext('2d', { willReadFrequently: true });  // HUMAN: Added this due to Chrome suggesting it
+    let canvas, ctx;        // set by init().
     let background; // global variable to store canvas image data (restored in main loop below somewhere)
     let oldImgData; // check collisions against this (array of 4 bytes / pixel)
   
@@ -1494,12 +1491,17 @@ var Llemmings = (function () {
     }
   
   
-    function init(debug = false)
+    function init(canvasElt, debug = false)
     {
       __DEBUG__ = debug;
   
       console.log("Current seed: ", currentSeed);
       Math.random = RNG(currentSeed);
+  
+      canvas = canvasElt;
+      canvas.width = 800;
+      canvas.height = 600;
+      ctx = canvas.getContext('2d', { willReadFrequently: true });  // HUMAN: Added wRF due to Chrome suggesting it
   
       generateMapNoiseHash();
       generateMap(canvas.width, canvas.height, EMPTY_SPACE_TOP_LEFT, EMPTY_SPACE_BOTTOM_RIGHT);
