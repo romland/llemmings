@@ -55,8 +55,8 @@
   <body>
     <div id="selectionDiv"></div>
     <div id="viewDiv">
-      <canvas id="canvas" width="800" height="600" style="position: absolute; z-index: 2;"></canvas>
-      <canvas id="seededCanvas" width="800" height="600" style="position: absolute; z-index: 1;"></canvas>
+      <canvas id="canvas" width="800" height="600" style="position: absolute; z-index: 2; width: 100%;"></canvas>
+      <canvas id="seededCanvas" width="800" height="600" style="position: absolute; z-index: 1; width: 100%;"></canvas>
     </div>
 
     <div id="toolDiv">
@@ -657,8 +657,14 @@
             y1: 600,
             stops: [
               { offset: 0, color: 'black' },
-              { offset: 1, color: 'blue' }
+              { offset: 1, color: '#660000' }
             ]
+          }
+        ],
+        decorations : [
+          {
+            type: "organics",
+            location: ["top"],
           }
         ],
         shapes : [],

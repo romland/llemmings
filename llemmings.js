@@ -1696,7 +1696,19 @@ var Llemmings = (function () {
         level : givenLevel.level || -1,
         name : givenLevel.name || "Noname",
         seed : givenLevel.seed || Date.now(),
-        gradients : givenLevel.gradients || [ ],
+        gradients : givenLevel.gradients || [
+          {
+            type: 'linear',
+            x0: 0,
+            y0: 0,
+            x1: 0,
+            y1: 600,
+            stops: [
+              { offset: 0, color: 'black' },
+              { offset: 1, color: '#000088' }
+            ]
+          }
+        ],
         shapes : givenLevel.shapes || [
           {
             "type": "rectangle",
@@ -1707,6 +1719,12 @@ var Llemmings = (function () {
             "y1": 600 - WATER_HEIGHT,
             "x2": 800,
             "y2": 600 
+          }
+        ],
+        decorations : givenLevel.decorations || [
+          {
+            type: "organics",
+            location: ["top"],
           }
         ],
         objects : givenLevel.objects || [],
@@ -1752,7 +1770,17 @@ var Llemmings = (function () {
       oldImgData = ctx.getImageData(0,0,canvas.width,canvas.height);
 
       setGradients(ctx, levelData.gradients);
-      LlemmingsOrganics.drawEdgeVegitation(ctx, "top");
+      for(let i = 0; i < levelData.decorations.length; i++) {
+        for(let j = 0; j < levelData.decorations[i].location.length; j++) {
+          switch(levelData.decorations[i].type) {
+            case "organics" :
+              LlemmingsOrganics.drawEdgeVegitation(ctx, levelData.decorations[i].location[j]);
+              break;
+            default :
+              throw "unknown decoration " + levelData.decorations[i].type;
+          }
+        }
+      }
       
       renderDirtTexture();
       renderRockTexture();
