@@ -339,7 +339,22 @@ var Llemmings = (function () {
         }
       }
     }
-  
+
+    // HUMAN: Added this as a placeholder -- should generate a better texture for this.
+    function renderWaterTexture()
+    {
+      ctx.fillStyle = `rgb(${waterColorBytes.join(',')})`;
+      for (let x = 0; x < canvas.width; x++) {
+        for (let y = 0; y < canvas.height; y++) {
+          if(!isColorOneOf(getPixelColor(oldImgData, x, y), waterColorBytes)) {
+            continue;
+          }
+          ctx.fillRect(x, y, 1, 1);
+
+        }
+      }
+    }
+
     function renderRockTexture() {
       const rockGrainSize = 24;
       const cliffColorBytes = [
@@ -1546,7 +1561,7 @@ var Llemmings = (function () {
         }
     }
   
-    function setBackground() {
+    function setBackgroundBuffer() {
       background = ctx.getImageData(0, 0, canvas.width, canvas.height);
     }
   
@@ -1705,7 +1720,7 @@ var Llemmings = (function () {
             y1: 600,
             stops: [
               { offset: 0, color: 'black' },
-              { offset: 1, color: '#000088' }
+              { offset: 1, color: '#000066' }
             ]
           }
         ],
@@ -1763,13 +1778,15 @@ var Llemmings = (function () {
       // console.log("Unique colors:", getUniqueColors(canvas));
 
       // Human notes:
-      // 1. oldImgData will be used for collision checking
-      // 2. This should be renamed, but I don't want to do it now since it would make some 
+      // 1. Everything that is collidable terrain should be above this
+      // 2. oldImgData will be used for collision checking
+      // 3. This should be renamed, but I don't want to do it now since it would make some 
       //    prompts invalid (for demonstration purposes). It does nicely to illustrate the 
       //    example of the need to keep track of these things.
       oldImgData = ctx.getImageData(0,0,canvas.width,canvas.height);
 
       setGradients(ctx, levelData.gradients);
+
       for(let i = 0; i < levelData.decorations.length; i++) {
         for(let j = 0; j < levelData.decorations[i].location.length; j++) {
           switch(levelData.decorations[i].type) {
@@ -1784,8 +1801,8 @@ var Llemmings = (function () {
       
       renderDirtTexture();
       renderRockTexture();
-      setBackground();
-
+      renderWaterTexture();
+      setBackgroundBuffer();
 
       if(!canvasEventsListening) {
         startCanvasEventListeners();
