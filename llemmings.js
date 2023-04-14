@@ -1690,6 +1690,7 @@ var Llemmings = (function () {
         1680983904827;  // builder test
         1681139505452;  // llemmings.com
       */
+
       // levelData defaults
       levelData = {
         level : givenLevel.level || -1,
@@ -1721,7 +1722,6 @@ var Llemmings = (function () {
         canvas = canvasElt;
         canvas.width = 800;
         canvas.height = 600;
-        ctx = canvas.getContext('2d', { willReadFrequently: true });
 
         /*
         Human note: TOOD: Map-generation on mobile devices
@@ -1732,12 +1732,13 @@ var Llemmings = (function () {
         ctx.scale(dpr, dpr);
         */
       }
+      ctx = canvas.getContext('2d', { willReadFrequently: true });
 
       generateMapNoiseHash();
       generateMap(canvas.width, canvas.height, EMPTY_SPACE_TOP_LEFT, EMPTY_SPACE_BOTTOM_RIGHT);
 
-      if (givenLevel.shapes) {
-        drawShapes(ctx, givenLevel.shapes);
+      if (levelData.shapes) {
+        drawShapes(ctx, levelData.shapes);
       }
 
       clearSmoothingOfTerrain(canvas, [...terrainColorBytes, waterColorBytes]);
@@ -1750,7 +1751,7 @@ var Llemmings = (function () {
       //    example of the need to keep track of these things.
       oldImgData = ctx.getImageData(0,0,canvas.width,canvas.height);
 
-      setGradients(ctx, givenLevel.gradients);
+      setGradients(ctx, levelData.gradients);
       LlemmingsOrganics.drawEdgeVegitation(ctx, "top");
       
       renderDirtTexture();
