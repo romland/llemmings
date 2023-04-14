@@ -1774,7 +1774,7 @@ var Llemmings = (function () {
         for(let j = 0; j < levelData.decorations[i].location.length; j++) {
           switch(levelData.decorations[i].type) {
             case "organics" :
-              LlemmingsOrganics.drawEdgeVegitation(ctx, levelData.decorations[i].location[j]);
+              LlemmingsOrganics.drawEdgeVegetation(ctx, levelData.decorations[i].location[j]);
               break;
             default :
               throw "unknown decoration " + levelData.decorations[i].type;

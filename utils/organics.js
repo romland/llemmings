@@ -84,7 +84,7 @@ var LlemmingsOrganics = (function () {
       drawLeaves(ctx, x + 0, y + len, len, -90, treeWidth, leafColors[Math.floor(Math.random() * leafColors.length)], "#000");
     }
     
-    function drawEdgeVegitation(ctx, edge = "top")
+    function drawEdgeVegetation(ctx, edge = "top")
     {
       switch(edge) {
         case "top" :
@@ -105,6 +105,6 @@ var LlemmingsOrganics = (function () {
     }
 
     return {
-        drawEdgeVegitation : drawEdgeVegitation
+        drawEdgeVegetation : drawEdgeVegetation
     }
 })();
