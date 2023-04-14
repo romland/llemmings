@@ -66,17 +66,6 @@ var LlemmingsOrganics = (function () {
       }
     }
     
-    function drawBackground(ctx)
-    {
-      ctx.beginPath();
-      ctx.rect(0, 0, canvas.width, canvas.height);
-      const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
-      gradient.addColorStop(0, "#25303B");
-      gradient.addColorStop(1, "#76999D");
-      ctx.fillStyle = gradient;
-      ctx.fill();
-    }
-    
     function drawTree(ctx, x, y)
     {
       const treeWidth = Math.random() * 40 + 20;
