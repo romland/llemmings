@@ -70,10 +70,21 @@ var Llemmings = (function () {
         return;
       }
   
-      const newLemming = new Lemming(); //Object.create(Lemming);
+      const newLemming = new Lemming();
       newLemming.id = ++lastLemmingId;
-      newLemming.x = Math.random() * canvas.width; // Start at a random x location
-      newLemming.y = -20;
+
+      if (levelData.start.x === null) {
+        newLemming.x = Math.random() * canvas.width; // Start at a random x location
+      } else {
+        newLemming.x = levelData.start.x;
+      }
+
+      if (levelData.start.y === null) {
+        newLemming.y = Math.random() * (canvas.height - 100);
+      } else {
+        newLemming.y = levelData.start.y;
+      }
+
       newLemming.velX = newLemming.maxVelX; // Walk to the right by default
   
       if(newLemming.id === 1) {
@@ -1743,7 +1754,8 @@ var Llemmings = (function () {
           }
         ],
         objects : givenLevel.objects || [],
-        start : givenLevel.start || { x : 25, y : -20 },
+        start : givenLevel.start || { x : null, y : -20 },
+        finish : givenLevel.finish || { x : 750, y : 500 },
       }
 
       console.log("Current seed: ", levelData.seed);

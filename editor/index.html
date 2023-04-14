@@ -10,7 +10,7 @@
       }
       body {
         margin: 0;
-        padding: 50px;
+        padding-top: 50px;
       }
       .colorButton {
         width: 30px;
@@ -55,8 +55,8 @@
   <body>
     <div id="selectionDiv"></div>
     <div id="viewDiv">
-      <canvas id="canvas" width="800" height="600" style="position: absolute; z-index: 2; width: 100%;"></canvas>
-      <canvas id="seededCanvas" width="800" height="600" style="position: absolute; z-index: 1; width: 100%;"></canvas>
+      <canvas id="canvas" width="800" height="600" style="position: absolute; z-index: 2;"></canvas>
+      <canvas id="seededCanvas" width="800" height="600" style="position: absolute; z-index: 1;"></canvas>
     </div>
 
     <div id="toolDiv">
@@ -670,6 +670,7 @@
         shapes : [],
         objects : [],
         start : { x : 25, y : -20 },
+        finish : { x : 750, y : 500 },
       }
 
       initEditor();
