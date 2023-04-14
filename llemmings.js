@@ -478,7 +478,7 @@ var Llemmings = (function () {
               grd.addColorStop(g.stops[i].offset, g.stops[i].color);
             }
             context.fillStyle = grd;
-            context.fillRect(g.x0, g.y0, g.x1, g.y1);
+            context.fillRect(0, 0, canvas.width, canvas.height);
             break;
           default :
             console.warn("unknown gradient", g.type);
@@ -1690,7 +1690,6 @@ var Llemmings = (function () {
         1680983904827;  // builder test
         1681139505452;  // llemmings.com
       */
-console.log("SHAPES", givenLevel.shapes);
       // levelData defaults
       levelData = {
         level : givenLevel.level || -1,
