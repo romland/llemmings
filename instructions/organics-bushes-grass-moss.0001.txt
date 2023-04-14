@@ -1,0 +1,21 @@
+>>> Prompt: 
+Given javascript and HTML canvas:
+
+Give me code for an algorithm that generates what looks like highly detailed organic 
+growth with small trees and roots of various sizes. The small trees should have leaves.
+
+The trees should be placed along all edges of the canvas so that the trunk is always 
+going inwards on the canvas.
+
+It needs to be organically colored (not just monochrome), e.g. multiple shades of 
+brown, green, yellow and red.
+
+You can use e.g. Lindenmayer system for the trees (don't forget leaves). Figure something out for the
+backgdrop.
+
+Don't use any external dependencies.
+
+Give me only code, no explanation.
+
+>>> HUMAN NOTE:
+I have massaged the code quite a bit and merged a few outcomes of variations of the above prompt.

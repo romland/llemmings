@@ -1690,7 +1690,7 @@ var Llemmings = (function () {
         1680983904827;  // builder test
         1681139505452;  // llemmings.com
       */
-
+console.log("SHAPES", givenLevel.shapes);
       // levelData defaults
       levelData = {
         level : givenLevel.level || -1,
@@ -1752,6 +1752,7 @@ var Llemmings = (function () {
       oldImgData = ctx.getImageData(0,0,canvas.width,canvas.height);
 
       setGradients(ctx, givenLevel.gradients);
+      LlemmingsOrganics.drawEdgeVegitation(ctx, "top");
       
       renderDirtTexture();
       renderRockTexture();
