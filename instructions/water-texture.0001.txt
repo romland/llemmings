@@ -1,0 +1,19 @@
+>>> Prompt:
+Generate and apply a detailed water texture using javascript and canvas.
+The water should look realistic and have multiple shades of blue.
+
+Only apply the texture to a pixel if this already defined variable is
+true: APPLYWATER, as there is already existing things on the canvas 
+that should remain there.
+
+Variables 'canvas' and 'ctx' are already defined, use them.
+
+You cannot use any external dependencies (not even images). There is 
+a Perlin Noise function, it's used like this:
+  let noiseValue = PerlinNoise2D(x / someVar, y / someVar);
+
+Give me code, no explanations.
+
+>>> HUMAN NOTE:
+replace APPLYWATER with:
+if(!isColorOneOf(getPixelColor(oldImgData, x, y), waterColorBytes)) continue;

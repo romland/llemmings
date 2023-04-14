@@ -351,17 +351,17 @@ var Llemmings = (function () {
       }
     }
 
-    // HUMAN: Added this as a placeholder -- should generate a better texture for this.
+    // >>> Prompt: instructions/water-texture.0001.txt
     function renderWaterTexture()
     {
-      ctx.fillStyle = `rgb(${waterColorBytes.join(',')})`;
-      for (let x = 0; x < canvas.width; x++) {
-        for (let y = 0; y < canvas.height; y++) {
-          if(!isColorOneOf(getPixelColor(oldImgData, x, y), waterColorBytes)) {
-            continue;
-          }
+      for (let y = 0; y < canvas.height; y++) {
+        for (let x = 0; x < canvas.width; x++) {
+          if(!isColorOneOf(getPixelColor(oldImgData, x, y), waterColorBytes)) continue;
+          
+          let noiseValue = PerlinNoise2D(x / 100, y / 100);
+          let blue = Math.floor(200 + noiseValue * 55);
+          ctx.fillStyle = `rgb(0, 0, ${blue})`;
           ctx.fillRect(x, y, 1, 1);
-
         }
       }
     }
