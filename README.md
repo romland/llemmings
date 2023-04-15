@@ -1,4 +1,4 @@
-# 💚💙 Llemmings 💙💚
+# 💙 Llemmings 💚
 
 <img width="30%" align="right" src="./github/llemming360.png">
 

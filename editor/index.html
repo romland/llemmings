@@ -442,8 +442,8 @@
       function preview()
       {
         if(previewing) {
-          // TODO: Only set selectionDiv to visible if it was actually visible before
-          selectionDiv.style.display = "block";
+          // TODO: Only set selectionDiv to visible if it was actually visible before (for now do nothing)
+          // selectionDiv.style.display = "block";
           canvas.style.display = "block";
           levelData.shapes = [];
           Llemmings.reset();
@@ -647,7 +647,7 @@
       levelData = {
         level : 1,
         name : "El-el-em-ing",
-        seed : 1681139505452,
+        seed : null, //1681139505452,
         gradients : [
           {
             type: 'linear',
@@ -673,6 +673,7 @@
         finish : { x : 750, y : 500 },
       }
 
+      // Only do this _once_:
       initEditor();
       initSelectionDiv();
 
