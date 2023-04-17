@@ -1,8 +1,9 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <meta charset="UTF-8">
     <title>Llemmings Level Editor</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
       html {
         background-color: #222;
@@ -46,21 +47,21 @@
       #toolDiv {
         margin-top: -50px;
       }
+      #viewDiv {
+        height: 610px;
+      }
+      #levelData {
+      }
     </style>
 
+    <script type="text/javascript" src="../utils/crud.js"></script>
     <script type="text/javascript" src="../utils/organics.js"></script>
     <script type="text/javascript" src="../llemmings.js"></script>
   </head>
   
   <body>
-    <div id="selectionDiv"></div>
-    <div id="viewDiv">
-      <canvas id="canvas" width="800" height="600" style="position: absolute; z-index: 2;"></canvas>
-      <canvas id="seededCanvas" width="800" height="600" style="position: absolute; z-index: 1;"></canvas>
-    </div>
-
     <div id="toolDiv">
-      <div id="colDiv" class="dashed"></div>
+      <div id="colDiv"></div>
 
       <button id="select">↖</button>
       <button id="shape-ellipse">O</button>
@@ -87,6 +88,15 @@
 
       <button id="preview" onclick="preview()">👀</button>
     </div>
+
+    <div id="selectionDiv"></div>
+    <div id="viewDiv">
+      <canvas id="canvas" width="800" height="600" style="position: absolute; z-index: 2;"></canvas>
+      <canvas id="seededCanvas" width="800" height="600" style="position: absolute; z-index: 1;"></canvas>
+    </div>
+
+
+    <div id="levelData"></div>
 
     <script>
       function getById(id)
@@ -647,7 +657,7 @@
       levelData = {
         level : 1,
         name : "El-el-em-ing",
-        seed : null, //1681139505452,
+        seed : 1681731696037, //1681139505452,
         gradients : [
           {
             type: 'linear',
@@ -680,7 +690,22 @@
         finish : { x : 750, y : 500 },
       }
 
-      // Only do this _once_:
+      const levelDataCrudOpts = {
+        gradients: {
+          type: ['linear', 'radial']
+        },
+        decorations: {
+          type: ['organics']
+        }
+      };
+    
+      CRUD.create(levelData, levelDataCrudOpts, document.getElementById("levelData"), (evt, data) => {
+        console.log("Saved:", data);
+        levelData = data;
+        Llemmings.init(document.querySelector('#seededCanvas'), levelData, false);
+      });
+
+      // Only do this _once_ per page-load:
       initEditor();
       initSelectionDiv();
 

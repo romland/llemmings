@@ -1,0 +1,65 @@
+<!-- NOTE: THIS IS GPT-4 -->
+>>> Prompt: GPT-4 -- two prompts in this file
+
+Using plain javascript (no dependencies) and HTML:
+
+Create a CRUD for e.g. data structure like below:
+
+levelData = {
+    level : 1,
+    name : "El-el-em-ing",
+    seed : null, //1681139505452,
+    gradients : [
+        {
+        type: 'linear',
+        x0: 0,
+        y0: 0,
+        x1: 0,
+        y1: 600,
+        stops: [
+            { offset: 0, color: 'black' },
+            { offset: 1, color: '#660000' }
+        ]
+        }
+    ],
+    decorations : [
+        {
+        type: "organics",
+        location: ["top"],
+        }
+    ],
+    shapes : [],
+    objects : [],
+    start : { x : 25, y : -20 },
+    finish : { x : 750, y : 500 },
+}
+
+
+- The CRUD system should be as generic as possible, so e.g. I pass in levelData to a function
+  and it will look at e.g. the "name" field and determine that is a string and output a form field like
+  <input type="text" id="levelData.name" value="El-el-em-ing"/>. Then do similar form fields
+  appropriate for all datatypes. E.g. integer, coordinate, array, child-objects (the structure
+  needs to be processed recursively), etc.
+- Add "+" and "-" actions on every array to add/remove items from the array.
+- The fields should be created dynamically. The above structure is just an example of the types
+  of data the CRUD system should support.
+- take into account that some field values might be null or undefined
+- every field named 'type' should be a select field as there will be more types. The options for
+  each select field will be passed in as a separate argument, e.g.: { gradients.type : [ "option 1", "option 2"] }
+- if a value is of type boolean, make it a checkbox
+- if a field is named something with color, make it a color dialog, make sure you check
+  actual names of keys and not some index in an array
+- add a placeholder for 'save' that just prints the content of the modified structure
+- visually indent nested child-objects so you can see what they are children of
+- when a form field is changed or a new item is added, the original passed in object should be modified
+- in order to keep track of datatypes and structure you will want to need to keep a copy of the
+  original structure around in case the last element of some part of the structure is deleted. So, 
+  check for datatypes/structure in a copy of what was passed in, but any modification should be to the original
+- No need to give me levelData object, I'll paste that in myself
+- Make the code brief, short variable names. E.g. short variable names like field as 'fld', options as 'opts',
+  value as 'val', button as 'btn', document as 'doc', label as 'lbl', remove as 'rm', etc
+
+Give me only code, no explanation.
+
+>>> Prompt 2 (also GPT-4):
+Give me a minimal but decent looking CSS for a form with fields. Label and field on same row
