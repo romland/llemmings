@@ -21,6 +21,16 @@ var CRUD = (function ()
 
     function dive(obj, path, opts, lvl = 0)
     {
+        // HUMAN: This is such stupid code. A string is also for-in-able, which means
+        //        a string will be seen as an array. Thus, making an input for every
+        //        character in the string. Off the hip, right now, I'm not entirely
+        //        sure how to best fix this without a rewrite.
+
+        // HUMAN HACK: See note above (will need to be rethought).
+        if(typeof obj === "string") {
+            obj = [ obj ]
+        }
+
         for (let key in obj) {
             const lbl = document.createElement('label');
             lbl.textContent = key;
@@ -79,7 +89,7 @@ var CRUD = (function ()
                         container.appendChild(itemPath);
                         dive(item, itemPath, opts?.[key], lvl + 1);
                     });
-                    
+
                     const addButton = document.createElement('button');
                     addButton.textContent = '+ ' + key;
                     addButton.style.marginLeft = `${20 * lvl}px`;
