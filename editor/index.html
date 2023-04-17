@@ -11,7 +11,7 @@
       }
       body {
         margin: 0;
-        padding-top: 50px;
+        padding: 0;
       }
       .colorButton {
         width: 30px;
@@ -44,14 +44,21 @@
           border-width: 1px;
         }
       }
-      #toolDiv {
-        margin-top: -50px;
-      }
+
       #viewDiv {
-        height: 610px;
+        display: inline-block;
+        width: 800px;
       }
-      #levelData input,select,label {
+      #levelData {
+        display: inline-block;
+      }
+      #levelData > input,select,label {
         display: block;
+      }
+
+      .canvas {
+        position: absolute;
+        top: 120px; 
       }
     </style>
 
@@ -92,10 +99,9 @@
 
     <div id="selectionDiv"></div>
     <div id="viewDiv">
-      <canvas id="canvas" width="800" height="600" style="position: absolute; z-index: 2;"></canvas>
-      <canvas id="seededCanvas" width="800" height="600" style="position: absolute; z-index: 1;"></canvas>
+      <canvas id="canvas" class="canvas" width="800" height="600" style="z-index: 2;"></canvas>
+      <canvas id="seededCanvas" class="canvas" width="800" height="600" style="z-index: 1;"></canvas>
     </div>
-
 
     <div id="levelData"></div>
 

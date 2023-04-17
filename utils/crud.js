@@ -82,6 +82,7 @@ var CRUD = (function ()
                     
                     const addButton = document.createElement('button');
                     addButton.textContent = '+ ' + key;
+                    addButton.style.marginLeft = `${20 * lvl}px`;
                     
                     addButton.addEventListener('click', () => {
                         obj[key].push(JSON.parse(JSON.stringify(obj[key][0])));
@@ -96,6 +97,8 @@ var CRUD = (function ()
                 if (obj[key].length > 0) {
                     const removeButton = document.createElement('button');
                     removeButton.textContent = '- ' + key;
+                    removeButton.style.marginLeft = `${20 * lvl}px`;
+
                     removeButton.addEventListener('click', () => {
                         obj[key].pop();
                         updateArr(arrContainer);
