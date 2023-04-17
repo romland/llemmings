@@ -35,8 +35,6 @@ var Llemmings = (function () {
     const MAP_LACUNARITY = 2.25;
     const MAP_AMPLITUDE = 2.0;
     const WATER_HEIGHT = 70;
-    const EMPTY_SPACE_TOP_LEFT = 50;
-    const EMPTY_SPACE_BOTTOM_RIGHT = 50;
     const mapNoiseHash = [];
   
     // constants for tunnel/cave generation
@@ -166,7 +164,7 @@ var Llemmings = (function () {
       }
     }
   
-    function generateMap(canvasWidth, canvasHeight, emptySpaceTopLeft, emptySpaceBottomRight)
+    function generateMap(canvasWidth, canvasHeight)
     {
         // create empty map
         const map = [];
@@ -1817,7 +1815,7 @@ var Llemmings = (function () {
       ctx = canvas.getContext('2d', { willReadFrequently: true });
 
       generateMapNoiseHash();
-      generateMap(canvas.width, canvas.height, EMPTY_SPACE_TOP_LEFT, EMPTY_SPACE_BOTTOM_RIGHT);
+      generateMap(canvas.width, canvas.height);
 
       if (levelData.shapes) {
         drawShapes(ctx, levelData.shapes);
