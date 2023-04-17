@@ -1,0 +1,18 @@
+Given the following div:
+
+  <div id="lemming-actions">
+    <button onclick="Llemmings.togglePause()">⏸️</button>
+    <button onclick="Llemmings.applyAction('Climber')">🧗<!-- Climber --></button>
+    <button onclick="Llemmings.applyAction('Floater')">🪂<!-- Floater--></button>
+    <button onclick="Llemmings.applyAction('Bomber')">💣<!-- Bomber--></button>
+    <button onclick="Llemmings.applyAction('Blocker')">🚫<!-- Blocker--></button>
+    <button onclick="Llemmings.applyAction('Builder')">🏗️<!-- Builder--></button>
+    <button onclick="Llemmings.applyAction('Basher')">🤜<!-- Basher--></button>
+    <button onclick="Llemmings.applyAction('Miner')">⛏️<!-- Miner--></button>
+    <button onclick="Llemmings.applyAction('Digger')">🕳️<!-- Digger--></button>
+    <button onclick="Llemmings.reset()">🔄</button>
+  </div>
+
+Make it so that there is a small (as in font-size) number in the upper right corner of each button. 
+
+The number is dynamically updated every time the action is used. I will need the CSS, HTML and the javascript I need to perform in applyAction().

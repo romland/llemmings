@@ -55,6 +55,22 @@
           bottom: 0;
           left: 50%;
         }
+
+        #lemming-actions button {
+            position: relative;
+        }
+
+        #lemming-actions span.count {
+            position: absolute;
+            top: 0;
+            right: 0;
+            font-size: 13px;
+            width: 13px;
+            background-color: red;
+            color: white;
+            padding: 2px;
+            border-radius: 50%;
+        }
     </style>
 </head>
 <body>
@@ -71,14 +87,14 @@
 
   <div id="lemming-actions">
     <button onclick="Llemmings.togglePause()">⏸️</button>
-    <button onclick="Llemmings.applyAction('Climber')">🧗<!-- Climber --></button>
-    <button onclick="Llemmings.applyAction('Floater')">🪂<!-- Floater--></button>
-    <button onclick="Llemmings.applyAction('Bomber')">💣<!-- Bomber--></button>
-    <button onclick="Llemmings.applyAction('Blocker')">🚫<!-- Blocker--></button>
-    <button onclick="Llemmings.applyAction('Builder')">🏗️<!-- Builder--></button>
-    <button onclick="Llemmings.applyAction('Basher')">🤜<!-- Basher--></button>
-    <button onclick="Llemmings.applyAction('Miner')">⛏️<!-- Miner--></button>
-    <button onclick="Llemmings.applyAction('Digger')">🕳️<!-- Digger--></button>
+    <button onclick="Llemmings.applyAction('Climber')" data-resource="Climber">🧗<span class="count"></span></button>
+    <button onclick="Llemmings.applyAction('Floater')" data-resource="Floater">🪂<span class="count"></span></button>
+    <button onclick="Llemmings.applyAction('Bomber')" data-resource="Bomber">💣<span class="count"></span></button>
+    <button onclick="Llemmings.applyAction('Blocker')" data-resource="Blocker">🚫<span class="count"></span></button>
+    <button onclick="Llemmings.applyAction('Builder')" data-resource="Builder">🏗️<span class="count"></span></button>
+    <button onclick="Llemmings.applyAction('Basher')" data-resource="Basher">🤜<span class="count"></span></button>
+    <button onclick="Llemmings.applyAction('Miner')" data-resource="Miner">⛏️<span class="count"></span></button>
+    <button onclick="Llemmings.applyAction('Digger')" data-resource="Digger">🕳️<span class="count"></span></button>
     <button onclick="Llemmings.reset()">🔄</button>
   </div>
 

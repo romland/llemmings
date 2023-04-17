@@ -1269,6 +1269,20 @@ var Llemmings = (function () {
         return;
       }
   
+      // Get the button element that was clicked
+      // >>> Prompt: instructions/actions-resource-counter.0001.txt
+      const btn = document.activeElement;
+      const countSpan = btn.querySelector('.count');
+
+      if(levelData.resources[action] <= 0) {
+        console.log("out of resource", action);
+        return;
+      }
+
+      // Consume resource, update UI
+      levelData.resources[action]--;
+      countSpan.innerText = levelData.resources[action];
+
       switch (action) {
         case 'Climber':
           // >>> Prompt: instructions/climber.0001.txt
@@ -1575,7 +1589,19 @@ var Llemmings = (function () {
     function setBackgroundBuffer() {
       background = ctx.getImageData(0, 0, canvas.width, canvas.height);
     }
-  
+ 
+    function setupUI()
+    {
+      // Update resource-count on the HTML buttons
+      let spans = document.querySelectorAll('#lemming-actions .count');
+      if(!spans) {
+        return;
+      }
+      for(let span of spans) {
+        span.innerHTML = levelData.resources[span.parentElement.getAttribute("data-resource")]
+      }
+    }
+
     // >>> Prompt: instructions/main-loop.0001.txt
     function update() {
       if (isPaused) {
@@ -1771,6 +1797,8 @@ var Llemmings = (function () {
         start : givenLevel.start || { x : null, y : -20 },
         finish : givenLevel.finish || { x : 750, y : 500 },
       }
+
+      setupUI();
 
       console.log("Current seed: ", levelData.seed);
       Math.random = RNG(levelData.seed);
