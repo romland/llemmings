@@ -59,14 +59,14 @@ var Llemmings = (function () {
     let isPaused = false;
     const lemmings = [];
     let levelData;
-  
-    
+
     // Create a new lemming and add it to the array of lemmings
     // HUMAN: This is just for easy testing for now.
     function spawnLemming() {
       if(isPaused)
         return;
-      if(lemmings.length > 15) {
+
+      if(lastLemmingId >= levelData.resources.lemmings) {
         return;
       }
   
@@ -1753,6 +1753,20 @@ var Llemmings = (function () {
             location: ["top"],
           }
         ],
+        spawnInterval : givenLevel.spawnInterval || 100,
+        resources : {
+            lemmings : givenLevel.resources?.lemmings || 5,
+
+            Climber : givenLevel.resources?.Climber || 0,
+            Floater : givenLevel.resources?.Floater || 0,
+            Bomber : givenLevel.resources?.Bomber || 0,
+            Blocker : givenLevel.resources?.Blocker || 0,
+            Builder : givenLevel.resources?.Builder || 0,
+            Basher : givenLevel.resources?.Basher || 0,
+            Miner : givenLevel.resources?.Miner || 0,
+            Digger : givenLevel.resources?.Digger || 0,
+        },
+        goal : { survivors : givenLevel.goal?.survivors || 30 },
         objects : givenLevel.objects || [],
         start : givenLevel.start || { x : null, y : -20 },
         finish : givenLevel.finish || { x : 750, y : 500 },
@@ -1827,7 +1841,7 @@ var Llemmings = (function () {
       reqAnimFrameId = update();
   
       // Spawn a new lemming every interval
-      gameIntervals["debugLemmingSpawner"] = setInterval(spawnLemming, 100);
+      gameIntervals["debugLemmingSpawner"] = setInterval(spawnLemming, levelData.spawnInterval);
     }
 
     return {
