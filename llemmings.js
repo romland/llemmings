@@ -279,11 +279,6 @@ var Llemmings = (function () {
                 ctx.fillRect(x, y, MAP_TILE_SIZE, MAP_TILE_SIZE);
             }
         }
-  
-        // add empty space at top left and bottom right
-        ctx.clearRect(0, 0, EMPTY_SPACE_TOP_LEFT, EMPTY_SPACE_TOP_LEFT);
-        // HUMAN: Moved to above water level.
-        ctx.clearRect(canvasWidth - EMPTY_SPACE_BOTTOM_RIGHT, canvasHeight - WATER_HEIGHT - EMPTY_SPACE_BOTTOM_RIGHT, EMPTY_SPACE_BOTTOM_RIGHT, EMPTY_SPACE_BOTTOM_RIGHT);
     }
   
   
