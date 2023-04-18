@@ -1202,13 +1202,6 @@ var Llemmings = (function () {
     function togglePause()
     {
       isPaused = !isPaused;
-  
-      lemmings.forEach((lemming) => {
-        console.log(
-            lemming,
-            getPixelColor(oldImgData, lemming.x + lemming.width / 2, lemming.y + lemming.height)
-        );
-      });
     }
   
     // >>> Prompt: instructions/particle-explosion.0001.txt
@@ -1384,7 +1377,7 @@ var Llemmings = (function () {
     }
   
   
-    // HUMAN: Added this to make it easier for the LLM
+    // HUMAN: Added this to make it easier for the LLM (copy of clearPixel)
     function setPixel(x, y, colorBytes)
     {
       if (x >= canvas.width || y >= canvas.height || x < 0 || y < 0) {
@@ -1417,11 +1410,13 @@ var Llemmings = (function () {
       oldImgData.data[pixelIndex + 1] = 0;
       oldImgData.data[pixelIndex + 2] = 0;
       oldImgData.data[pixelIndex + 3] = 255;
-  
-      background.data[pixelIndex] = col;
-      background.data[pixelIndex + 1] = col;
-      background.data[pixelIndex + 2] = col;
-      background.data[pixelIndex + 3] = (col ? 64 : 255);
+
+      if(background) {
+        background.data[pixelIndex] = col;
+        background.data[pixelIndex + 1] = col;
+        background.data[pixelIndex + 2] = col;
+        background.data[pixelIndex + 3] = (col ? 64 : 0);
+      }
     }
   
   
@@ -1682,6 +1677,59 @@ var Llemmings = (function () {
     }
 
 
+    function clearSquare(x, y, radius)
+    {
+      const clrHalfRad = radius / 2;
+
+      let mix = Math.max(0, x - clrHalfRad);
+      let max = Math.min(canvas.width, x + clrHalfRad);
+      let miy = Math.max(0, y - clrHalfRad);
+      let may = Math.min(canvas.height, y + clrHalfRad);
+
+      for(let x = mix; x < max; x++) {
+        for(let y = miy; y < may; y++) {
+          clearPixel(x, y);
+        }
+      }
+    }
+
+    function setupStartFinish()
+    {
+      const clrRad = 80;
+
+      if(levelData.start.x === null || !levelData.start.clear) {
+        // debug: random on x axis -- clear entire upper clrRad/2
+        for(let x = 0; x < canvas.width; x++) {
+          for(let y = 0; y < (clrRad/2); y++) {
+            clearPixel(x, y);
+          }
+        }
+  
+      } else if(levelData.start.clear) {
+        // clear start zone
+        clearSquare(levelData.start.x, levelData.start.y, clrRad);
+      }
+
+      if(levelData.finish.clear) {
+        clearSquare(levelData.finish.x, levelData.finish.y, clrRad);
+      }
+    }
+
+    function renderDecorations()
+    {
+      for(let i = 0; i < levelData.decorations.length; i++) {
+        for(let j = 0; j < levelData.decorations[i].location.length; j++) {
+          switch(levelData.decorations[i].type) {
+            case "organics" :
+              LlemmingsOrganics.drawEdgeVegetation(ctx, levelData.decorations[i].location[j]);
+              break;
+            default :
+              throw "unknown decoration " + levelData.decorations[i].type;
+          }
+        }
+      }
+    }
+
     function reset()
     {
         // Stop requestAnimationFrame
@@ -1787,8 +1835,8 @@ var Llemmings = (function () {
         },
         goal : { survivors : givenLevel.goal?.survivors || 30 },
         objects : givenLevel.objects || [],
-        start : givenLevel.start || { x : null, y : -20 },
-        finish : givenLevel.finish || { x : 750, y : 500 },
+        start : givenLevel.start || { x : null, y : -20, clear: false },
+        finish : givenLevel.finish || { x : 750, y : 500, clear: true },
       }
 
       setupUI();
@@ -1832,23 +1880,16 @@ var Llemmings = (function () {
       //    example of the need to keep track of these things.
       oldImgData = ctx.getImageData(0,0,canvas.width,canvas.height);
 
+      setupStartFinish();
+
       setGradients(ctx, levelData.gradients);
 
-      for(let i = 0; i < levelData.decorations.length; i++) {
-        for(let j = 0; j < levelData.decorations[i].location.length; j++) {
-          switch(levelData.decorations[i].type) {
-            case "organics" :
-              LlemmingsOrganics.drawEdgeVegetation(ctx, levelData.decorations[i].location[j]);
-              break;
-            default :
-              throw "unknown decoration " + levelData.decorations[i].type;
-          }
-        }
-      }
-      
+      renderDecorations();
+
       renderDirtTexture();
       renderRockTexture();
       renderWaterTexture();
+
       setBackgroundBuffer();
 
       if(!canvasEventsListening) {
@@ -1872,6 +1913,7 @@ var Llemmings = (function () {
       togglePause : togglePause,
       applyAction : applyAction,
       reset : reset,
+      restart : (canvasElt) => { reset(); init(canvasElt, levelData, true); start(); },
       drawShapes : drawShapes,
     }
   })();
