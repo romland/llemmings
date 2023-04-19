@@ -1702,7 +1702,7 @@ var Llemmings = (function () {
 
     function setupStartFinish()
     {
-      const clrRad = 80;
+      const clrRad = 100;
 
       if(levelData.start.x === null || !levelData.start.clear) {
         // debug: random on x axis -- clear entire upper clrRad/2
@@ -1906,7 +1906,7 @@ var Llemmings = (function () {
       if (__DEBUG__) {
         // Human: This is just for testing the morph text effect (debug more or less)
         TextEffectMorph.init({
-          text : "RESCUE 30",
+          text : "RESCUE " + levelData.goal.survivors,
           placeOverCanvas:canvas,
           onAnimationDone: () => effectsToUpdate.delete("TextEffectMorph")
         });

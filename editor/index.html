@@ -65,6 +65,7 @@
     <script type="text/javascript" src="../utils/texteffect-morph.js"></script>
     <script type="text/javascript" src="../utils/crud.js"></script>
     <script type="text/javascript" src="../utils/organics.js"></script>
+    <script type="text/javascript" src="../utils/levels.0001.js"></script>
     <script type="text/javascript" src="../llemmings.js"></script>
   </head>
   
@@ -131,7 +132,7 @@
       let lastX, lastY;
       let startX, startY;
       let isDrawing = false;
-      let shapes = [];
+      // let shapes = [];
       let previewing = false;
       let levelData = { };
 
@@ -141,7 +142,7 @@
         // Clear the canvas
         ctx.clearRect(0, 0, c.width, c.height);
 
-        Llemmings.drawShapes(ctx, shapes);
+        Llemmings.drawShapes(ctx, levelData.shapes);
 
         // Draw preview of current shape
         if (isDrawing) {
@@ -184,7 +185,7 @@
               break;
 
             case "draw":
-              const shape = shapes[shapes.length - 1];
+              const shape = levelData.shapes[levelData.shapes.length - 1];
               if(!shape.points) {
                 shape.points = [{x:startX, y:startY}];
               } else {
@@ -229,14 +230,14 @@
         startY = y;
 
         const filled = fill.checked;
-        shapes.push({ type: currToolType, filled, color: currColor, lineWidth: currLineWidth });
+        levelData.shapes.push({ type: currToolType, filled, color: currColor, lineWidth: currLineWidth });
       }
 
       function finishDrawing(x, y)
       {
         isDrawing = false;
 
-        const shape = shapes[shapes.length - 1];
+        const shape = levelData.shapes[levelData.shapes.length - 1];
         switch (currToolType) {
           case "ellipse":
             const halfWidth = (x - startX) / 2;
@@ -354,14 +355,14 @@
 
       function selectShape(x, y)
       {
-        currSelectedShapeIndex = findSmallestShape(x, y, shapes);
+        currSelectedShapeIndex = findSmallestShape(x, y, levelData.shapes);
 
         if(currSelectedShapeIndex === null) {
           deselectSelected();
           return;
         }
 
-        const shape = shapes[currSelectedShapeIndex];
+        const shape = levelData.shapes[currSelectedShapeIndex];
         const bounds = getShapeBounds(shape);
         bounds.minX += c.offsetLeft;
         bounds.minY += c.offsetTop;
@@ -423,37 +424,42 @@
 
       function serialize()
       {
-        const data = JSON.stringify({ shapes, currColor });
+        const data = JSON.stringify({ shapes : levelData.shapes, currColor : currColor });
         localStorage.setItem("data", data);
       }
 
       function deserialize()
       {
+        if(true) {
+          console.warn("Not getting shapes from LocalStorage -- using levelData instead")
+          return;
+        }
+
         const data = localStorage.getItem("data");
         if (!data) {
           return;
         }
 
         const { shapes: loadedShapes, currentColor: loadedColor } = JSON.parse(data);
-        shapes = loadedShapes;
-        if(!shapes) {
-          shapes = [];
+        levelData.shapes = loadedShapes;
+        if(!levelData.shapes) {
+          levelData.shapes = [];
         }
-        console.log("Loaded shapes:", shapes);
+        console.log("Loaded shapes:", levelData.shapes);
         draw();
       }
 
       function undo()
       {
-        if(!shapes.length) return;
-        redoStack.push(shapes.pop());
+        if(!levelData.shapes.length) return;
+        redoStack.push(levelData.shapes.pop());
         draw();
       }
 
       function redo()
       {
         if(!redoStack.length) return;
-        shapes.push(redoStack.pop());
+        levelData.shapes.push(redoStack.pop());
         draw();
       }
 
@@ -463,15 +469,12 @@
           // TODO: Only set selectionDiv to visible if it was actually visible before (for now do nothing)
           // selectionDiv.style.display = "block";
           canvas.style.display = "block";
-          levelData.shapes = [];
           Llemmings.reset();
           Llemmings.init(document.querySelector('#seededCanvas'), levelData, false);
         } else {
           selectionDiv.style.display = "none";
           canvas.style.display = "none";
-          levelData.shapes = shapes;
-          // It's very jarring if you switch to preview and get a new seed because it was random before
-          Llemmings.init(document.querySelector('#seededCanvas'), {...levelData, seed : Llemmings.getSeed() }, false);
+          Llemmings.init(document.querySelector('#seededCanvas'), levelData, false);
           Llemmings.start();
         }
 
@@ -603,7 +606,7 @@
                   // HUMAN: TODO: This needs to be handled in undo logic:
                   // - need to keep index available in shapes array
                   // - un redo array, store whether it was a delete action and which index the shape was in
-                  shapes.splice(currSelectedShapeIndex, 1);
+                  levelData.shapes.splice(currSelectedShapeIndex, 1);
                   draw();
                   deselectSelected();
                 }
@@ -646,7 +649,7 @@
 
             // Translate selected shape
             if(currSelectedShapeIndex !== null) {
-              const shape = shapes[currSelectedShapeIndex];
+              const shape = levelData.shapes[currSelectedShapeIndex];
               translateShape(shape, mouseX - orgX, mouseY - orgY);
               draw();
             }
@@ -662,10 +665,10 @@
       }
 
       // >>> Prompt: editor/instructions/gradient-serialize.0001.txt
-      levelData = {
+      const defaultLevelData = {
         level : 1,
         name : "El-el-em-ing",
-        seed : 1681731696037, //1681139505452,
+        seed : null, //1681139505452,
         gradients : [
           {
             type: 'linear',
@@ -703,6 +706,8 @@
         start : { x : 25, y : -20, clear: true },
         finish : { x : 750, y : 500, clear: true },
       }
+
+      levelData = { ...defaultLevelData, ...LlemmingsLevels[1] };
 
       const levelDataCrudOpts = {
         gradients: {

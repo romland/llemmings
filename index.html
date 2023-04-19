@@ -96,9 +96,11 @@
 
   <script type="text/javascript" src="utils/texteffect-morph.js"></script>
   <script type="text/javascript" src="utils/organics.js"></script>
+  <script type="text/javascript" src="utils/levels.0001.js"></script>
   <script type="text/javascript" src="llemmings.js"></script>
   <script type="text/javascript">
-    Llemmings.init(document.getElementById('canvas'), { seed : null, resources : { lemmings : 150, Bomber : 99 } }, true);
+    // Llemmings.init(document.getElementById('canvas'), { seed : null, resources : { lemmings : 150, Bomber : 99 } }, true);
+    Llemmings.init(document.getElementById('canvas'), LlemmingsLevels[1], true);
     Llemmings.start();
   </script>
 
