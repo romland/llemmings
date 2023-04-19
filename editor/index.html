@@ -66,6 +66,7 @@
     <script type="text/javascript" src="../utils/crud.js"></script>
     <script type="text/javascript" src="../utils/organics.js"></script>
     <script type="text/javascript" src="../utils/levels.0001.js"></script>
+    <script type="text/javascript" src="../utils/editor-utils.js"></script>
     <script type="text/javascript" src="../llemmings.js"></script>
   </head>
   
@@ -267,6 +268,10 @@
 
           case "draw" :
             shape.points.push({x:lastX, y:lastY});
+            // >>> Prompt: editor/instructions/point-reduction.0001.txt
+            console.log("Num points before: ", shape.points.length);
+            shape.points = EditorUtils.douglasPeucker(shape.points, 1.2);
+            console.log("Num points after: ", shape.points.length);
             break;
 
           case "triangle" :
