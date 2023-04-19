@@ -63,7 +63,12 @@ var Llemmings = (function () {
 
     // Create a new lemming and add it to the array of lemmings
     // HUMAN: This is just for easy testing for now.
-    function spawnLemming() {
+    // HUMAN: This could be used to 'cheat' as this method will only be called
+    //        at a fixed interval, so you could probably delay spawns by repeatedly
+    //        toggling pause. Spawning should be done in the update(). For now, I
+    //        don't care.
+    function spawnLemming()
+    {
       if(isPaused)
         return;
 
@@ -73,6 +78,7 @@ var Llemmings = (function () {
   
       const newLemming = new Lemming();
       newLemming.id = ++lastLemmingId;
+      newLemming.velX = newLemming.maxVelX; // Walk to the right by default
 
       if (levelData.start.x === null) {
         newLemming.x = Math.random() * canvas.width; // Start at a random x location
@@ -86,75 +92,6 @@ var Llemmings = (function () {
         newLemming.y = levelData.start.y;
       }
 
-      newLemming.velX = newLemming.maxVelX; // Walk to the right by default
-  
-      if(newLemming.id === 1) {
-        // Builder building leftwards
-        newLemming.velX = -newLemming.maxVelX;
-        newLemming.action = "Builder";
-      }
-  
-      //if(newLemming.id % 2) {
-      if(newLemming.id === 7 || newLemming.id === 5) {
-        newLemming.action = "Climber";
-      }
-  
-      if(newLemming.id === 2) {
-        newLemming.action = "Miner";
-      }
-  
-      if(newLemming.id === 3) {
-        newLemming.action = "Miner";
-      }
-  
-      if(newLemming.id === 4) {
-        newLemming.actions = [
-          { action: "Builder", x : 727, y : 175, rad : 5, },
-          { action: "Builder", x : 675, y : 158, rad : 3, },
-          // { action: "Builder", x : 727, y : 175, rad : 5, },
-          // { action: "Builder", x : 727, y : 175, rad : 5, },
-        ];
-      }
-  
-      if(newLemming.id === 12) {
-        newLemming.action = "Digger";
-      }
-  
-      if(newLemming.id === 10) {
-        newLemming.action = "Blocker";
-      }
-      
-      if(newLemming.id === 11) {
-        // Builder building rightwards
-        newLemming.action = "Builder";
-        newLemming.isSelected = true;
-      }
-      
-      if(newLemming.id === 13) {
-        // Test left-walking Basher
-        newLemming.action = "Basher";
-        newLemming.velX = -newLemming.maxVelX;
-      }
-  
-      if(newLemming.id === 14) {
-        newLemming.action = "Floater";
-      }
-  
-      if(newLemming.id === 21) {
-        newLemming.actions = [
-          { action: "Builder", x : 210, y : 169, rad : 10, },
-          { action: "Builder", x : 277, y : 149, rad : 5,  },
-          { action: "Builder", x : 347, y : 137, rad : 5,  },
-          { action: "Builder", x : 414, y : 121, rad : 5,  }
-        ];
-      }
-  
-      if(newLemming.id === 18) {
-        newLemming.action = "Climber";
-      }
-  
-      console.log("Making new lemming a", newLemming.action, newLemming);
-  
       lemmings.push(newLemming);
     }
   
@@ -534,6 +471,7 @@ var Llemmings = (function () {
         this.isDead = false;
         this.action = null;
         this.actionStarted = false;
+        this.executedActions = [];    // for pre-programmed actions (i.e. solutions to level)
   
         // Initialize these variables in the constructor or wherever appropriate
         this.legColor = "green";
@@ -1164,26 +1102,39 @@ var Llemmings = (function () {
   
   
     /**
-     * Trigger action at position.
+     * Trigger action at position + other conditions.
      * HUMAN: For easier debugging and demo-purposes.
+     * HUMAN: it is now also a way to provide hints/solutions
      */
     function doProgrammedActions(lemming)
     {
-      if (!lemming.actions || lemming.action) {
+      if (!levelData.solution[lemming.id]) {
         return false;
       }
-  
+
+      let actions = levelData.solution[lemming.id];
+
       const lx = lemming.x + (lemming.width/2);
       const ly = lemming.y + lemming.height;
-  
-      for(let i = 0; i < lemming.actions.length; i++) {
-        if(lemming.actions[i].ran) {
+      
+      let act;
+      for(let i = 0; i < actions.length; i++) {
+        act = actions[i];
+
+        if(lemming.action && act.action !== "Bomber") {
+          // Only a bomber can replace another action (I think?)
+          continue;
+        }
+
+        // TODO: Should check if we actually have the resource available.
+
+        if(lemming.executedActions.includes(i)) {
           continue;
         }
   
-        if(isPointWithinCircle(lx, ly, lemming.actions[i].x, lemming.actions[i].y, lemming.actions[i].rad)) {
-          lemming.action = lemming.actions[i].action;
-          lemming.actions[i].ran = true;
+        if(isPointWithinCircle(lx, ly, act.x, act.y, act.r) && GameUtils.matchesCondition(act.conditions, lemming)) {
+          lemming.action = act.action;
+          lemming.executedActions.push(i);
           return true;
         }
       }
@@ -1376,6 +1327,7 @@ var Llemmings = (function () {
         velX: ${lem.velX.toFixed(2)} 
         velY: ${lem.velY.toFixed(2)} 
         Started: ${lem.actionStarted}
+        Age: ${lem.age}
         `;
     }
   
@@ -1618,7 +1570,7 @@ var Llemmings = (function () {
           // Remove dead lemmings from the array as optimization
           const index = lemmings.indexOf(lemming);
           lemmings.splice(index, 1);
-          console.log("removing dead lemming");
+
           for(let i = 0; i < 50; i++) {
             // I cheated and added this color variation myself. :/ 
             const p = new Particle(lemming.x + Math.random() * 20 - 10, lemming.y + Math.random() * 20 - 10);
@@ -1840,6 +1792,7 @@ var Llemmings = (function () {
             Miner : givenLevel.resources?.Miner || 0,
             Digger : givenLevel.resources?.Digger || 0,
         },
+        solution : givenLevel.solution || { },
         goal : { survivors : givenLevel.goal?.survivors || 30 },
         objects : givenLevel.objects || [],
         start : givenLevel.start || { x : null, y : -20, clear: false },
@@ -1874,6 +1827,7 @@ var Llemmings = (function () {
 
       if (levelData.shapes) {
         drawShapes(ctx, levelData.shapes);
+        ctx.lineWidth = 1;
       }
 
       clearSmoothingOfTerrain(canvas, [...terrainColorBytes, waterColorBytes]);

@@ -1,0 +1,9 @@
+Given an object with conditions like the following:
+    conditions : [
+        "velX > 0",
+        "age < 100"
+    ],
+Give me a function called matchesCondition(conditions, lemming), this function should
+check whether the property velX is greater than 0 and age is less than 100.
+Note that the values checked against are integers. There can be more than
+two arguments and there can also be other types of operators.
