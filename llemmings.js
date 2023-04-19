@@ -50,6 +50,9 @@ var Llemmings = (function () {
     const DIGGER_LOOK_AHEAD = 4;
     const DIGGER_SPEED_FACTOR = 0.4;    // HUMAN: Changed my mind; changed from 0.2
   
+    // Human: Added this to call dynamic things from update() loop.
+    const effectsToUpdate = new Map();
+
     // Debug
     let __DEBUG__ = false;
   
@@ -1634,7 +1637,11 @@ var Llemmings = (function () {
             const index = particles.indexOf(particle);
             particles.splice(index, 1);
           }
-        });
+      });
+
+      for(let fx of effectsToUpdate) {
+        fx[1]();
+      }
   
       // Schedule the next frame
       reqAnimFrameId = requestAnimationFrame(update);
@@ -1895,6 +1902,14 @@ var Llemmings = (function () {
       if(!canvasEventsListening) {
         startCanvasEventListeners();
       }
+
+      // Human: This is just for testing the morph text effect (debug more or less)
+      TextEffectMorph.init({
+        text : "RESCUE 30",
+        placeOverCanvas:canvas,
+        onAnimationDone: () => effectsToUpdate.delete("TextEffectMorph")
+      });
+      effectsToUpdate.set("TextEffectMorph", TextEffectMorph.update);
     }
   
     function start()

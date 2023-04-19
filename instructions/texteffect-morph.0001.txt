@@ -1,0 +1,23 @@
+>>> Prompt: ChatGPT -- this is pretty specific. My first attempt of this prompt let me down big-time,
+            the hope there was to get something generic that I could easily reuse without having to
+            re-render the bitmap for every string. Fine. Future.
+
+Using Javascript, create a temporary canvas, write "GAME OVER" on it. Iterate over all pixels of the
+canvas and note down the position of all pixels that are set.
+
+Now, on a cleared canvas, take all pixels and put them at a random location along the border of
+the canvas. Now animate them so that they fly from a random location along the border of the canvos
+and random magnitude to re-create the original GAME OVER string. Every pixel should always head in the 
+direction of its destination -- THAT is NOT random.
+
+For performance reasons, don't use fillRect (etc), but instead use raw pixel manipulation like:
+... ctx.createImageData(canvas.width, canvas.height)
+... set positions of all pixels
+... put typed array back with ctx.putImageData(...)
+
+You can treat the pixels as a type of particle system, but instead of fading out the particles
+they stay put.
+
+Use requestAnimationFrame for the frame update.
+
+Give me the code, I don't need an explanation this time.
