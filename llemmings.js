@@ -1903,13 +1903,15 @@ var Llemmings = (function () {
         startCanvasEventListeners();
       }
 
-      // Human: This is just for testing the morph text effect (debug more or less)
-      TextEffectMorph.init({
-        text : "RESCUE 30",
-        placeOverCanvas:canvas,
-        onAnimationDone: () => effectsToUpdate.delete("TextEffectMorph")
-      });
-      effectsToUpdate.set("TextEffectMorph", TextEffectMorph.update);
+      if (__DEBUG__) {
+        // Human: This is just for testing the morph text effect (debug more or less)
+        TextEffectMorph.init({
+          text : "RESCUE 30",
+          placeOverCanvas:canvas,
+          onAnimationDone: () => effectsToUpdate.delete("TextEffectMorph")
+        });
+        effectsToUpdate.set("TextEffectMorph", TextEffectMorph.update);
+      }
     }
   
     function start()
