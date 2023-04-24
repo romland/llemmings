@@ -259,7 +259,7 @@ var AudioSamples = (function ()
 		if(!samples.has("BD-"+len)) samples.set("BD-"+len, generateBassDrum(len));
 	}
 	
-	// >>> Prompt: In javascript, I want a function that converts "Bb", "Ab", "Db" (and the rest) to real notes like C, C# etc
+	// >>> Prompt: instructions/audio-convertToRealNote.0001.txt
 	// Human: I have no idea what these things are actually called. It's pretty nifty that I don't need to.
 	function convertToRealNote(note) {
 		if(note.length === 1 || note[1].toLowerCase() !== "b") {

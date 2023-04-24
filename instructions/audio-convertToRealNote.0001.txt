@@ -1,0 +1,2 @@
+In javascript, I want a function that converts "Bb", "Ab", "Db" (and the rest) to 
+real notes like C, C# etc
