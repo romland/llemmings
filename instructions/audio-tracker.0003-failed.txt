@@ -1,0 +1,70 @@
+>>> Version 5:
+Given a datastructure that looks like this:
+
+const song = {
+  // Samples are named like this: instrument-octave-note-length(in sec)
+  sampleAliases : [
+    "PN-4-C-0.25",  // 0
+    // etc
+  ],
+  // Patterns specify which instrument-octave-note-length sample to play when. What is specified
+  // here is the index of a sample in sampleAliases (to save space).
+  // Patterns should have 64 items, but can have empty indices to indicate that no new audio should start
+  patterns: [
+    [3,0,1, ...],
+    [4,,4,, ...],
+    [0,1,2, ...],
+    [4,,3,, ...],
+  ],
+
+  // A player will iterate over the objects in data, each channel can refer to 0 or more pattern (indices).
+  // All 4 channels will play at the same time as they are using different instruments, when all patterns
+  // in all channels completed, the player will move to the next object and play that. When the song is 
+  // finished, give a console.log() stating so.
+  data: [
+    {
+      // BPM for these patterns being played in the four channels (determines how fast a pattern is played)
+      bpm: 60,
+      // Refers to indices of the patterns array
+      channels: [
+        [0, 0, 0 ],  // e.g bass-drum plays here
+        [2, 2, 2 ],  // piano here ...
+        [null],      // bass here
+        [null],      // guitar here
+      ],
+    },
+    {
+      // ...another object with different BPM
+      tempo: 120,
+      channels: [
+        [0, 1, 2, 3],
+        [1, 1, 1, 1],
+        [2, 2, 2, 2],
+        [3, 3, 3, 3],
+      ],
+    },
+  ],
+};
+
+The name of the sample PN-4-C-0.25 says what it is:
+- PN = piano
+- 4 = octave 4
+- C = note C
+- 0.25 = length in seconds
+
+- Available instruments and their acronym are:
+  - PN = piano
+  - GU = guitar
+  - BG = bass guitar
+  - BD = bass drum (note is ignored)
+  - HH = high hat (note is ignored)
+- You can only use these instruments, nothing else.
+- All octaves and notes are available.
+
+I already have a song, don't give me another one.
+Give me the code to play this structure using only a web-browser, all samples are already
+available. Likewise, this function is there for you to use: playSample("PN-4-C-0.25") to play that sample. 
+Do NOT use while(forever) and do NOT use setTimeout() for timing the playing of samples. Use frame-rate,
+or setInterval _maybe_.
+
+Give a console.log() every time a pattern is done, and when song is done.

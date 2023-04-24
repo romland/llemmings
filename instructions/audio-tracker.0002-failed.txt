@@ -1,0 +1,85 @@
+>>> Version 4
+In client-side Javascript, think about a MOD-tracker and the structure you would need to 
+create. A song consists of patterns which has a max of 64 items. Patterns can be played
+at variable tempo defined by the channel. 
+
+Four patterns can play at the same time (channels). Patterns together with tempo implicitly
+define how long a sample can play, it migth mean that a sample should be stopped and a new
+sample will take its place in a channel. That is, the current tempo dictactes the maximum
+length in time a sample can play.
+
+The following is provided, you should not reimplement this:
+
+This is how you play a sample:
+  playSample("PN-4-C-0.25"); // this returns the source, which can be used to stop the sample
+
+Again, this function already exists -- use it -- don't fucking re-implement it.
+
+The name of the sample says is:
+- PN = piano
+- 4 = octave 4
+- C = note C
+- 0.25 = length of samples
+
+- All octaves and notes are available.
+- Available instruments and their acronym are:
+  - PN = piano
+  - GU = guitar
+  - BG = bass guitar
+  - BD = bass drum (note is ignored)
+  - HH = high hat (note is ignored)
+
+You can only use these instruments, nothing else.
+
+- For now you can only use samples that are of 0.25 second length
+
+The key-points are: 
+- I need a player of tracker songs which can play a song using patterns. 
+- Patterns can be re-used. Invent the structure on how these patterns and songs should be 
+  defined. I need the code to actually play them. Most importantly is timing.
+- A series of patterns are defined for each channel, not all channels have to be used all the time
+- Give me the NEW code for playing a known song in four channels, using the instruments outlined above.
+- You cannot invent new instruments.
+- You can use whatever timing you want, just DON'T use a setInterval or setTimeout for every sound played
+- audioCtx is already defined, use it
+- when a pattern and a song has finished playing, output a console.log() saying so
+
+Since you are failing me a bit, I picture a structure along these lines:
+song = {
+  // a pattern can have 64 items, but you can give me short examples
+  patterns : [
+    [ "PN-4-C-0.25", , , "PN-4-G-0.25", ... ],
+    [ "BD-4-C-0.25", "BD-4-C-0.25", "BD-4-C-0.25", "BD-4-C-0.25", ... ],
+    ...
+  ],
+  // in this example, the song start out playing 2 channels at tempo 60,
+  // when they are played, it plays the remainder of the song at tempo 120
+  data : [
+    // 4 channels, each specify which pattern (index) to play at tempo 60,
+    // each index of each channel should play simultaneously, when the channel
+    // with most amount of items finished playing, we move on to the next
+    // item in this (data) array. This is just an example.
+    {
+      tempo : 60,
+      channels : [
+        [0,1],
+        [4,4],
+        [3,0],
+        [0,0]
+      ]
+    },
+    // when the patterns above finished playing, more patterns are played
+    // but at tempo 120 (this is just an example):
+    {
+      tempo : 120,
+      channels : [
+        [0,1,2,3],
+        [4,4,4,4],
+        [3,1,1,1],
+        [2,0,0,2]
+      ]
+    },
+  ]
+}
+
+This time I don't need explanation, be brief and just give me the complete code in one code-block.

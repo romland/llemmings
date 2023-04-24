@@ -1,0 +1,44 @@
+>>> Version 3
+Think about a simplified MOD-tracker like structure. Now, only using client-side
+JS and AudioContext, no other external libraries or files.
+- generate a sound that sounds like a bass-drum (~80Hz), very short fade-in, ~200ms fade-out
+- generate other instruments, at least one more, (and include code) referenced from the 
+  tracker-like structure you are thinking about (e.g. piano for the melody)
+- generated sounds should be stored using audioCtx.createBuffer and then stored in a Map() so that
+  they are re-used instead of generated again
+- the notes in the structure should be specified with C#, D, etc, so, you need one or more
+  look-up tables, depending on the instrument (e.g. a bass-drum sits at different freq than a piano)
+- A pattern, which is 64 items long, we need to sample and note, I picture something like:
+  patterns : { 
+    "p1" : {
+      tempo : 120,
+      data : [ ["BD", "C", 0.25], ["BD", "C", 0.25], ... ]
+    }, ...
+    "p2" : {
+      tempo : 60,
+      data : [ ["P", "C", 0.25], ["P", "G", 1.25], ... ]
+    }, ...
+  }
+  Tempo defines at what BPM the pattern should be played (don't play all notes at once!)
+  where BD is the pre-generated Bass-Drum sample, C is the note and 0.25 is duration. Note that the 
+  duration of the sample does not dictate time-span of pattern. If tempo dictates a new sample should
+  start playing in one channel, the sample already playing should simply stop.
+  Other samples could be shortened to P for piano.
+  In the example song you only need to include 2 patterns played in 2 separate channels and 4 items at
+  different notes per pattern (no need for 64)
+- this is multi-channel so all channels/patterns should play at the same time and each pattern should have
+  its own tempo
+- provide a small example on how to use the tracker-like structure to play a song consisting of
+  a few patterns for every channel, e.g. a rhythm of bass drum and guitar in separate channels
+  from the piano.
+
+- If it means less code, feel free to use MIDI numbers
+- Patterns can be reused in a song
+- Make generic functions as there will likely be a need for generating more sounds
+- Put everything in functions as web-browsers prevent playing sounds by default, trigger 
+  both generating and playing the song from a mouse-click event
+- You can also use whatever timing you want, just DON'T use a setInterval for every sound played
+
+Do a console.log() when a sound was generated and another one when the sound was played.
+
+This time I don't need explanation, be brief and just give me the complete code in one code-block.

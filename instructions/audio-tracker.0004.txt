@@ -1,0 +1,50 @@
+Think about a compact data structure for use in Javascript, it should facilitate the following:
+- it's a data structure for a tune
+- it should describe a tune in a MOD-tracker-type way
+
+- samples are played sequentially as defined in patterns
+- samples can be looked up by name in the mapping 'samples', all samples have a name like
+  this "PN-4-C-0.25" where:
+    - PN = piano
+    - 4 = octave 4
+    - C = note C
+    - 0.25 = length in seconds
+- you play a sample using playSample(sample's name) -- this code is already in place, you should
+  NOT give me any code for this, just use the function
+- You do not need to give me code to load or play samples. That is already done. I fucking mean it.
+- to save space, in the patterns you just want to refer to samples with a single integer instead of
+  the long sample name. So, use an array to look up a sample name using just an index. 
+  E.g. samples : [ "PN-4-C-0.25", "PN-4-C#-0.25" ],
+- a pattern can contain 64 items that are played sequentially -- a pattern should only define
+  one channel, it can contain less than 64 items, empty or non-existing items mean no sample is to be played
+- In the example, you MUST use less items, for brevity. Instead of specifying null in an array,
+  you can just use e.g. ,,,,, to create 4 empty slots in an array. Just remember to check for 
+  undefined when playing back
+- the speed at which pattern are played is configurable in the song (set with a 'tempo')
+- 4 patterns always play at the same time in 4 channels (but less can be used)
+- not all indices in a pattern contain a reference to a sample, if an index is null or undefined,
+  don't do anything - just let current sample play on
+- patterns can be reused within a tune, for instance a pattern with a bass-drum might always 
+  be playing in a channel, but there is no need to define the samples in it more than once
+- when a pattern start playing, we know how long it will play due to the fact that it should
+  have 64 items and we know the 'tempo' (from here we should also be able to deduct a BPM)
+- There can be different tempos at different stages in a song, so there should be a way to
+  refer to the tempo at which all channels should be playing
+- Use something like this to group up patterns that should play simultaneously (this is just
+  an example), the integers in 'channels' refer to patterns:
+  patternGroups : [
+    { tempo: 120, channels: [ 0,1,,null ] },
+    { tempo: 120, channels: [ 0,2,1,2 ] }
+  ],
+  Patterngroups would then be the 'top level' of what defines a tune.
+- patterngroups may contain undefined/null entries for a channel, it just means the channel is not used at this time
+- a pattern by itself should have no connection to a channel -- patterngroup defines that
+- So, logic would be something like this:
+    iterate over all patterngroups -> iterate over all channels in patterngroup at designated tempo ->
+    all items in each pattern is played simultaneously -> play item using playSample -> go to next patterngroup ...
+- use requestAnimationFrame for timing to schedule the playing of samples
+
+Show me how this structure should look and give me a player for that structure.
+
+This time I don't need explanation, be brief and just give me the complete code in one code-block
+and the tune structure in another.
