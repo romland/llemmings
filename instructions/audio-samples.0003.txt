@@ -1,0 +1,5 @@
+>>> Same vein as previous prompt (for more instruments)
+Given this function: function generateGuitar()
+
+... done ...
+

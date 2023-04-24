@@ -1,0 +1,30 @@
+>>> from there on, refine instruments:
+
+Given this function:
+function generatePiano(note, octave) {
+  const bufferSize = audioCtx.sampleRate * 2; // 2s buffer
+  const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+  const data = buffer.getChannelData(0);
+  
+  // Add fade-in and fade-out
+  const fadeLength = audioCtx.sampleRate * 0.1; // 100ms fade
+  const frequency = getFrequencyFromNoteOctave(note, octave);
+  const amplitude = 0.5;
+  for (let i = 0; i < buffer.length; i++) {
+    const t = i / audioCtx.sampleRate;
+    const sample = amplitude * Math.sin(2 * Math.PI * frequency * t) * Math.exp(-8 * t);
+    if (i < fadeLength) {
+      data[i] = sample * Math.sin((i / fadeLength) * (Math.PI / 2));
+    } else if (i >= buffer.length - fadeLength) {
+      data[i] = sample * Math.sin(((buffer.length - i) / fadeLength) * (Math.PI / 2));
+    } else {
+      data[i] = sample;
+    }
+  }
+  
+  console.log(`Piano sound for ${note}${octave} generated`);
+  return buffer;
+}
+
+Instead of piano, give me a realistic sounding guitar instead
+

@@ -180,5 +180,6 @@ AGPL.
 All about the specifiprompts.  
 It's the age of average text.  
 It is still creating. Which is what we like. Right.  
+[Llemmings](https://llemmings.com)  
 
 **Oh, woe is us.** 😲

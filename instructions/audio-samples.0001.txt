@@ -1,0 +1,28 @@
+>>> Human note:
+>>> Prior to this there were attempts to get sample generation and tracker in one go, it was too much for
+>>> both me and the LLM.
+>>>
+>>> Splitting prompt so that i generate instruments apart from the tracker (kept running into context-limit)
+
+Using client-side JS and AudioContext, no other external libraries or files. Generate at all plausible
+octates and notes for:
+- high hat
+- guitar
+- bass drum
+- bass guitar
+- piano
+
+Store each sample for reuse using audioCtx.createBuffer() in a Map() where index is "PN-4-C#" for Piano's
+octave 4's C#, and key is the buffer.
+
+- Make sure all samples have a small fade-in and a fate-out as we want to avoid a crack noise
+- don't just generate random noise, be detailed and realistic.
+
+Also give me an example on how to play an instrument's sample at a given octave, note
+
+Do a console.log() when a sound was generated and another one when the sound was played.
+
+This time I don't need explanation, be brief and just give me the complete code in one code-block.
+
+- Put everything in functions as web-browsers prevent playing sounds by default, trigger 
+  both generating and playing the song from a mouse-click event

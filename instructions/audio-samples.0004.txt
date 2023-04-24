@@ -1,0 +1,37 @@
+>>> Generate the piano sound instead
+
+Given this function synopsis:
+function generatePiano(note, octave, len = 0.25))
+
+Give me something that generates the various sounds of a piano and returns a buffer that is stored in a map called
+'samples' and then played using 
+
+function playSample(sampleKey) {
+  const source = audioCtx.createBufferSource();
+  source.buffer = samples.get(sampleKey);
+  source.connect(audioCtx.destination);
+  source.start();
+  
+  console.log(`Sample ${sampleKey} played`);
+}
+
+There is already a structure like this:
+const notes = [
+  {note: "C", frequency: 16.35},
+  {note: "C#", frequency: 17.32},
+  {note: "D", frequency: 18.35},
+  {note: "D#", frequency: 19.45},
+  {note: "E", frequency: 20.6},
+  {note: "F", frequency: 21.83},
+  {note: "F#", frequency: 23.12},
+  {note: "G", frequency: 24.5},
+  {note: "G#", frequency: 25.96},
+  {note: "A", frequency: 27.5},
+  {note: "A#", frequency: 29.14},
+  {note: "B", frequency: 30.87},
+];
+There is no need to re-declare it. Just use it if you need to.
+
+Give me that function, and that function only, note that is should return buffer of the data
+generated, the caller will put it in the samples map.
+Note that there should be a fade-in and a fade-out so we don't get any sudden cracks.
