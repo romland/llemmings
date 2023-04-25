@@ -93,6 +93,8 @@ var Llemmings = (function () {
       }
 
       lemmings.push(newLemming);
+      
+      AudioSamples.playSample("BD-0.25");
     }
   
   
@@ -1866,6 +1868,9 @@ var Llemmings = (function () {
         });
         effectsToUpdate.set("TextEffectMorph", TextEffectMorph.update);
       }
+
+      // Create sound effects
+      AudioSamples.createSamples(["BD-0.25"]);
     }
   
     function start()

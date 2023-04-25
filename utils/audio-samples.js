@@ -14,6 +14,28 @@
 var AudioSamples = (function ()
 {
 	const audioCtx = new AudioContext();
+	const notes = [
+		{note: "C", frequency: 16.35},
+		{note: "C#", frequency: 17.32},
+		{note: "D", frequency: 18.35},
+		{note: "D#", frequency: 19.45},
+		{note: "E", frequency: 20.6},
+		{note: "F", frequency: 21.83},
+		{note: "F#", frequency: 23.12},
+		{note: "G", frequency: 24.5},
+		{note: "G#", frequency: 25.96},
+		{note: "A", frequency: 27.5},
+		{note: "A#", frequency: 29.14},
+		{note: "B", frequency: 30.87},
+	];
+	// Map to store all samples
+	const samples = new Map();
+	const noteInstruments = new Map([
+		["Guitar", "GU"],
+		["BassGuitar", "BG"],
+		["Piano", "PN"]
+	]);
+
 	
 	// Generate sound data for high hat
 	function generateHighHat(len) {
@@ -182,29 +204,11 @@ var AudioSamples = (function ()
 		return buffer;
 	}
 	
-	const notes = [
-		{note: "C", frequency: 16.35},
-		{note: "C#", frequency: 17.32},
-		{note: "D", frequency: 18.35},
-		{note: "D#", frequency: 19.45},
-		{note: "E", frequency: 20.6},
-		{note: "F", frequency: 21.83},
-		{note: "F#", frequency: 23.12},
-		{note: "G", frequency: 24.5},
-		{note: "G#", frequency: 25.96},
-		{note: "A", frequency: 27.5},
-		{note: "A#", frequency: 29.14},
-		{note: "B", frequency: 30.87},
-	];
-	
 	// Helper function to get frequency from note and octave
 	function getFrequencyFromNoteOctave(note, octave) {
 		const noteIndex = notes.findIndex(n => n.note === note);
 		return notes[noteIndex].frequency * Math.pow(2, octave);
 	}
-	
-	// Map to store all samples
-	const samples = new Map();
 	
 	// Example on how to play an instrument's sample at a given octave, note
 	function playSample(sampleKey) {
@@ -226,12 +230,6 @@ var AudioSamples = (function ()
 		console.log(`Sample ${sampleKey} played`);
 		return source;
 	}
-	
-	const noteInstruments = new Map([
-		["Guitar", "GU"],
-		["BassGuitar", "BG"],
-		["Piano", "PN"]
-	]);
 	
 	function createSamplesPerInstrumentPerNotePerOctave(len = 0.25) {
 		// Instruments with notes
@@ -259,6 +257,7 @@ var AudioSamples = (function ()
 		if(!samples.has("BD-"+len)) samples.set("BD-"+len, generateBassDrum(len));
 	}
 	
+
 	// >>> Prompt: instructions/audio-convertToRealNote.0001.txt
 	// Human: I have no idea what these things are actually called. It's pretty nifty that I don't need to.
 	function convertToRealNote(note) {
@@ -285,6 +284,9 @@ var AudioSamples = (function ()
 	}
 	
 	
+	// Samples look like this. Instrument.Piano-Octave.4-Note.C-0.25.seconds
+	// samples: [ "PN-4-C-0.25", "PN-4-C#-0.25", "BD-0.25" ],
+	// If no octave/note -- then like the 3rd example above
 	function createSamples(sampleNames)
 	{
 		for(let i = 0; i < sampleNames.length; i++) {
@@ -299,14 +301,13 @@ var AudioSamples = (function ()
 			if(instrument === "HH" || instrument === "BD") {
 				len = parseFloat(octave);
 				switch(instrument) {
-					// TODO: these two will only ever have one note/octave, make sure tunes don't create more than one!
+					// HUMAN TODO: these two will only ever have one note/octave, make sure tunes don't attempt to create more than one!
 					case "BD" : samples.set(sampleNames[i], generateBassDrum(len)); break;
 					case "HH" : samples.set(sampleNames[i], generateHighHat(len)); break;
 					default : throw "unknown instrument " + instrument;
 				}
 			} else {
 				// HUMAN: I have NO idea what I am doing... I read that this might be true:
-				
 				// HUMAN: Enable this when we've tested and read up a bit more on it
 				//note = convertToRealNote(note);
 				
