@@ -193,16 +193,18 @@ var LlemmingsLevels = [
         },
         "spawnInterval": 1000,
         "goal": {
-            "survivors": 5
+            "survivors": 10
         },
         "start": {
             "x": 50,
             "y": -20,
+            "radius" : 100,
             "clear": true
         },
         "finish": {
             "x": 750,
             "y": 480,
+            "radius" : 100,
             "clear": true
         }
     }

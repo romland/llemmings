@@ -60,6 +60,7 @@ var Llemmings = (function () {
     let isPaused = false;
     const lemmings = [];
     let levelData;
+    let scoreKeeper = null;
 
     // Create a new lemming and add it to the array of lemmings
     // HUMAN: This is just for easy testing for now.
@@ -471,6 +472,7 @@ var Llemmings = (function () {
         this.onGround = false;
         this.isClimbing = false;
         this.isDead = false;
+        this.rescued = false;
         this.action = null;
         this.actionStarted = false;
         this.executedActions = [];    // for pre-programmed actions (i.e. solutions to level)
@@ -569,7 +571,13 @@ var Llemmings = (function () {
             this.isDead = true;
             return;
         }
-  
+
+        // >>> Prompt: instructions/score.0001.txt
+        if (checkLemmingFinish(this, levelData.finish)) {
+          this.rescued = true;
+          return;
+        }
+
         if (this.standStillUntil && this.standStillUntil < this.age) {
           this.standStillUntil = null;
           this.velX = -this.standStillDirection;
@@ -1580,6 +1588,17 @@ var Llemmings = (function () {
             particles.push(p);
           }
         }
+
+        // >>> Prompt: instructions/score.0001.txt
+        if (lemming.rescued) {
+          const index = lemmings.indexOf(lemming);
+          lemmings.splice(index, 1);
+          scoreKeeper.incrementScore(1);
+          console.log(`Lemming ${lemming.id} reached the finish! Score: ${scoreKeeper.score}`);
+          // HUMAN TODO: Do some effect here (also sound)
+        }
+
+        // HUMAN TODO: Game over / success check
       });
   
       particles.forEach((particle) => {
@@ -1654,25 +1673,30 @@ var Llemmings = (function () {
       }
     }
 
+    // >>> Prompt: score.0001.txt
+    function checkLemmingFinish(lemming, finish) {
+      const distance = Math.abs(lemming.x - finish.x) + Math.abs(lemming.y - finish.y);
+      const isReached = distance <= finish.radius;
+      return isReached;
+    }
+
     function setupStartFinish()
     {
-      const clrRad = 100;
-
       if(levelData.start.x === null || !levelData.start.clear) {
-        // debug: random on x axis -- clear entire upper clrRad/2
+        // debug: random on x axis -- clear upper levelData.start.radius/2
         for(let x = 0; x < canvas.width; x++) {
-          for(let y = 0; y < (clrRad/2); y++) {
+          for(let y = 0; y < (levelData.start.radius/2); y++) {
             clearPixel(x, y);
           }
         }
   
       } else if(levelData.start.clear) {
         // clear start zone
-        clearSquare(levelData.start.x, levelData.start.y, clrRad);
+        clearSquare(levelData.start.x, levelData.start.y, levelData.start.radius);
       }
 
       if(levelData.finish.clear) {
-        clearSquare(levelData.finish.x, levelData.finish.y, clrRad);
+        clearSquare(levelData.finish.x, levelData.finish.y, levelData.finish.radius);
       }
     }
 
@@ -1715,6 +1739,8 @@ var Llemmings = (function () {
         
         // clear canvas
         ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        scoreKeeper = null;
 
         // Unpause
         isPaused = false;
@@ -1794,6 +1820,11 @@ var Llemmings = (function () {
             Miner : givenLevel.resources?.Miner || 0,
             Digger : givenLevel.resources?.Digger || 0,
         },
+        ui : {
+          showScore : true,
+          showActions : true,
+          showGithub : true,
+        },
         solution : givenLevel.solution || { },
         goal : { survivors : givenLevel.goal?.survivors || 30 },
         objects : givenLevel.objects || [],
@@ -1871,6 +1902,9 @@ var Llemmings = (function () {
 
       // Create sound effects
       AudioSamples.createSamples(["BD-0.25"]);
+
+      // Create an instance of the ScoreKeeper class
+      scoreKeeper = new GameUtils.ScoreKeeper(canvas, 0, levelData.goal.survivors, !levelData.ui.showScore);
     }
   
     function start()

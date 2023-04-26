@@ -1,0 +1,16 @@
+>>> Prompt 1
+We're making a game using Javascript and canvas, we need to do score keeping. 
+Give me a class which keeps track of score and updates UI when score changes. 
+The UI can be an HTML element position in the top-right of a passed in canvas
+
+>>> Prompt 2
+Make the HTML element a bit fancier, like give it a round transparent
+background and remove the word "score". You cannot use any third party
+libraries, but make it look fancy.
+
+>>> Prompt 3
+Give the text some shadow effect
+
+>>> Prompt 4: Give me a name of some standard whimsical font that can be used for a game.
+>>> ChatGPT: One standard whimsical font that can be used for a game is "Comic Sans MS".
+>>> Human: OK!

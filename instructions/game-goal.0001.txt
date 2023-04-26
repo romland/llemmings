@@ -1,0 +1,28 @@
+Given this partial game object:
+
+    class Lemming {
+      constructor(x, y) {
+        this.id = -49152;
+        this.width = 10;
+        this.height = 20;
+        this.x = x;
+        this.y = y;
+        this.velX = 0;
+        this.velY = 0;
+      }
+    }
+
+and this structure in levelData:
+    "finish": {
+        "x": 750,
+        "y": 480,
+        "radius" : 100,
+        "clear": true
+    }
+
+I want a function to check whether a lemming reached the finish area.
+You can use manhattan distance.
+
+In the update loop, check whether lemming reached its finish, if it was, 
+increase score by one and set a new property in the lemming that it was
+rescued.
