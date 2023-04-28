@@ -61,6 +61,7 @@ var Llemmings = (function () {
     const lemmings = [];
     let levelData;
     let scoreKeeper = null;
+    let doneSpawning = false;
 
     // Create a new lemming and add it to the array of lemmings
     // HUMAN: This is just for easy testing for now.
@@ -70,34 +71,50 @@ var Llemmings = (function () {
     //        don't care.
     function spawnLemming()
     {
-      if(isPaused)
-        return;
-
-      if(lastLemmingId >= levelData.resources.lemmings) {
+      if(isPaused || doneSpawning) {
         return;
       }
-  
-      const newLemming = new Lemming();
-      newLemming.id = ++lastLemmingId;
-      newLemming.velX = newLemming.maxVelX; // Walk to the right by default
 
-      if (levelData.start.x === null) {
-        newLemming.x = Math.random() * canvas.width; // Start at a random x location
-      } else {
-        newLemming.x = levelData.start.x;
+      let spawned = false;
+      for(let i = 0; i < lemmings.length; i++) {
+        if(!lemmings[i].isSpawned) {
+          lemmings[i].isSpawned = true;
+          spawned = true;
+          AudioSamples.playSample("BD-0.25");
+          break;
+        }
       }
 
-      if (levelData.start.y === null) {
-        newLemming.y = Math.random() * (canvas.height - 100);
-      } else {
-        newLemming.y = levelData.start.y;
+      if(!spawned) {
+        doneSpawning = true;
+        console.log("Done spawning lemmings");
       }
-
-      lemmings.push(newLemming);
-      
-      AudioSamples.playSample("BD-0.25");
     }
+ 
+    // isSpawned
+    function createLemmings(amount)
+    {
+      for(let i = 0; i < amount; i++) {
+        const newLemming = new Lemming();
+        newLemming.id = ++lastLemmingId;
+        newLemming.velX = newLemming.maxVelX; // Walk to the right by default
   
+        if (levelData.start.x === null) {
+          newLemming.x = Math.random() * canvas.width; // Start at a random x location
+        } else {
+          newLemming.x = levelData.start.x;
+        }
+  
+        if (levelData.start.y === null) {
+          newLemming.y = Math.random() * (canvas.height - 100);
+        } else {
+          newLemming.y = levelData.start.y;
+        }
+  
+        lemmings.push(newLemming);
+      }
+    }
+
   
     // >>> Prompt: instructions/map-generation.0003.txt (0001-0002 are now obsolete)
     function generateMapNoiseHash()
@@ -468,6 +485,7 @@ var Llemmings = (function () {
         this.y = y;
         this.velX = 0;
         this.velY = 0;
+        this.isSpawned = false;
         this.isSelected = false;
         this.onGround = false;
         this.isClimbing = false;
@@ -489,6 +507,10 @@ var Llemmings = (function () {
   
       // >>> Prompt: instructions/lemming-legs.draw.0001.txt
       draw() {
+        if(!this.isSpawned) {
+          return;
+        }
+
         // draw body
         ctx.fillStyle = "rgb(" + lemmingBodyColor.join(",") + ")";
         ctx.fillRect (this.x, this.y, this.width, this.height * 0.75);
@@ -565,6 +587,10 @@ var Llemmings = (function () {
       }
   
       update() {
+        if(!this.isSpawned) {
+          return;
+        }
+
         doProgrammedActions(this);
   
         if (this.y >= canvas.height - (this.height + this.velY + 1)) {
@@ -673,7 +699,15 @@ var Llemmings = (function () {
           // HUMAN: TODO: Just use 'digging' for now -- same concept
           digging = build(this);
         }
-  
+
+        // Check if this is a Bomber, and if so create a hole
+        // TODO: Need to make nearby aliens die...
+        if (this.action === "Bomber") {
+          createHole(this.x, this.y + this.height);
+          this.isDead = true;
+          return;
+        }
+      
         // Handle climbing
         if (shouldClimb) {
             this.isClimbing = true;
@@ -700,18 +734,10 @@ var Llemmings = (function () {
                 if (this.y - heightAdjustment >= 0) {
                     this.y += heightAdjustment; // move sprite up (HUMAN comment: gravity takes care of down)
                 } else {
-                    console.log("Death by heigthAdjustment")
+                    console.log("Death by heightAdjustment");
                     this.isDead = true;
                     return;
                 }
-            }
-  
-            // Check if this is a Bomber, and if so create a hole
-            // TODO: Need to make nearby aliens die...
-            if (this.action === "Bomber") {
-                createHole(this.x, this.y + this.height);
-                this.isDead = true;
-                return;
             }
   
             // HUMAN: this if block to slow down when digging
@@ -739,8 +765,8 @@ var Llemmings = (function () {
             this.x = Math.max(this.x, 2);
   
             this.y += this.velY;
-            this.age++;
         }
+        this.age++;
       }
     }
   
@@ -1733,6 +1759,7 @@ var Llemmings = (function () {
         // remove all lemmings
         lemmings.length = 0;
         lastLemmingId = 0;
+        doneSpawning = false;
 
         // clear map noise
         mapNoiseHash.length = 0;
@@ -1905,6 +1932,9 @@ var Llemmings = (function () {
 
       // Create an instance of the ScoreKeeper class
       scoreKeeper = new GameUtils.ScoreKeeper(canvas, 0, levelData.goal.survivors, !levelData.ui.showScore);
+
+      // HUMAN: Pre-create lemmings -- we need this early to determine level failure/success
+      createLemmings(levelData.resources.lemmings);
     }
   
     function start()
