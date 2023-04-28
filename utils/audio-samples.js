@@ -1,16 +1,16 @@
 /**
- * >>> Prompt: instructions/audio-samples.0001.txt
- * >>> Prompt: instructions/audio-samples.0002.txt
- * >>> Prompt: instructions/audio-samples.0003.txt
- * >>> Prompt: instructions/audio-samples.0004.txt
- * 
- * Human notes:
- * - A lot of these samples does not sound at all as the instrument they are posing as.
- *   There will be imminent updates, I just wanted to get a first version commited to
- *   repository for posterity.
- * - As with the audio-tracker, I know so little about musical notation and sound that
- *   this is just winging it -- I blame it all on the LLM!
- */
+* >>> Prompt: instructions/audio-samples.0001.txt
+* >>> Prompt: instructions/audio-samples.0002.txt
+* >>> Prompt: instructions/audio-samples.0003.txt
+* >>> Prompt: instructions/audio-samples.0004.txt
+* 
+* Human notes:
+* - A lot of these samples does not sound at all as the instrument they are posing as.
+*   There will be imminent updates, I just wanted to get a first version commited to
+*   repository for posterity.
+* - As with the audio-tracker, I know so little about musical notation and sound that
+*   this is just winging it -- I blame it all on the LLM!
+*/
 var AudioSamples = (function ()
 {
 	const audioCtx = new AudioContext();
@@ -35,7 +35,7 @@ var AudioSamples = (function ()
 		["BassGuitar", "BG"],
 		["Piano", "PN"]
 	]);
-
+	
 	
 	// Generate sound data for high hat
 	function generateHighHat(len) {
@@ -59,62 +59,75 @@ var AudioSamples = (function ()
 		return buffer;
 	}
 	
-	function generateGuitar(note, octave, len = 0.25) {
-		const bufferSize = audioCtx.sampleRate * len; // 2s buffer
-		const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
-		const data = buffer.getChannelData(0);
-		
-		// Add fade-in and fade-out
-		const fadeLength = audioCtx.sampleRate * 0.1; // 100ms fade
-		const frequency = getFrequencyFromNoteOctave(note, octave);
-		const amplitude = 0.5;
-		
-		const noise = new Float32Array(bufferSize);
-		for (let i = 0; i < bufferSize; i++) {
-			noise[i] = amplitude * (Math.random() * 2 - 1);
+	// >>> Prompt: instructions/audio-samples-guitar.0001.txt - 0003.txt
+	function getFrequency(note, octave) {
+		const notes = [
+			'C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'
+		];
+		const noteIndex = notes.indexOf(note);
+		if (noteIndex === -1) {
+			throw new Error('Invalid note');
+		}
+		return 440 * Math.pow(2, (octave - 4) + (noteIndex - 10) / 12);
+	}
+	
+	// >>> Prompt: instructions/audio-samples-guitar.0001.txt - 0003.txt
+	function generateGuitar(note, octave, len = 0.25, reverbTime, delayTime)
+	{
+		return generateGuitarFreq(getFrequency(note, octave), len, reverbTime, delayTime)
+	}
+	
+	// >>> Prompt: instructions/audio-samples-guitar.0001.txt - 0003.txt
+	function generateGuitarFreq(frequency, duration, reverbTime, delayTime)
+	{
+		if(!frequency) {
+			throw "no frequency passed in";
 		}
 		
-		for (let i = 0; i < buffer.length; i++) {
-			const t = i / audioCtx.sampleRate;
-			
-			// Sine wave
-			let sample = amplitude * Math.sin(2 * Math.PI * frequency * t);
-			
-			// Add noisy attack
-			const attackTime = audioCtx.sampleRate * 0.005; // 5ms attack time
-			if (i < attackTime) {
-				const attackAmplitude = (i / attackTime) * amplitude;
-				sample += attackAmplitude * noise[i];
+		const bufferSize = context.sampleRate * duration,
+		buffer = context.createBuffer(1, bufferSize, context.sampleRate),
+		data = buffer.getChannelData(0),
+		delaySamples = Math.floor(context.sampleRate * delayTime),
+		decay = 0.85,
+		reverbFactor = 0.6,
+		reverbSamples = Math.floor(context.sampleRate * reverbTime),
+		feedbackAmount = 0.5;
+		
+		// Initialize the buffer with random noise
+		for (let i = 0; i < bufferSize; i++) {
+			data[i] = Math.random() * 2 - 1;
+		}
+		
+		// Apply the Karplus-Strong algorithm to generate a string-like sound
+		const delay = Math.floor(context.sampleRate / frequency);
+		for (let i = delay; i < bufferSize; i++) {
+			data[i] = (data[i - delay] + data[i - delay + 1]) / 2;
+		}
+		
+		// Apply a fade-out effect to the end of the buffer
+		const fadeLength = Math.floor(bufferSize * decay);
+		for (let i = bufferSize - fadeLength; i < bufferSize; i++) {
+			const t = (i - (bufferSize - fadeLength)) / fadeLength;
+			data[i] *= Math.exp(-t * Math.PI / 2);
+		}
+		
+		// apply reverb
+		if(reverbTime > 0) {
+			for (let i = reverbSamples; i < bufferSize; i++) {
+				data[i] += (data[i - reverbSamples] * reverbFactor);
 			}
-			
-			// Add noisy decay
-			const decayTime = audioCtx.sampleRate * 0.5; // 500ms decay time
-			if (i >= attackTime && i < decayTime) {
-				const decayAmplitude = (1 - (i - attackTime) / (decayTime - attackTime)) * amplitude;
-				sample += decayAmplitude * noise[i];
-			}
-			
-			// Add noisy release
-			const releaseTime = audioCtx.sampleRate * 0.2; // 200ms release time
-			if (i >= buffer.length - releaseTime) {
-				const releaseAmplitude = (buffer.length - i) / releaseTime * amplitude;
-				sample += releaseAmplitude * noise[i];
-			}
-			
-			// Apply fade-in and fade-out
-			if (i < fadeLength) {
-				data[i] = sample * Math.sin((i / fadeLength) * (Math.PI / 2));
-			} else if (i >= buffer.length - fadeLength) {
-				data[i] = sample * Math.sin(((buffer.length - i) / fadeLength) * (Math.PI / 2));
-			} else {
-				data[i] = sample;
+		}
+		
+		// apply delay
+		if(delayTime > 0) {
+			for (let i = delaySamples; i < bufferSize; i++) {
+				data[i] += (data[i - delaySamples] * feedbackAmount);
 			}
 		}
 		
 		console.log(`Guitar sound for ${note}-${octave} generated`);
 		return buffer;
 	}
-	
 	
 	// Generate sound data for bass drum
 	function generateBassDrum(len = 0.25) {
@@ -257,7 +270,7 @@ var AudioSamples = (function ()
 		if(!samples.has("BD-"+len)) samples.set("BD-"+len, generateBassDrum(len));
 	}
 	
-
+	
 	// >>> Prompt: instructions/audio-convertToRealNote.0001.txt
 	// Human: I have no idea what these things are actually called. It's pretty nifty that I don't need to.
 	function convertToRealNote(note) {

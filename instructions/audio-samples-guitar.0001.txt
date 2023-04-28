@@ -1,0 +1,4 @@
+Think about some tricks to synthetically generate a realistic sounding guitar using
+javascript and audio context, without using samples. Be sure to give it a bit of fade-out.
+
+Now give me the code to play a few notes so I can test how it sounds.

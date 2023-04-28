@@ -1,0 +1,15 @@
+>>> Human: Yes, this gave us a better guitar than we had. So, there we have it.
+Using javascript and audio context, I want the sound of a very realistic piano. With
+ploink sound (when hammer hits string), fade-out, fourier tranform, attack, decay, 
+sustain and release, fourier transform, simulated physical modeling synthesis, the whole sha-bang.
+
+I know it's a complex task, rest assured I know how to make a basic piano, so give me
+the most advanced implementation you can come up with.
+
+I am not able to use any pre-recorded samples.
+
+Function should look like this: function createPianoNoteBuffer(note, octave, duration) 
+
+Give me the code to play a few notes so I can test it.
+
+I don't need explanation of the code this time.

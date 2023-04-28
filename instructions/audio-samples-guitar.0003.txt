@@ -1,0 +1,5 @@
+Add reverb and delay to this function, it should be automatically 
+generated (not using samples). Make it configurable arguments so 
+that the function will look like this:
+
+createGuitarNoteBuffer(frequency, duration, reverb, delay).
