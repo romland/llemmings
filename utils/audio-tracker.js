@@ -9,7 +9,7 @@
     const tune = {
         // Samples that are used in this tune, e.g. Instrument.Piano-Octave.4-Note.C-0.25.seconds
         samples: [ "PN-4-C-0.25", "PN-4-C#-0.25", "BD-0.25" ],
-        // Refers to samples above
+        // Refers to samples above, empty slot means don't start a new sample
         patterns: [
             [ 0, 1, , , 0, , , , , , , , , , , , , , , , , , , , , , , , , , , , , , , , , , , , , , , , , , ],
             [ 1, , , , , , , , , , , , , , , , , , , , , , , , , , , , , , , , , , , , , , , , , , , , , ],
