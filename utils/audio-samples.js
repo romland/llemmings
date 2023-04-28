@@ -240,7 +240,7 @@ var AudioSamples = (function ()
 		source.connect(audioCtx.destination);
 		source.start();
 		
-		console.log(`Sample ${sampleKey} played`);
+		// console.log(`Sample ${sampleKey} played`);
 		return source;
 	}
 	
