@@ -1,0 +1,40 @@
+Using a filled rectangle-drawing algorithm, figure out the x/y
+of the pixels affected when drawing a rectangle from in front of the lemmings feet
+when given: angle (0-360), length and height (in pixels) of the rectangle. Regardless
+of angle of the rectangle, it's length and height should remain the same.
+
+The rectangle should end if the _entire_ height of it is obstructed, or the
+rectangle would hit the border of the canvas (use canvas.height/width). You can 
+check for obstruction on canvas using an already existing function (you do not 
+need to reimplement this): isPixelOneOf(oldImgData, x, y, collisionColors). The
+obstruction check should allow for some forgiveness as the terrain is not always
+smooth. That is, at the very start of the rectangle (at lemming's feet)
+we allow for obstructions of up to 4 pixels on the Y axis -- the rectangle should then
+start above that obstruction. Note that the rectangle MUST "rest" on an obstruction 
+on the Y axis (the bottom-most pixel of it must have an obstruction under it).
+
+The variable collisionColors should be passed into this new function.
+
+The front of lemming can be determined by looking at lemming's velX (positive 
+value: moving right).
+
+A lemming has these properties, its x/y position is the top-right of the lemming.
+    this.width = 10;
+    this.height = 20;
+    this.x = x;
+    this.y = y;
+    this.velX = 0;
+    this.velY = 0;
+
+Note that a lemming's position might be a double, but when checking for collisions
+and storing the x/y pairs, you would want them to be integers.
+
+Declare function like this:
+getRectanglePoints(lemming, angle, length, height, collisionColors)
+The return value should be an array of x/y pairs of all pixels this rectangle affected,
+that is, you don't actually draw anything.
+
+It's important that the rectangle is entirely filled, there should be no pixel gaps
+anywhere.
+
+Only give me the new code, I don't need an explanation this time.

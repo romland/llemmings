@@ -44,9 +44,7 @@ var Llemmings = (function () {
   
     // Lemming settings
     const VEL_CLIMB = 1;    // Cheat. HUMAN added this undeclared variable.
-    const BUILDER_LOOK_AHEAD = 1;
-    const BUILD_MATERIAL_CARRIED = 120;
-    const BUILD_PER_FRAME_MAX = 10;
+    const BUILDER_LOOK_AHEAD = 10;
     const DIGGER_LOOK_AHEAD = 4;
     const DIGGER_SPEED_FACTOR = 0.4;    // HUMAN: Changed my mind; changed from 0.2
   
@@ -494,6 +492,8 @@ var Llemmings = (function () {
         this.action = null;
         this.actionStarted = false;
         this.executedActions = [];    // for pre-programmed actions (i.e. solutions to level)
+        this.standStillUntil = 0;
+        this.standStillDirection = undefined;
   
         // Initialize these variables in the constructor or wherever appropriate
         this.legColor = "green";
@@ -624,7 +624,7 @@ var Llemmings = (function () {
               }
             }
         }
-  
+
         // Check if we hit a wall on the x axis
         // >>> Prompt: instructions/wall-hit-fix.0001.txt
         let hitWallOnLeft = this.velX < 0 && isPixelOneOf(oldImgData, this.x - 1, this.y + this.height / 2, terrainColorBytes);
@@ -694,10 +694,11 @@ var Llemmings = (function () {
             digging = startDigging(this);
         }
         // ============ /Digger/Basher/Miner code
-  
+
+        let building = false;
         if (this.action === "Builder") {
           // HUMAN: TODO: Just use 'digging' for now -- same concept
-          digging = build(this);
+          building = build(this);
         }
 
         // Check if this is a Bomber, and if so create a hole
@@ -721,7 +722,7 @@ var Llemmings = (function () {
             // Not climbing, normal movement applies
             // HUMAN: added check for 'this.velY === 0' here so that we don't turn when we are falling
             // HUMAN: don't turn if digging
-            if (!digging && this.velY === 0 && (hitWallOnLeft || hitWallOnRight || this.x <= this.width || this.x >= canvas.width - this.width)) {
+            if (!digging && !building && this.velY === 0 && (hitWallOnLeft || hitWallOnRight || this.x <= this.width || this.x >= canvas.width - this.width)) {
                 this.velX *= -1;
             }
   
@@ -763,85 +764,123 @@ var Llemmings = (function () {
   
             this.x = Math.min(this.x, canvas.width - this.width - 2);
             this.x = Math.max(this.x, 2);
-  
             this.y += this.velY;
         }
         this.age++;
+
       }
     }
   
-  
+    // >>> Prompt: instructions/builder.0004.txt
+    function getRectanglePoints(lemming, angle, length, height, collisionColors) {
+      const points = [];
+      const radians = (Math.PI / 180) * angle;
+      const rectX = lemming.velX >= 0 ? lemming.x + lemming.width : lemming.x - length;
+      const rectY = lemming.y + lemming.height;
+      let offsetY = 0;
+
+      // Find offsetY for initial obstruction forgiveness
+      for (let i = 0; i <= 4; i++) {
+        if (isPixelOneOf(oldImgData, rectX, rectY - i, collisionColors)) {
+          offsetY = i;
+          break;
+        }
+      }
+
+      // Iterate through each point of the rectangle and check for obstructions or canvas boundaries
+      for (let x = 0; x < length; x++) {
+        for (let y = 0; y < height; y++) {
+          const newX = rectX + x * Math.cos(radians) - y * Math.sin(radians);
+          const newY = rectY - x * Math.sin(radians) - y * Math.cos(radians) - offsetY;
+
+          if (
+            newX >= 0 &&
+            newX < canvas.width &&
+            newY >= 0 &&
+            newY < canvas.height &&
+            !isPixelOneOf(oldImgData, newX, newY, collisionColors)
+          ) {
+            points.push({ x: Math.round(newX), y: Math.round(newY) });
+            // setPixel(Math.round(newX), Math.round(newY), collisionColors[0]);        
+
+            // Cover gaps by adding up to 1 pixel on each side of the current point
+            const surroundingPixels = [
+              { x: newX + 1, y: newY },
+              { x: newX - 1, y: newY },
+              { x: newX, y: newY + 1 },
+              { x: newX, y: newY - 1 },
+            ];
+
+            surroundingPixels.forEach((pixel) => {
+              if (
+                pixel.x >= 0 &&
+                pixel.x < canvas.width &&
+                pixel.y >= 0 &&
+                pixel.y < canvas.height &&
+                !isPixelOneOf(oldImgData, pixel.x, pixel.y, collisionColors)
+              ) {
+                points.push({ x: Math.round(pixel.x), y: Math.round(pixel.y) });
+                // setPixel(Math.round(pixel.x), Math.round(pixel.y), collisionColors[0]);
+              }
+            });
+          }
+        }
+      }
+
+      return points;
+    }
+
+
     // =========================================================================
     // Builder
     // >>> Prompt: instructions/builder.0001.txt
     // >>> Prompt: instructions/builder.0002.txt
-  
+    // >>> Prompt: instructions/builder.0003.txt
+    // >>> Prompt: instructions/builder.0004.txt (new implementation)
     function build(lemming)
     {
         if (!lemming.onGround) {
             return false;
         }
-  
-        const startX = Math.floor(
-          lemming.velX < 0
-            ? lemming.x - BUILDER_LOOK_AHEAD
-            : lemming.x + lemming.width + BUILDER_LOOK_AHEAD
-        );
-  
-        const startY = Math.floor(lemming.y + lemming.height) + 1;
-  
-        if (startX >= canvas.width || startY >= canvas.height) {
-            return false;
+
+        if(!lemming.bridgePixels) {
+          lemming.bridgePixels = getRectanglePoints(lemming, 25, 80, 2, terrainColorBytes);
+          lemming.framesNotBuilt = 0;
         }
   
         let pixelsBuilt = 0;
-        if(!lemming.totalPixelsBuilt) {
-          lemming.totalPixelsBuilt = 0;
-        }
-  
-        let y = startY
-        // HUMAN: TODO: This should check end of the bridge, not where lemming is?
-        const obstacleOnLeft = lemming.velX < 0 && isPixelOneOf(oldImgData, startX - 1, y - lemming.height / 2, terrainColorBytes);
-        const obstacleOnRight = lemming.velX > 0 && isPixelOneOf(oldImgData, startX + 1, y - lemming.height / 2, terrainColorBytes);
-        
-        if (obstacleOnLeft || obstacleOnRight) {
-          // Do nothing
-        } else {
-          if(!lemming.actionStarted) {
-            // Find ground within 5 pixels of feet
-            let addY = 0;
-            for(let i = 0; i < 5; i++) {
-              if(!isPixelOneOf(oldImgData, startX, startY + addY, terrainColorBytes)) {
-                addY += 1;
-              } else {
-                break;
-              }
-            }
-  
-            if(addY) {
-              // Create a (free) platform straight under the feet since we are on a slope
-              const offset = lemming.velX < 0 ? -1 : 0;
-              for(let i = (lemming.velX < 0 ? -BUILDER_LOOK_AHEAD : 0); i < lemming.width + BUILDER_LOOK_AHEAD; i++) {
-                setPixel(Math.floor(lemming.x) + i, startY + offset, dirtColorBytes);
-                setPixel(Math.floor(lemming.x) + i, startY + (offset+1), dirtColorBytes);
-              }
-              lemming.actionStarted = true;
-            }
-          }
-  
-          for (let x = startX; x < canvas.width && x < startX + 4 && pixelsBuilt <= BUILD_PER_FRAME_MAX; x++) {
-            // HUMAN: TODO: This will allow for a lemming to build more than totalPixelsBuilt by at most BUILD_PER_FRAME -- need check
-            if (isPixelOneOf(oldImgData, x, y, blackColorBytes)) {
-              setPixel(x, y, dirtColorBytes);
+        let remove = [];
+
+        for(let i = 0; i < lemming.bridgePixels.length; i++) {
+          if(isPointWithinCircle(
+              lemming.x + (lemming.width / 2), lemming.y + lemming.height,
+              lemming.bridgePixels[i].x, lemming.bridgePixels[i].y,
+              BUILDER_LOOK_AHEAD * 1.5)
+            ) {
+              setPixel(lemming.bridgePixels[i].x, lemming.bridgePixels[i].y, dirtColorBytes);
               pixelsBuilt++;
+              remove.push(i);
               lemming.actionStarted = true;
             }
-          }
-          lemming.totalPixelsBuilt += pixelsBuilt;
+        }
+
+        if(lemming.actionStarted && pixelsBuilt === 0) {
+          lemming.framesNotBuilt++;
+        } else {
+          lemming.framesNotBuilt = 0;
+        }
+
+        for(let i = remove.length-1; i > 0; i--) {
+          lemming.bridgePixels.splice(remove[i], 1);
+        }
+
+        if(lemming.framesNotBuilt > (2 / Math.abs(lemming.velX))) {
+          console.log("Did not build for", lemming.framesNotBuilt, "frames, calling it done")
+          lemming.bridgePixels.length = 0;
         }
   
-        if (obstacleOnLeft || obstacleOnRight || lemming.totalPixelsBuilt >= BUILD_MATERIAL_CARRIED) {
-            lemming.totalPixelsBuilt = 0;
+        if (lemming.bridgePixels.length === 0) {
+            lemming.bridgePixels = null;
             lemming.standStillUntil = lemming.age + 120;
             lemming.standStillDirection = lemming.velX;
             lemming.action = null;

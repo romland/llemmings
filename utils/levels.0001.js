@@ -151,11 +151,15 @@ var LlemmingsLevels = [
             ],
             [2] : [
                 {
-                    x: 393, y: 333, r: 3,
+                    x: 383, y: 333, r: 3,
                     action : "Builder",
                 },
                 {
-                    x: 471, y: 332, r: 3,
+                    x: 449, y: 312, r: 3,
+                    action : "Basher",
+                },
+                {
+                    x: 462, y: 306, r: 3,
                     action : "Basher",
                 },
             ],

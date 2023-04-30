@@ -1,0 +1,132 @@
+>>> Prompt: GPT-4
+>>> Human: There were a few small tweaks needed to get the final code to work
+>>>        properly, but honestly not much.
+
+Using a line-drawing algorithm, figure out the x/y
+of the pixels affected when drawing a line from in front of the lemmings feet
+to a passed in angle + distance (in pixels). The thickness of the line should 
+also be taken into consideration. Make sure that there are no gaps between the
+pixels of the line -- drawing parallell lines is not enough, the gaps between
+the lines need to be filled too.
+
+The line should end if the _entire_ thickness of the line is obstructed, or the
+line would hit the border of the canvas (use canvas.height/width). You can 
+check for obstruction on canvas using an already existing function (you do not 
+need to reimplement this): isPixelOneOf(oldImgData, x, y, collisionColors). The
+obstruction check should allow for some forgiveness as the terrain is not always
+smooth. That is, at the very start of the line (at lemming's feet) 
+we allow for obstructions of up to 4 pixels on the Y axis -- the line should then
+start above that obstruction. Note that the line MUST "rest" on an obstruction 
+on the Y axis (so the first pixel of the line must have an obstruction under it).
+
+The variable collisionColors should be passed into this new function.
+
+The front of lemming can be determined by looking at lemming's velX (positive 
+value: moving right).
+
+A lemming has these properties, its x/y position is the top-right of the lemming.
+    this.width = 10;
+    this.height = 20;
+    this.x = x;
+    this.y = y;
+    this.velX = 0;
+    this.velY = 0;
+
+Note that a lemming's position might be a double, but when checking for collisions
+and storing the x/y pairs, you would want them to be integers.
+
+Declare function like this:
+getLinesPoints(lemming, angle, distance, thickness, collisionColors)
+The return value should be an array of x/y pairs of all pixels this line affected,
+that is, you don't actually draw anything.
+
+Only give me the new code, I don't need an explanation this time.
+
+>>>
+>>> HUMAN: the above is failing me due to gaps between lines, I will redo this using
+>>> rectangles instead. For posterity, the below was the "working code" it generated:
+>>>
+    // PROMPT NOTE: This is GPT4; it understood my prompt better than davinci-3.5-turbo
+    function getLinesPoints(lemming, angle, distance, thickness, collisionColors) {
+      let startX, startY;
+      let points = [];
+      let maxForgiveness = 4;
+      let angleRad = angle * (Math.PI / 180);
+
+      if (lemming.velX > 0) {
+        startX = lemming.x + lemming.width + BUILDER_LOOK_AHEAD;
+        startY = lemming.y + lemming.height;
+      } else {
+        startX = lemming.x - BUILDER_LOOK_AHEAD;
+        startY = lemming.y + lemming.height;
+      }
+
+      let endX = lemming.x + distance * Math.cos(angleRad);
+      let endY = lemming.y + distance * Math.sin(angleRad);
+
+      let dx = endX - startX;
+      let dy = endY - startY;
+      let stepX = Math.abs(dx) > Math.abs(dy) ? 1 : Math.abs(dx / dy);
+      let stepY = Math.abs(dy) > Math.abs(dx) ? 1 : Math.abs(dy / dx);
+
+      if (dx < 0) stepX = -stepX;
+      if (dy < 0) stepY = -stepY;
+
+      if(lemming.velX < 0) {
+        stepX = -stepX;
+      }
+
+      let x = startX;
+      let y = startY;
+
+      console.log("Line:", startX, startY, "->", endX, endY)
+
+      while (maxForgiveness >= 0) {
+        if (!isPixelOneOf(oldImgData, x, y, collisionColors)) {
+          break;
+        }
+        y--;
+        maxForgiveness--;
+      }
+
+      let thicknessCounter = 0;
+      let iterations = Math.ceil(Math.sqrt(dx * dx + dy * dy));
+
+      for (let i = 0; i < iterations; i++) {
+        if (x < 0 || y < 0 || x >= canvas.width || y >= canvas.height) {
+          break;
+        }
+
+        let wholeThickness = true;
+
+        for (let j = 0; j < thickness; j++) {
+          let offsetY = j * stepY;
+          let offsetX = j * stepX;
+          let tX = Math.round(x + offsetX);
+          let tY = Math.round(y + offsetY);
+
+          if (isPixelOneOf(oldImgData, tX, tY, collisionColors)) {
+            thicknessCounter++;
+          } else {
+            wholeThickness = false;
+            thicknessCounter = 0;
+            points.push({ x: tX, y: tY });
+            // debug:
+            setPixel(tX, tY, collisionColors[0]);
+          }
+
+          if (thicknessCounter === thickness) {
+            break;
+          }
+        }
+
+        if (wholeThickness) {
+          break;
+        }
+
+        x += stepX;
+        y += -stepY;
+      }
+
+      return points;
+    }
