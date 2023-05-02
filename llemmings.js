@@ -911,7 +911,7 @@ var Llemmings = (function () {
           lemming.framesNotDug = 0;
         }
 
-        if (lemming.actionStarted && lemming.framesNotDug > (3 / Math.abs(lemming.velX + lemming.velY))) {
+        if (lemming.actionStarted && lemming.framesNotDug > (3 / (Math.abs(lemming.velX) + Math.abs(lemming.velY)))) {
             console.log("basher done. not dug", lemming.framesNotDug);
             lemming.action = null;
             lemming.actionStarted = false;
