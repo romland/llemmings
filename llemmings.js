@@ -1092,14 +1092,14 @@ var Llemmings = (function () {
           continue;
         }
 
-        // TODO: Should check if we actually have the resource available.
-
         if(lemming.executedActions.includes(i)) {
           continue;
         }
   
         if(isPointWithinCircle(lx, ly, act.x, act.y, act.r) && GameUtils.matchesCondition(act.conditions, lemming)) {
-          lemming.action = act.action;
+          lemming.isSelected = true;
+          applyAction(act.action)
+          lemming.isSelected = false;
           lemming.executedActions.push(i);
           return true;
         }
@@ -1177,7 +1177,7 @@ var Llemmings = (function () {
   
       // Get the button element that was clicked
       // >>> Prompt: instructions/actions-resource-counter.0001.txt
-      const btn = document.activeElement;
+      const btn = document.querySelector(`[data-resource="${action}"]`);
       const countSpan = btn.querySelector('.count');
 
       if(levelData.resources[action] <= 0) {

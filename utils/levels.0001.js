@@ -203,13 +203,6 @@ var LlemmingsLevels = [
         "solution" : {
             [1] : [
                 {
-                    x: 185, y: 204, r: 3,
-                    conditions : [
-                        "velX > 0",
-                    ],
-                    action : "Builder"
-                },
-                {
                     x: 275, y: 177, r: 3,
                     conditions : [
                         "velX > 0",
@@ -250,12 +243,12 @@ var LlemmingsLevels = [
         "objects": [],
         "resources": {
             "lemmings": 15,
-            "Climber": 3,
+            "Climber": 0,
             "Floater": 0,
-            "Bomber": 2,
+            "Bomber": 1,
             "Blocker": 1,
-            "Builder": 4,
-            "Basher": 1,
+            "Builder": 1,
+            "Basher": 2,
             "Miner": 0,
             "Digger": 1
         },
