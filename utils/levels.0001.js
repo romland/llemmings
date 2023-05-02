@@ -126,7 +126,79 @@ var LlemmingsLevels = [
                         "y": 520
                     }
                 ]
-            }
+            },
+            {
+                "type": "draw",
+                "filled": false,
+                "color": "rgb(74, 46, 0)",
+                "lineWidth": 30,
+                "points": [
+                  {
+                    "x": 121,
+                    "y": 218
+                  },
+                  {
+                    "x": 122,
+                    "y": 215
+                  },
+                  {
+                    "x": 144,
+                    "y": 195
+                  },
+                  {
+                    "x": 161,
+                    "y": 188
+                  },
+                  {
+                    "x": 181,
+                    "y": 188
+                  },
+                  {
+                    "x": 188,
+                    "y": 190
+                  },
+                  {
+                    "x": 190,
+                    "y": 193
+                  },
+                  {
+                    "x": 193,
+                    "y": 193
+                  },
+                  {
+                    "x": 211,
+                    "y": 204
+                  },
+                  {
+                    "x": 235,
+                    "y": 206
+                  },
+                  {
+                    "x": 253,
+                    "y": 197
+                  },
+                  {
+                    "x": 287,
+                    "y": 193
+                  },
+                  {
+                    "x": 296,
+                    "y": 183
+                  },
+                  {
+                    "x": 298,
+                    "y": 177
+                  },
+                  {
+                    "x": 302,
+                    "y": 175
+                  },
+                  {
+                    "x": 309,
+                    "y": 175
+                  }
+                ]
+              }            
         ],
         "solution" : {
             [1] : [
@@ -138,32 +210,30 @@ var LlemmingsLevels = [
                     action : "Builder"
                 },
                 {
-                    x: 287, y: 185, r: 3,
+                    x: 275, y: 177, r: 3,
                     conditions : [
                         "velX > 0",
                     ],
-                    action : "Miner"
+                    action : "Basher"
                 },
                 {
-                    x: 399, y: 311, r: 3,
-                    action : "Bomber"
+                    x: 410, y: 243, r: 3,
+                    action : "Builder"
+                },
+                {
+                    x: 545, y: 278, r: 3,
+                    action : "Digger"
+                },
+                {
+                    x: 545, y: 431, r: 3,
+                    conditions : [
+                        "velX > 0",
+                    ],
+                    action : "Basher"
                 }
+
             ],
             [2] : [
-                {
-                    x: 383, y: 333, r: 3,
-                    action : "Builder",
-                },
-                {
-                    x: 449, y: 312, r: 3,
-                    action : "Basher",
-                },
-                {
-                    x: 462, y: 306, r: 3,
-                    action : "Basher",
-                },
-            ],
-            [3] : [
                 {
                     x: 164, y: 100, r: 3,
                     action : "Blocker",
@@ -171,17 +241,11 @@ var LlemmingsLevels = [
                 {
                     x: 164, y: 100, r: 3,
                     conditions : [
-                        "age > 6000",
+                        "age > 2600",
                     ],
                     action : "Bomber"
                 },
             ],
-            [13] : [
-                {
-                    x: 510, y: 333, r: 3,
-                    action : "Miner",
-                },
-            ]
         },
         "objects": [],
         "resources": {
