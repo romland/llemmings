@@ -508,6 +508,7 @@ var Llemmings = (function () {
         this.executedActions = [];    // for pre-programmed actions (i.e. solutions to level)
         this.standStillUntil = 0;
         this.standStillDirection = undefined;
+        this.bridgePixels = undefined;
   
         // Initialize these variables in the constructor or wherever appropriate
         this.legColor = "green";
@@ -1511,6 +1512,18 @@ var Llemmings = (function () {
       }
     }
 
+    function getLemmingsRemaining()
+    {
+      let remaining = 0;
+      for(let i = 0; i < lemmings.length; i++) {
+        if(lemmings[i].action !== "Blocker" && lemmings[i].isDead === false) {
+            remaining++;
+        }
+      }
+
+      return remaining;
+    }
+
     // >>> Prompt: instructions/main-loop.0001.txt
     function update() {
       if (isPaused) {
@@ -1549,12 +1562,21 @@ var Llemmings = (function () {
         if (lemming.rescued) {
           const index = lemmings.indexOf(lemming);
           lemmings.splice(index, 1);
-          scoreKeeper.incrementScore(1);
-          console.log(`Lemming ${lemming.id} reached the finish! Score: ${scoreKeeper.score}`);
-          // HUMAN TODO: Do some effect here (also sound)
+          scoreKeeper.addSavedLemmings(1);
+          scoreKeeper.addScore(100);
+          console.log(`Lemming ${lemming.id} reached the finish! Saved: ${scoreKeeper.getSavedLemmingsCount()} lemmings`);
+          // HUMAN TODO: Do some effect here (also sound?)
         }
 
         // HUMAN TODO: Game over / success check
+        if(getLemmingsRemaining() === 0) {
+          if(scoreKeeper.getSavedLemmingsCount() >= this.levelData.goal.survivors) {
+            console.log("Success! You beat the level");
+          } else {
+            console.log("Aww. Game over");
+          }
+        }
+
       });
   
       particles.forEach((particle) => {
@@ -1861,7 +1883,7 @@ var Llemmings = (function () {
       AudioSamples.createSamples(["BD-0.25"]);
 
       // Create an instance of the ScoreKeeper class
-      scoreKeeper = new GameUtils.ScoreKeeper(canvas, 0, levelData.goal.survivors, !levelData.ui.showScore);
+      scoreKeeper = new GameUtils.ScoreKeeper(canvas, levelData.goal.survivors, 0, !levelData.ui.showScore);
 
       // HUMAN: Pre-create lemmings -- we need this early to determine level failure/success
       createLemmings(levelData.resources.lemmings);

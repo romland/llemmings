@@ -66,10 +66,11 @@ var GameUtils = (function () {
 
     // >>> Prompt: instructions/score.0001.txt
     class ScoreKeeper {
-      constructor(canvas, initialScore = 0, initialTargetScore = 0, hidden = false) {
+      constructor(canvas, initialLemmingsToSave = 0, initialScore = 0, hidden = false) {
         this.hidden = hidden;
+        this.lemmingsSaved = 0;
+        this.targetLemmingsToSave = initialLemmingsToSave;
         this.score = initialScore;
-        this.targetScore = initialTargetScore;
         this.canvas = canvas;
         this.scoreElement = document.getElementById("goalTrackerDiv");
 
@@ -106,19 +107,29 @@ var GameUtils = (function () {
       }
     
       // Increment the score by a specified amount
-      incrementScore(amount) {
-        this.score += amount;
+      addSavedLemmings(amount) {
+        this.lemmingsSaved += amount;
         this.updateUI();
       }
 
-      setTargetScore(amount) {
-        this.targetScore = amount;
+      addScore(amount)
+      {
+        this.score += amount;
       }
-    
+
+      getSavedLemmingsCount()
+      {
+        return this.lemmingsSaved;
+      }
+
+      setLemmingsToSave(amount) {
+        this.targetLemmingsToSave = amount;
+      }
+  
       // Update the score UI element with the current score
       updateUI() {
         if(!this.hidden) {
-          this.scoreElement.innerHTML = `${this.score}/${this.targetScore}`;
+          this.scoreElement.innerHTML = `${this.lemmingsSaved}/${this.targetLemmingsToSave}`;
         }
       }
     }
