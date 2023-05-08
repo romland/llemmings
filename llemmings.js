@@ -1570,7 +1570,7 @@ var Llemmings = (function () {
 
         // HUMAN TODO: Game over / success check
         if(getLemmingsRemaining() === 0) {
-          if(scoreKeeper.getSavedLemmingsCount() >= this.levelData.goal.survivors) {
+          if(scoreKeeper.getSavedLemmingsCount() >= levelData.goal.survivors) {
             console.log("Success! You beat the level");
           } else {
             console.log("Aww. Game over");
