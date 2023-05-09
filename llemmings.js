@@ -70,7 +70,7 @@ var Llemmings = (function () {
     const persistedDefaults = {
       currentLevel : 1,
       currentLevelAttempts : 0,
-      overallScore : 0,
+      levelScores : [ 0 ],
     };
 
     // FPS related
@@ -78,6 +78,10 @@ var Llemmings = (function () {
     let frameInterval = 1000 / FPS; // Calculate the interval in milliseconds
     let lastFrameUpdate = 0;
     let elapsedLevelTime = 0;
+
+    // Fade
+    let canvasOpacity = 0;  // Initialize the opacity to 0
+    let canvasFadeDirection = null;
 
     // Create a new lemming and add it to the array of lemmings
     // HUMAN: This is just for easy testing for now.
@@ -1545,6 +1549,28 @@ var Llemmings = (function () {
       const data = localStorage.getItem(key);
       return deserialize(data);
     }
+
+    function fadeInCanvas() {
+      if(canvasOpacity >= 1) {
+        canvasOpacity = 1;
+        canvas.style.opacity = canvasOpacity;
+        canvasFadeDirection = null;
+        return;        
+      }
+      canvasOpacity += 0.01;
+      canvas.style.opacity = canvasOpacity;
+    }
+    
+    function fadeOutCanvas() {
+      if(canvasOpacity <= 0) {
+        canvasOpacity = 0;
+        canvas.style.opacity = canvasOpacity;
+        canvasFadeDirection = null;
+        return;        
+      }
+      canvasOpacity -= 0.01;
+      canvas.style.opacity = canvasOpacity;
+    }    
     
     function setupUI()
     {
@@ -1592,6 +1618,13 @@ var Llemmings = (function () {
 
       // Restore the background
       ctx.putImageData(background, 0, 0);
+
+      // Handle fading
+      if (canvasFadeDirection === "in") {
+        fadeInCanvas();
+      } else if (canvasFadeDirection === "out") {
+        fadeOutCanvas();
+      }
 
       if(playing) {
         // Update and draw each lemming
@@ -1761,6 +1794,8 @@ var Llemmings = (function () {
         cancelAnimationFrame(reqAnimFrameId);
         reqAnimFrameId = null;
 
+        TextEffectMorph.cleanUp();
+
         // Clear all intervals.
         const intervals = Object.values(gameIntervals);
         for(let i = 0; i < intervals.length; i++) {
@@ -1788,6 +1823,8 @@ var Llemmings = (function () {
 
         elapsedLevelTime = 0;
         playing = false;
+
+        canvasFadeDirection = null;
 
         // Clear some debug divs
         if(coordinatesDiv) {
@@ -1957,6 +1994,10 @@ var Llemmings = (function () {
   
     function start()
     {
+      canvasOpacity = 0;
+      canvas.style.opacity = canvasOpacity;
+      canvasFadeDirection = "in";
+
       playing = true;
       persisted.currentLevelAttempts++;
       saveToLocalStorage('persisted', persisted);
@@ -1968,12 +2009,26 @@ var Llemmings = (function () {
       gameIntervals["debugLemmingSpawner"] = setInterval(spawnLemming, levelData.spawnInterval);
     }
 
+    function getOverallScore()
+    {
+      return persisted.levelScores.reduce((partialSum, a) => partialSum + a, 0);
+    }
+
     // HUMAN TODO: Move this function
     function levelCompleted()
     {
       console.log("Success! You beat the level");
 
+      canvasFadeDirection = "out";
+
       // TODO here: A lot.
+
+      // scoreKeeper.addScore(100);
+
+      console.log("Level score:", scoreKeeper.getScore());
+
+      persisted.levelScores[persisted.currentLevel] = scoreKeeper.getScore();
+      persisted.currentLevel++;
 
       // Save to local storage
       saveToLocalStorage('persisted', persisted);
@@ -1991,6 +2046,9 @@ var Llemmings = (function () {
     {
       console.log("Aww. Game over");
 
+      canvasFadeDirection = "out";
+
+      TextEffectMorph.cleanUp();
       TextEffectMorph.init({
         text : "GAME OVER",
         placeOverCanvas:canvas,
@@ -2017,7 +2075,10 @@ var Llemmings = (function () {
 
       // init(document.getElementById('canvas'), { seed : null, resources : { lemmings : 150, Bomber : 99 } }, true);
       // init(document.getElementById('canvas'), { seed : 1682936781219 }, true);
-      init(document.getElementById('canvas'), LlemmingsLevels[persisted.currentLevel], true);
+      init(document.getElementById('canvas'), LlemmingsLevels[1], true);
+
+      // This is the "real" init with level progression
+      // init(document.getElementById('canvas'), LlemmingsLevels[persisted.currentLevel], true);
       start();
     }
 

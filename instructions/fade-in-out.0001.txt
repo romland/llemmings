@@ -1,0 +1,10 @@
+Given a canvas and requestAnimationFrame(update).
+
+Give me functions to fade in and out HTML element "canvas" on command
+from update(). The command is a global variable called "fade" which 
+can contain "in", "out", or null.
+
+You have the following timing variables available:
+lastFrameUpdate = currentTime - (currentTime % frameInterval);
+
+I don't need explanation this time, just give me the code.
