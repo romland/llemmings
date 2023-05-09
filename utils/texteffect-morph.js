@@ -55,8 +55,8 @@ var TextEffectMorph = (function () {
             offsetY : givenSettings.offsetY || (givenSettings.placeOverCanvas.height / 2) - (40 / 2),
             font : givenSettings.font || "Arial",
             fontSize : givenSettings.fontSize || 40,
-            speed : givenSettings.speed || 1.7,
-            pause : givenSettings.pause || 120,               // num frames
+            speed : givenSettings.speed || 4,
+            pause : givenSettings.pause || 40,               // num frames
             morphOut : givenSettings.morphOut || true,
             onAnimationDone : null,    // called when animation is done
         }

@@ -24,7 +24,7 @@ var Llemmings = (function () {
     const gameIntervals = {};
 
     // World settings
-    const GRAVITY = 0.03; // Adjust this until falling looks good
+    const GRAVITY = 0.08; // Adjust this until falling looks good
     let particles = [];
     let lastLemmingId = 0;
   
@@ -71,6 +71,11 @@ var Llemmings = (function () {
       currentLevelAttempts : 0,
       overallScore : 0,
     };
+
+    // FPS related
+    const FPS = 60; // Set the desired FPS
+    let frameInterval = 1000 / FPS; // Calculate the interval in milliseconds
+    let lastFrameUpdate = 0;
 
     // Create a new lemming and add it to the array of lemmings
     // HUMAN: This is just for easy testing for now.
@@ -502,8 +507,8 @@ var Llemmings = (function () {
         this.age = 0;
         this.width = 10;
         this.height = 20;
-        this.maxVelX = 0.2;
-        this.deadlyVelY = 3;
+        this.maxVelX = 0.4;
+        this.deadlyVelY = 4.5;
         this.x = x;
         this.y = y;
         this.velX = 0;
@@ -1039,7 +1044,7 @@ var Llemmings = (function () {
   
         if (lemming.bridgePixels.length === 0) {
             lemming.bridgePixels = null;
-            lemming.standStillUntil = lemming.age + 120;
+            lemming.standStillUntil = lemming.age + 60;
             lemming.standStillDirection = lemming.velX;
             lemming.action = null;
             lemming.actionStarted = false;
@@ -1563,12 +1568,25 @@ var Llemmings = (function () {
       return remaining;
     }
 
+
     // >>> Prompt: instructions/main-loop.0001.txt
+    // >>> Prompt: instructions/main-loop.0002.txt
+    // >>> Prompt: instructions/main-loop.0003.txt (throttling)
     function update() {
       if (isPaused) {
         reqAnimFrameId = requestAnimationFrame(update);
         return;
       }
+
+      let currentTime = performance.now();
+
+      if (currentTime - lastFrameUpdate <= frameInterval) {
+        reqAnimFrameId = requestAnimationFrame(update);
+        return;
+      }
+
+      lastFrameUpdate = currentTime - (currentTime % frameInterval);
+
       // Restore the background
       ctx.putImageData(background, 0, 0);
   
@@ -1974,9 +1992,9 @@ var Llemmings = (function () {
       }
       console.log("Loaded persisted data...", persisted);
 
-      // Llemmings.init(document.getElementById('canvas'), { seed : null, resources : { lemmings : 150, Bomber : 99 } }, true);
+      // init(document.getElementById('canvas'), { seed : null, resources : { lemmings : 150, Bomber : 99 } }, true);
+      // init(document.getElementById('canvas'), { seed : 1682936781219 }, true);
       init(document.getElementById('canvas'), LlemmingsLevels[persisted.currentLevel], true);
-      // Llemmings.init(document.getElementById('canvas'), { seed : 1682936781219 }, true);
       start();
     }
 

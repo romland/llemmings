@@ -1,0 +1,8 @@
+Given javascript and the snippet requestAnimationFrame(update)
+Give me code on how to throttle the update() function to a fixed FPS. Do
+not add any new arguments to the update() function. 
+
+Use high precision timer.
+Declare and initialize all variables needed.
+
+I don't need explanation this time, just give me the code.

@@ -234,7 +234,7 @@ var LlemmingsLevels = [
                 {
                     x: 164, y: 100, r: 3,
                     conditions : [
-                        "age > 2600",
+                        "age > 1400",
                     ],
                     action : "Bomber"
                 },
