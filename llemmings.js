@@ -61,6 +61,7 @@ var Llemmings = (function () {
     let scoreKeeper = null;
     let doneSpawning = false;
     let playing = false;
+    let levelDataResources = null;
 
     // Human: scoreKeeper keeps track of score for current level, this will keep
     //        track of it between levels -- it gets updated only on completion or 
@@ -1209,14 +1210,14 @@ var Llemmings = (function () {
       const btn = document.querySelector(`[data-resource="${action}"]`);
       const countSpan = btn.querySelector('.count');
 
-      if(levelData.resources[action] <= 0) {
+      if(levelDataResources[action] <= 0) {
         console.log("out of resource", action);
         return;
       }
 
       // Consume resource, update UI
-      levelData.resources[action]--;
-      countSpan.innerText = levelData.resources[action];
+      levelDataResources[action]--;
+      countSpan.innerText = levelDataResources[action];
 
       switch (action) {
         case 'Climber':
@@ -1580,7 +1581,7 @@ var Llemmings = (function () {
         return;
       }
       for(let span of spans) {
-        span.innerHTML = levelData.resources[span.parentElement.getAttribute("data-resource")]
+        span.innerHTML = levelDataResources[span.parentElement.getAttribute("data-resource")]
       }
     }
 
@@ -1608,7 +1609,7 @@ var Llemmings = (function () {
 
       let currentTime = performance.now();
 
-      if (currentTime - lastFrameUpdate <= frameInterval) {
+      if (currentTime - lastFrameUpdate < frameInterval) {
         reqAnimFrameId = requestAnimationFrame(update);
         return;
       }
@@ -1680,7 +1681,7 @@ var Llemmings = (function () {
       }
   
       // Game over / success check
-      if(playing && ((levelData.resources.time - elapsedLevelTime) <= 0 || getLemmingsRemaining() === 0)) {
+      if(playing && ((levelDataResources.time - elapsedLevelTime) <= 0 || getLemmingsRemaining() === 0)) {
         playing = false;
         if(scoreKeeper.getSavedLemmingsCount() >= levelData.goal.survivors) {
           levelCompleted();
@@ -1812,7 +1813,7 @@ var Llemmings = (function () {
 
         // clear map noise
         mapNoiseHash.length = 0;
-        
+
         // clear canvas
         ctx.clearRect(0, 0, canvas.width, canvas.height);
 
@@ -1825,6 +1826,8 @@ var Llemmings = (function () {
         playing = false;
 
         canvasFadeDirection = null;
+
+        levelDataResources = null;
 
         // Clear some debug divs
         if(coordinatesDiv) {
@@ -1914,6 +1917,8 @@ var Llemmings = (function () {
         finish : givenLevel.finish || { x : 750, y : 500, clear: true },
       }
 
+      levelDataResources = { ...levelData.resources };
+
       setupUI();
 
       console.log("Current seed: ", levelData.seed);
@@ -1989,7 +1994,7 @@ var Llemmings = (function () {
       scoreKeeper = new GameUtils.ScoreKeeper(canvas, levelData.goal.survivors, 0, !levelData.ui.showScore);
 
       // HUMAN: Pre-create lemmings -- we need this early to determine level failure/success
-      createLemmings(levelData.resources.lemmings);
+      createLemmings(levelDataResources.lemmings);
     }
   
     function start()
