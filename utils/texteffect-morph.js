@@ -75,7 +75,9 @@ var TextEffectMorph = (function () {
     // Human: Added when glueing things together.
     function cleanUp()
     {
+        console.log("Cleaning up morph");
         waitFrames = 0;
+        scenesDone = 0;
         initialized = false;
         ctx = null;
         canvas.remove();
@@ -153,7 +155,7 @@ var TextEffectMorph = (function () {
         particles = pixelPositions.map(position => {
             const particle = {
                 x: Math.random() * canvas.width,
-                y: Math.random() >= 0.5 ? canvas.height : 0,
+                y: Math.random() >= 0.5 ? canvas.height : -2,
                 destX: position.x,
                 destY: position.y,
                 speed: Math.random() * 1.0 + settings.speed,
@@ -205,10 +207,13 @@ var TextEffectMorph = (function () {
             const dx = particle.destX - particle.x;
             const dy = particle.destY - particle.y;
             const distance = Math.sqrt(dx * dx + dy * dy);
-            if (distance < 2 || particle.x < 0 || particle.x > canvas.width || particle.y < 0 || particle.y > canvas.height) {
+            if (distance < 4 || particle.x < 0 || particle.x > canvas.width || particle.y < 0 || particle.y > canvas.height) {
                 particle.vx = 0;
                 particle.vy = 0;
                 activeParticles--;
+
+                particle.x = particle.destX;
+                particle.y = particle.destY;
             }
 
             drawParticle(particle);
@@ -225,7 +230,7 @@ var TextEffectMorph = (function () {
             waitFrames = settings.pause;
             particles.forEach(particle => {
                 particle.destX = Math.random() * canvas.width;
-                particle.destY = Math.random() >= 0.5 ? canvas.height + 1 : -1;
+                particle.destY = Math.random() >= 0.5 ? canvas.height + 1 : -2;
                 const dx = particle.destX - particle.x;
                 const dy = particle.destY - particle.y;
                 particle.angle = Math.atan2(dy, dx);
