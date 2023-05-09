@@ -1610,15 +1610,9 @@ var Llemmings = (function () {
         // HUMAN TODO: Game over / success check
         if(getLemmingsRemaining() === 0) {
           if(scoreKeeper.getSavedLemmingsCount() >= levelData.goal.survivors) {
-            console.log("Success! You beat the level");
-
-            // TODO here: A lot.
-
-            // Save to local storage
-            saveToLocalStorage('persisted', persisted);
-
+            levelCompleted();
           } else {
-            console.log("Aww. Game over");
+            levelFailed();
           }
         }
 
@@ -1834,6 +1828,7 @@ var Llemmings = (function () {
         spawnInterval : givenLevel.spawnInterval || 100,
         resources : {
             lemmings : givenLevel.resources?.lemmings || 5,
+            time : givenLevel.resources?.time || 120,
 
             Climber : givenLevel.resources?.Climber || 0,
             Floater : givenLevel.resources?.Floater || 0,
@@ -1945,6 +1940,24 @@ var Llemmings = (function () {
       // Spawn a new lemming every interval
       gameIntervals["debugLemmingSpawner"] = setInterval(spawnLemming, levelData.spawnInterval);
     }
+
+    // HUMAN TODO: Move this function
+    function levelCompleted()
+    {
+      console.log("Success! You beat the level");
+
+      // TODO here: A lot.
+
+      // Save to local storage
+      saveToLocalStorage('persisted', persisted);
+    }
+
+    // HUMAN TODO: Move this function
+    function levelFailed()
+    {
+      console.log("Aww. Game over");
+    }
+
 
     /**
      * Human: This is the entry point when page is loaded/refreshed.

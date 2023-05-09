@@ -243,6 +243,7 @@ var LlemmingsLevels = [
         "objects": [],
         "resources": {
             "lemmings": 15,
+            "time": 120,
             "Climber": 0,
             "Floater": 0,
             "Bomber": 1,
