@@ -117,6 +117,11 @@ var GameUtils = (function () {
         this.score += amount;
       }
 
+      getScore()
+      {
+        return this.score;
+      }
+
       getSavedLemmingsCount()
       {
         return this.lemmingsSaved;
