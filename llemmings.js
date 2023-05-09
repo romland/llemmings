@@ -60,6 +60,7 @@ var Llemmings = (function () {
     let levelData;
     let scoreKeeper = null;
     let doneSpawning = false;
+    let playing = false;
 
     // Human: scoreKeeper keeps track of score for current level, this will keep
     //        track of it between levels -- it gets updated only on completion or 
@@ -76,6 +77,7 @@ var Llemmings = (function () {
     const FPS = 60; // Set the desired FPS
     let frameInterval = 1000 / FPS; // Calculate the interval in milliseconds
     let lastFrameUpdate = 0;
+    let elapsedLevelTime = 0;
 
     // Create a new lemming and add it to the array of lemmings
     // HUMAN: This is just for easy testing for now.
@@ -1586,55 +1588,48 @@ var Llemmings = (function () {
       }
 
       lastFrameUpdate = currentTime - (currentTime % frameInterval);
+      elapsedLevelTime += frameInterval;
 
       // Restore the background
       ctx.putImageData(background, 0, 0);
-  
-      // Update and draw each lemming
-      lemmings.forEach((lemming) => {
-        lemming.update();
-        lemming.draw();
-        
-        // HUMAN: There can be multiple lemmings selected, only the last one will be visible to us
-        if (__DEBUG__) {
-          if(lemming.isSelected) {
-            updateInfoDiv(lemming);
+
+      if(playing) {
+        // Update and draw each lemming
+        lemmings.forEach((lemming) => {
+          lemming.update();
+          lemming.draw();
+          
+          // HUMAN: There can be multiple lemmings selected, only the last one will be visible to us
+          if (__DEBUG__) {
+            if(lemming.isSelected) {
+              updateInfoDiv(lemming);
+            }
           }
-        }
-  
-        if (lemming.isDead) {
-          // Remove dead lemmings from the array as optimization
-          const index = lemmings.indexOf(lemming);
-          lemmings.splice(index, 1);
+    
+          if (lemming.isDead) {
+            // Remove dead lemmings from the array as optimization
+            const index = lemmings.indexOf(lemming);
+            lemmings.splice(index, 1);
 
-          for(let i = 0; i < 50; i++) {
-            // I cheated and added this color variation myself. :/ 
-            const p = new Particle(lemming.x + Math.random() * 20 - 10, lemming.y + Math.random() * 20 - 10);
-            p.color = i < 20 ? "#55ff55" : "#5555ff";
-            particles.push(p);
+            for(let i = 0; i < 50; i++) {
+              // I cheated and added this color variation myself. :/ 
+              const p = new Particle(lemming.x + Math.random() * 20 - 10, lemming.y + Math.random() * 20 - 10);
+              p.color = i < 20 ? "#55ff55" : "#5555ff";
+              particles.push(p);
+            }
           }
-        }
 
-        // >>> Prompt: instructions/score.0001.txt
-        if (lemming.rescued) {
-          const index = lemmings.indexOf(lemming);
-          lemmings.splice(index, 1);
-          scoreKeeper.addSavedLemmings(1);
-          scoreKeeper.addScore(100);
-          console.log(`Lemming ${lemming.id} reached the finish! Saved: ${scoreKeeper.getSavedLemmingsCount()} lemmings`);
-          // HUMAN TODO: Do some effect here (also sound?)
-        }
-
-        // HUMAN TODO: Game over / success check
-        if(getLemmingsRemaining() === 0) {
-          if(scoreKeeper.getSavedLemmingsCount() >= levelData.goal.survivors) {
-            levelCompleted();
-          } else {
-            levelFailed();
+          // >>> Prompt: instructions/score.0001.txt
+          if (lemming.rescued) {
+            const index = lemmings.indexOf(lemming);
+            lemmings.splice(index, 1);
+            scoreKeeper.addSavedLemmings(1);
+            scoreKeeper.addScore(100);
+            console.log(`Lemming ${lemming.id} reached the finish! Saved: ${scoreKeeper.getSavedLemmingsCount()} lemmings`);
+            // HUMAN TODO: Do some effect here (also sound?)
           }
-        }
-
-      });
+        });
+      }
   
       particles.forEach((particle) => {
           particle.update();
@@ -1651,6 +1646,16 @@ var Llemmings = (function () {
         fx[1]();
       }
   
+      // Game over / success check
+      if(playing && ((levelData.resources.time - elapsedLevelTime) <= 0 || getLemmingsRemaining() === 0)) {
+        playing = false;
+        if(scoreKeeper.getSavedLemmingsCount() >= levelData.goal.survivors) {
+          levelCompleted();
+        } else {
+          levelFailed();
+        }
+      }
+
       // Schedule the next frame
       reqAnimFrameId = requestAnimationFrame(update);
     }
@@ -1781,6 +1786,9 @@ var Llemmings = (function () {
         // Unpause
         isPaused = false;
 
+        elapsedLevelTime = 0;
+        playing = false;
+
         // Clear some debug divs
         if(coordinatesDiv) {
           coordinatesDiv.innerHTML = "";
@@ -1846,7 +1854,7 @@ var Llemmings = (function () {
         spawnInterval : givenLevel.spawnInterval || 100,
         resources : {
             lemmings : givenLevel.resources?.lemmings || 5,
-            time : givenLevel.resources?.time || 120,
+            time : givenLevel.resources?.time || 120 * 1000,
 
             Climber : givenLevel.resources?.Climber || 0,
             Floater : givenLevel.resources?.Floater || 0,
@@ -1949,6 +1957,7 @@ var Llemmings = (function () {
   
     function start()
     {
+      playing = true;
       persisted.currentLevelAttempts++;
       saveToLocalStorage('persisted', persisted);
 
@@ -1968,12 +1977,26 @@ var Llemmings = (function () {
 
       // Save to local storage
       saveToLocalStorage('persisted', persisted);
+
+      TextEffectMorph.init({
+        text : "SUCCESS!",
+        placeOverCanvas:canvas,
+        onAnimationDone: () => effectsToUpdate.delete("TextEffectMorph")
+      });
+      effectsToUpdate.set("TextEffectMorph", TextEffectMorph.update);
     }
 
     // HUMAN TODO: Move this function
     function levelFailed()
     {
       console.log("Aww. Game over");
+
+      TextEffectMorph.init({
+        text : "GAME OVER",
+        placeOverCanvas:canvas,
+        onAnimationDone: () => effectsToUpdate.delete("TextEffectMorph")
+      });
+      effectsToUpdate.set("TextEffectMorph", TextEffectMorph.update);
     }
 
 
