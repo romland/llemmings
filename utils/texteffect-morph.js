@@ -40,6 +40,10 @@ var TextEffectMorph = (function () {
 
     function init(givenSettings)
     {
+        if(initialized) {
+            throw "an instance of TextEffectMorph is already running"
+        }
+
         if(!givenSettings.placeOverCanvas) {
             throw "missing mandatory placeOverCanvas";
         }
