@@ -80,7 +80,9 @@ var TextEffectMorph = (function () {
         scenesDone = 0;
         initialized = false;
         ctx = null;
-        canvas.remove();
+        if(canvas) {
+            canvas.remove();
+        }
         canvas = null;
         pixelPositions.length = 0;
         particles.length = 0;
@@ -244,6 +246,7 @@ var TextEffectMorph = (function () {
 
     return {
         init : init,
-        update : update
+        update : update,
+        cleanUp : cleanUp
     }
 })();
