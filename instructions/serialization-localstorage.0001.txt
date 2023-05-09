@@ -1,0 +1,11 @@
+Given client-side javascript and this snippet:
+    let persisted = {
+      currentLevel : 1,
+      currentLevelAttempts : 0,
+      overallScore : 0,
+    }
+
+I want functions for serializing and deserializing the contents of that variable
+in local storage. All code should be in aptly named functions.
+
+This time I don't need explanation, just the code.

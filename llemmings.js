@@ -61,6 +61,17 @@ var Llemmings = (function () {
     let scoreKeeper = null;
     let doneSpawning = false;
 
+    // Human: scoreKeeper keeps track of score for current level, this will keep
+    //        track of it between levels -- it gets updated only on completion or 
+    //        failure of a level.
+    // >>> Prompt: instructions/serialization-localstorage.0001.txt
+    let persisted = null;
+    const persistedDefaults = {
+      currentLevel : 1,
+      currentLevelAttempts : 0,
+      overallScore : 0,
+    };
+
     // Create a new lemming and add it to the array of lemmings
     // HUMAN: This is just for easy testing for now.
     // HUMAN: This could be used to 'cheat' as this method will only be called
@@ -774,6 +785,12 @@ var Llemmings = (function () {
             this.y += this.velY;
         }
         this.age++;
+
+        // HUMAN: Testing "beating level"
+        if(false && this.age === 1) {
+          this.x = 650;
+          this.y = 455;
+        }
 
       }
     }
@@ -1499,7 +1516,29 @@ var Llemmings = (function () {
     function setBackgroundBuffer() {
       background = ctx.getImageData(0, 0, canvas.width, canvas.height);
     }
- 
+
+    // >>> Prompt: instructions/serialization-localstorage.0001.txt
+    function serialize(data) {
+      return JSON.stringify(data);
+    }
+    
+    // >>> Prompt: instructions/serialization-localstorage.0001.txt
+    function deserialize(data) {
+      return JSON.parse(data);
+    }
+    
+    // >>> Prompt: instructions/serialization-localstorage.0001.txt
+    function saveToLocalStorage(key, data) {
+      const serializedData = serialize(data);
+      localStorage.setItem(key, serializedData);
+    }
+    
+    // >>> Prompt: instructions/serialization-localstorage.0001.txt
+    function getFromLocalStorage(key) {
+      const data = localStorage.getItem(key);
+      return deserialize(data);
+    }
+    
     function setupUI()
     {
       // Update resource-count on the HTML buttons
@@ -1572,6 +1611,12 @@ var Llemmings = (function () {
         if(getLemmingsRemaining() === 0) {
           if(scoreKeeper.getSavedLemmingsCount() >= levelData.goal.survivors) {
             console.log("Success! You beat the level");
+
+            // TODO here: A lot.
+
+            // Save to local storage
+            saveToLocalStorage('persisted', persisted);
+
           } else {
             console.log("Aww. Game over");
           }
@@ -1891,12 +1936,38 @@ var Llemmings = (function () {
   
     function start()
     {
+      persisted.currentLevelAttempts++;
+      saveToLocalStorage('persisted', persisted);
+
       // Start the update loop
       reqAnimFrameId = update();
   
       // Spawn a new lemming every interval
       gameIntervals["debugLemmingSpawner"] = setInterval(spawnLemming, levelData.spawnInterval);
     }
+
+    /**
+     * Human: This is the entry point when page is loaded/refreshed.
+     */
+    function runOnce()
+    {
+      // Retrieve from local storage
+      let tmpPersisted = getFromLocalStorage('persisted');
+      if(!tmpPersisted) {
+        console.log("No persisted data, setting to default");
+        persisted = { ...persistedDefaults };
+      } else {
+        persisted = tmpPersisted;
+      }
+      console.log("Loaded persisted data...", persisted);
+
+      // Llemmings.init(document.getElementById('canvas'), { seed : null, resources : { lemmings : 150, Bomber : 99 } }, true);
+      init(document.getElementById('canvas'), LlemmingsLevels[persisted.currentLevel], true);
+      // Llemmings.init(document.getElementById('canvas'), { seed : 1682936781219 }, true);
+      start();
+    }
+
+    runOnce();
 
     return {
       getSeed : () => { return levelData.seed; },
@@ -1909,4 +1980,3 @@ var Llemmings = (function () {
       drawShapes : drawShapes,
     }
   })();
-  
