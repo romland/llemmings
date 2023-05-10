@@ -2115,7 +2115,7 @@ var Llemmings = (function () {
       // Retrieve from local storage
       let tmpPersisted = getFromLocalStorage('persisted');
 
-      if(resetLocalStorage) {
+      if(resetLocalStorage || !persisted.levelScores) {
         console.warn("Resetting local storage. It was: ", tmpPersisted);
         tmpPersisted = null;
       }
