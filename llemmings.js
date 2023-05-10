@@ -1573,6 +1573,87 @@ var Llemmings = (function () {
       canvas.style.opacity = canvasOpacity;
     }    
     
+    function getOverallScore()
+    {
+      return persisted.levelScores.reduce((partialSum, a) => partialSum + a, 0);
+    }
+
+    // HUMAN TODO: Move this function
+    function levelCompleted()
+    {
+      console.log("Success! You beat the level");
+
+      canvasFadeDirection = "out";
+
+      //
+      // Completion bonuses
+      //
+
+      // ...extra lemmings
+      const extraLemmings = scoreKeeper.getSavedLemmings() - levelData.goal.survivors;
+      if(extraLemmings > 0) {
+        scoreKeeper.addScore( extraLemmings * 100, "More lemmings" );
+      }
+
+      // ...extra resources
+      scoreKeeper.addScore(levelDataResources["Climber"] * 50, "Climbing");
+      scoreKeeper.addScore(levelDataResources["Floater"] * 50, "Floating");
+      scoreKeeper.addScore(levelDataResources["Bomber"] * 50, "Bombing");
+      scoreKeeper.addScore(levelDataResources["Blocker"] * 50, "Blocking");
+      scoreKeeper.addScore(levelDataResources["Builder"] * 50, "Building");
+      scoreKeeper.addScore(levelDataResources["Basher"] * 50, "Bashing");
+      scoreKeeper.addScore(levelDataResources["Miner"] * 50, "Mining");
+      scoreKeeper.addScore(levelDataResources["Digger"] * 50, "Digging");
+
+      // ...number of attempts needed
+      switch(persisted.currentLevelAttempts) {
+        case 3 : scoreKeeper.addScore(125, "Attempts 1"); break;
+        case 2 : scoreKeeper.addScore(250, "Attempts 2"); break;
+        case 1 : scoreKeeper.addScore(500, "Attempts 3"); break;
+      }
+
+      // ...time bonus (seconds remaining * 10)
+      scoreKeeper.addScore((levelData.resources.time - elapsedLevelTime) / 100, "Time");
+
+      // Store the score for the level (so that it can be improved at a later date)
+      persisted.levelScores[levelData.level] = scoreKeeper.getScore();
+
+      console.log("Level score:", scoreKeeper.getScore());
+      console.log("Overall score:", getOverallScore());
+
+      if(levelData.level === persisted.currentLevel) {
+        persisted.currentLevel++;
+      } else {
+        console.warn("Not adding to currentLevel as levelData.level does not match persisted.currentLevel (probably dev-mode)");
+      }
+
+      // Save to local storage
+      saveToLocalStorage('persisted', persisted);
+
+      TextEffectMorph.init({
+        text : "SUCCESS!",
+        placeOverCanvas:canvas,
+        onAnimationDone: () => effectsToUpdate.delete("TextEffectMorph")
+      });
+      effectsToUpdate.set("TextEffectMorph", TextEffectMorph.update);
+    }
+
+    // HUMAN TODO: Move this function
+    function levelFailed()
+    {
+      console.log("Aww. Game over");
+
+      canvasFadeDirection = "out";
+
+      TextEffectMorph.cleanUp();
+      TextEffectMorph.init({
+        text : "GAME OVER",
+        placeOverCanvas:canvas,
+        onAnimationDone: () => effectsToUpdate.delete("TextEffectMorph")
+      });
+      effectsToUpdate.set("TextEffectMorph", TextEffectMorph.update);
+    }
+
     function setupUI()
     {
       // Update resource-count on the HTML buttons
@@ -1646,7 +1727,7 @@ var Llemmings = (function () {
             lemmings.splice(index, 1);
 
             for(let i = 0; i < 50; i++) {
-              // I cheated and added this color variation myself. :/ 
+              // Human: I cheated and added this color variation myself. :/ 
               const p = new Particle(lemming.x + Math.random() * 20 - 10, lemming.y + Math.random() * 20 - 10);
               p.color = i < 20 ? "#55ff55" : "#5555ff";
               particles.push(p);
@@ -1658,7 +1739,7 @@ var Llemmings = (function () {
             const index = lemmings.indexOf(lemming);
             lemmings.splice(index, 1);
             scoreKeeper.addSavedLemmings(1);
-            scoreKeeper.addScore(100);
+            scoreKeeper.addScore(100, "Saved lemming");
             console.log(`Lemming ${lemming.id} reached the finish! Saved: ${scoreKeeper.getSavedLemmingsCount()} lemmings`);
             // HUMAN TODO: Do some effect here (also sound?)
           }
@@ -2014,62 +2095,19 @@ var Llemmings = (function () {
       gameIntervals["debugLemmingSpawner"] = setInterval(spawnLemming, levelData.spawnInterval);
     }
 
-    function getOverallScore()
-    {
-      return persisted.levelScores.reduce((partialSum, a) => partialSum + a, 0);
-    }
-
-    // HUMAN TODO: Move this function
-    function levelCompleted()
-    {
-      console.log("Success! You beat the level");
-
-      canvasFadeDirection = "out";
-
-      // TODO here: A lot.
-
-      // scoreKeeper.addScore(100);
-
-      console.log("Level score:", scoreKeeper.getScore());
-
-      persisted.levelScores[persisted.currentLevel] = scoreKeeper.getScore();
-      persisted.currentLevel++;
-
-      // Save to local storage
-      saveToLocalStorage('persisted', persisted);
-
-      TextEffectMorph.init({
-        text : "SUCCESS!",
-        placeOverCanvas:canvas,
-        onAnimationDone: () => effectsToUpdate.delete("TextEffectMorph")
-      });
-      effectsToUpdate.set("TextEffectMorph", TextEffectMorph.update);
-    }
-
-    // HUMAN TODO: Move this function
-    function levelFailed()
-    {
-      console.log("Aww. Game over");
-
-      canvasFadeDirection = "out";
-
-      TextEffectMorph.cleanUp();
-      TextEffectMorph.init({
-        text : "GAME OVER",
-        placeOverCanvas:canvas,
-        onAnimationDone: () => effectsToUpdate.delete("TextEffectMorph")
-      });
-      effectsToUpdate.set("TextEffectMorph", TextEffectMorph.update);
-    }
-
-
     /**
      * Human: This is the entry point when page is loaded/refreshed.
      */
-    function runOnce()
+    function runOnce(resetLocalStorage = false)
     {
       // Retrieve from local storage
       let tmpPersisted = getFromLocalStorage('persisted');
+
+      if(resetLocalStorage) {
+        console.warn("Resetting local storage. It was: ", tmpPersisted);
+        tmpPersisted = null;
+      }
+
       if(!tmpPersisted) {
         console.log("No persisted data, setting to default");
         persisted = { ...persistedDefaults };
@@ -2087,7 +2125,7 @@ var Llemmings = (function () {
       start();
     }
 
-    runOnce();
+    runOnce(false);
 
     return {
       getSeed : () => { return levelData.seed; },

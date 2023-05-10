@@ -112,9 +112,15 @@ var GameUtils = (function () {
         this.updateUI();
       }
 
-      addScore(amount)
+      getSavedLemmings()
       {
-        this.score += amount;
+        return this.lemmingsSaved;
+      }
+
+      addScore(amount, label)
+      {
+        console.log("Adding score", label, Math.round(amount));
+        this.score += Math.round(amount);
       }
 
       getScore()
