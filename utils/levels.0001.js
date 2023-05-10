@@ -2,6 +2,9 @@ var LlemmingsLevels = [
     {
         // Level 0 is all defaults with random seed.
         // Note that the defaults may be different in game and editor.
+        "level" : 0,
+        "name" : "Intro",
+        "seed" : 49153,
     },
     {
         "level": 1,

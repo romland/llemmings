@@ -457,6 +457,14 @@ var Llemmings = (function () {
               context.stroke();
             }
             break;
+
+          case "text":
+            context.font = shape.fontSize + "px " + shape.fontName;
+            context.fillStyle = shape.color;
+            context.textBaseline = shape.textBaseline;
+            context.fillText(shape.string, shape.x, shape.y);
+            break;
+
         }
       }
     }

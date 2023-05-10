@@ -1,0 +1,6 @@
+Given a HTML 2D canvas context (variable called context) I need to get the width 
+and height of a string using variable font and font-size.
+
+Give it to me as a function.
+
+I don't need an explanation this time. Just give me the code.
