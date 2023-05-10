@@ -1745,7 +1745,7 @@ var Llemmings = (function () {
           }
         });
       }
-  
+
       particles.forEach((particle) => {
           particle.update();
           particle.draw();
@@ -1760,7 +1760,7 @@ var Llemmings = (function () {
       for(let fx of effectsToUpdate) {
         fx[1]();
       }
-  
+
       // Game over / success check
       if(playing && ((levelDataResources.time - elapsedLevelTime) <= 0 || getLemmingsRemaining() === 0)) {
         playing = false;
@@ -2058,16 +2058,6 @@ var Llemmings = (function () {
         startCanvasEventListeners();
       }
 
-      if (__DEBUG__) {
-        // Human: This is just for testing the morph text effect (debug more or less)
-        TextEffectMorph.init({
-          text : "RESCUE " + levelData.goal.survivors,
-          placeOverCanvas:canvas,
-          onAnimationDone: () => effectsToUpdate.delete("TextEffectMorph")
-        });
-        effectsToUpdate.set("TextEffectMorph", TextEffectMorph.update);
-      }
-
       // Create sound effects
       AudioSamples.createSamples(["BD-0.25"]);
 
@@ -2076,23 +2066,45 @@ var Llemmings = (function () {
 
       // HUMAN: Pre-create lemmings -- we need this early to determine level failure/success
       createLemmings(levelDataResources.lemmings);
+
+      // Start the update loop
+      reqAnimFrameId = update();
     }
-  
-    function start()
+ 
+    function preStart()
     {
       canvasOpacity = 0;
       canvas.style.opacity = canvasOpacity;
       canvasFadeDirection = "in";
 
-      playing = true;
+      if (false && __DEBUG__) {
+        // Skip level-intro
+        start();
+      } else {
+        // Human: This is just for testing the morph text effect (debug more or less)
+        TextEffectMorph.init({
+          text : "RESCUE " + levelData.goal.survivors,
+          placeOverCanvas:canvas,
+          onAnimationDone: () => {
+            effectsToUpdate.delete("TextEffectMorph");
+            start();
+          }
+        });
+        effectsToUpdate.set("TextEffectMorph", TextEffectMorph.update);
+      }
+    }
+
+    
+    function start()
+    {
       persisted.currentLevelAttempts++;
       saveToLocalStorage('persisted', persisted);
 
-      // Start the update loop
-      reqAnimFrameId = update();
-  
       // Spawn a new lemming every interval
       gameIntervals["debugLemmingSpawner"] = setInterval(spawnLemming, levelData.spawnInterval);
+      
+      playing = true;
+      console.log("Starting level", levelData.level);
     }
 
     /**
@@ -2122,7 +2134,9 @@ var Llemmings = (function () {
 
       // This is the "real" init with level progression
       // init(document.getElementById('canvas'), LlemmingsLevels[persisted.currentLevel], true);
-      start();
+
+      // start();
+      preStart();
     }
 
     runOnce(false);

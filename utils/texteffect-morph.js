@@ -58,7 +58,7 @@ var TextEffectMorph = (function () {
             speed : givenSettings.speed || 4,
             pause : givenSettings.pause || 40,               // num frames
             morphOut : givenSettings.morphOut || true,
-            onAnimationDone : null,    // called when animation is done
+            onAnimationDone : givenSettings.onAnimationDone || null,    // called when animation is done
         }
 
         maxScenes = settings.morphOut ? 2 : 1;
