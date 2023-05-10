@@ -4,6 +4,8 @@ var Llemmings = (function () {
     const coordinatesDiv = document.getElementById("coordinatesDiv");
     const infoDiv = document.getElementById("infoDiv");
   
+    let EDITOR_MODE = false;
+
     // Colors
     const blackColorBytes = [0x0, 0x0, 0x0];
     const waterColorBytes = [0x00, 0x77, 0xbe]; // [0, 119, 190];
@@ -1581,13 +1583,12 @@ var Llemmings = (function () {
       return persisted.levelScores.reduce((partialSum, a) => partialSum + a, 0);
     }
 
-    // HUMAN TODO: Move this function
     function levelCompleted()
     {
       console.log("Success! You beat the level");
 
-      // If we're in editor, there is no 'persisted'
-      if(persisted) {
+      // If we're in editor don't do this stuff
+      if(EDITOR_MODE) {
         canvasFadeDirection = "out";
 
         //
@@ -1644,20 +1645,21 @@ var Llemmings = (function () {
       }
     }
 
-    // HUMAN TODO: Move this function
     function levelFailed()
     {
       console.log("Aww. Game over");
 
-      canvasFadeDirection = "out";
+      if(!EDITOR_MODE) {
+        canvasFadeDirection = "out";
 
-      TextEffectMorph.cleanUp();
-      TextEffectMorph.init({
-        text : "GAME OVER",
-        placeOverCanvas:canvas,
-        onAnimationDone: () => effectsToUpdate.delete("TextEffectMorph")
-      });
-      effectsToUpdate.set("TextEffectMorph", TextEffectMorph.update);
+        TextEffectMorph.cleanUp();
+        TextEffectMorph.init({
+          text : "GAME OVER",
+          placeOverCanvas:canvas,
+          onAnimationDone: () => effectsToUpdate.delete("TextEffectMorph")
+        });
+        effectsToUpdate.set("TextEffectMorph", TextEffectMorph.update);
+      }
     }
 
     function setupUI()
@@ -2103,7 +2105,7 @@ var Llemmings = (function () {
     
     function start()
     {
-      if(persisted?.currentLevelAttempts) {
+      if(!EDITOR_MODE) {
         persisted.currentLevelAttempts++;
         saveToLocalStorage('persisted', persisted);
       }
@@ -2149,7 +2151,11 @@ var Llemmings = (function () {
     }
 
     // Don't run when in level editor
-    if(!document.location.href.endsWith("editor/index.html")) {
+    if(document.location.href.endsWith("editor/index.html")) {
+      EDITOR_MODE = true;
+    }
+
+    if(!EDITOR_MODE) {
       runOnce(false);
     }
 
