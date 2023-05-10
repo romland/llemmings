@@ -6,6 +6,9 @@ var Llemmings = (function () {
   
     let EDITOR_MODE = false;
 
+    // Debug
+    let __DEBUG__ = false;
+  
     // Colors
     const blackColorBytes = [0x0, 0x0, 0x0];
     const waterColorBytes = [0x00, 0x77, 0xbe]; // [0, 119, 190];
@@ -53,9 +56,6 @@ var Llemmings = (function () {
     // Human: Added this to call dynamic things from update() loop.
     const effectsToUpdate = new Map();
 
-    // Debug
-    let __DEBUG__ = false;
-  
     // Game-play related
     let isPaused = false;
     const lemmings = [];
@@ -459,10 +459,12 @@ var Llemmings = (function () {
             break;
 
           case "text":
+            context.save();
             context.font = shape.fontSize + "px " + shape.fontName;
             context.fillStyle = shape.color;
             context.textBaseline = shape.textBaseline;
             context.fillText(shape.string, shape.x, shape.y);
+            context.restore();
             break;
 
         }
@@ -1597,60 +1599,68 @@ var Llemmings = (function () {
 
       // If we're in editor don't do this stuff
       if(EDITOR_MODE) {
-        canvasFadeDirection = "out";
-
-        //
-        // Completion bonuses
-        //
-
-        // ...extra lemmings
-        const extraLemmings = scoreKeeper.getSavedLemmings() - levelData.goal.survivors;
-        if(extraLemmings > 0) {
-          scoreKeeper.addScore( extraLemmings * 100, "More lemmings" );
-        }
-
-        // ...extra resources
-        scoreKeeper.addScore(levelDataResources["Climber"] * 50, "Climbing");
-        scoreKeeper.addScore(levelDataResources["Floater"] * 50, "Floating");
-        scoreKeeper.addScore(levelDataResources["Bomber"] * 50, "Bombing");
-        scoreKeeper.addScore(levelDataResources["Blocker"] * 50, "Blocking");
-        scoreKeeper.addScore(levelDataResources["Builder"] * 50, "Building");
-        scoreKeeper.addScore(levelDataResources["Basher"] * 50, "Bashing");
-        scoreKeeper.addScore(levelDataResources["Miner"] * 50, "Mining");
-        scoreKeeper.addScore(levelDataResources["Digger"] * 50, "Digging");
-
-        // ...number of attempts needed
-        switch(persisted.currentLevelAttempts) {
-          case 3 : scoreKeeper.addScore(125, "Attempts 1"); break;
-          case 2 : scoreKeeper.addScore(250, "Attempts 2"); break;
-          case 1 : scoreKeeper.addScore(500, "Attempts 3"); break;
-        }
-
-        // ...time bonus (seconds remaining * 10)
-        scoreKeeper.addScore((levelData.resources.time - elapsedLevelTime) / 100, "Time");
-
-        // Store the score for the level (so that it can be improved at a later date)
-        persisted.levelScores[levelData.level] = scoreKeeper.getScore();
-
-        console.log("Level score:", scoreKeeper.getScore());
-        console.log("Overall score:", getOverallScore());
-
-        if(levelData.level === persisted.currentLevel) {
-          persisted.currentLevel++;
-        } else {
-          console.warn("Not adding to currentLevel as levelData.level does not match persisted.currentLevel (probably dev-mode)");
-        }
-
-        // Save to local storage
-        saveToLocalStorage('persisted', persisted);
-
-        TextEffectMorph.init({
-          text : "SUCCESS!",
-          placeOverCanvas:canvas,
-          onAnimationDone: () => effectsToUpdate.delete("TextEffectMorph")
-        });
-        effectsToUpdate.set("TextEffectMorph", TextEffectMorph.update);
+        return;
       }
+
+      canvasFadeDirection = "out";
+
+      //
+      // Completion bonuses
+      //
+
+      // ...extra lemmings
+      const extraLemmings = scoreKeeper.getSavedLemmings() - levelData.goal.survivors;
+      if(extraLemmings > 0) {
+        scoreKeeper.addScore( extraLemmings * 100, "More lemmings" );
+      }
+
+      // ...extra resources
+      scoreKeeper.addScore(levelDataResources["Climber"] * 50, "Climbing");
+      scoreKeeper.addScore(levelDataResources["Floater"] * 50, "Floating");
+      scoreKeeper.addScore(levelDataResources["Bomber"] * 50, "Bombing");
+      scoreKeeper.addScore(levelDataResources["Blocker"] * 50, "Blocking");
+      scoreKeeper.addScore(levelDataResources["Builder"] * 50, "Building");
+      scoreKeeper.addScore(levelDataResources["Basher"] * 50, "Bashing");
+      scoreKeeper.addScore(levelDataResources["Miner"] * 50, "Mining");
+      scoreKeeper.addScore(levelDataResources["Digger"] * 50, "Digging");
+
+      // ...number of attempts needed
+      switch(persisted.currentLevelAttempts) {
+        case 3 : scoreKeeper.addScore(125, "Attempts 1"); break;
+        case 2 : scoreKeeper.addScore(250, "Attempts 2"); break;
+        case 1 : scoreKeeper.addScore(500, "Attempts 3"); break;
+      }
+
+      // ...time bonus (seconds remaining * 10)
+      scoreKeeper.addScore((levelData.resources.time - elapsedLevelTime) / 100, "Time");
+
+      // Store the score for the level (so that it can be improved at a later date)
+      persisted.levelScores[levelData.level] = scoreKeeper.getScore();
+
+      console.log("Level score:", scoreKeeper.getScore());
+      console.log("Overall score:", getOverallScore());
+
+      if(levelData.level === persisted.currentLevel) {
+        if(LlemmingsLevels.length <= (levelData.level + 1)) {
+          // We also completed the entire game
+          console.log("Winner! You finished the game too!");
+        } else {
+          // Progress to next level
+          persisted.currentLevel++;
+        }
+      } else {
+        console.warn("Not adding to currentLevel as levelData.level does not match persisted.currentLevel (probably dev-mode)");
+      }
+
+      // Save to local storage
+      saveToLocalStorage('persisted', persisted);
+
+      TextEffectMorph.init({
+        text : "SUCCESS!",
+        placeOverCanvas:canvas,
+        onAnimationDone: () => effectsToUpdate.delete("TextEffectMorph")
+      });
+      effectsToUpdate.set("TextEffectMorph", TextEffectMorph.update);
     }
 
     function levelFailed()
@@ -1672,6 +1682,24 @@ var Llemmings = (function () {
 
     function setupUI()
     {
+      const actions = document.getElementById('lemming-actions');
+      if(actions) {
+        if(levelData.ui.showActions === false) {
+          actions.style.display = "none";
+        } else {
+          actions.style.display = "block";
+        }
+      }
+
+      const startElt = document.getElementById("start-game");
+      if(startElt) {
+        if(levelData.ui.showStartGame === true) {
+          startElt.style.display = "block";
+        } else {
+          startElt.style.display = "none";
+        }
+      }
+
       // Update resource-count on the HTML buttons
       let spans = document.querySelectorAll('#lemming-actions .count');
       if(!spans) {
@@ -1778,7 +1806,7 @@ var Llemmings = (function () {
       }
 
       // Game over / success check
-      if(playing && ((levelDataResources.time - elapsedLevelTime) <= 0 || getLemmingsRemaining() === 0)) {
+      if(levelData.disableGame === false && playing && ((levelDataResources.time - elapsedLevelTime) <= 0 || getLemmingsRemaining() === 0)) {
         playing = false;
         if(scoreKeeper.getSavedLemmingsCount() >= levelData.goal.survivors) {
           levelCompleted();
@@ -1944,19 +1972,22 @@ var Llemmings = (function () {
     function init(canvasElt, givenLevel = {}, debug = false)
     {
       __DEBUG__ = debug;
+
+      // Override by givenLevel if it specifies it
+      if(givenLevel.__DEBUG__ !== undefined && givenLevel.__DEBUG__ !== null) {
+        __DEBUG__ = givenLevel.__DEBUG__;
+      }
     
-      /* Some seeds used in the past:
-        1680878681505;  // slow
-        1680905320764;  // action
-        1680983904827;  // builder test
+      /*
+        Some seeds used in the past:
         1681139505452;  // llemmings.com
       */
-
       // levelData defaults
       levelData = {
         level : givenLevel.level || -1,
         name : givenLevel.name || "Noname",
         seed : givenLevel.seed || Date.now(),
+        disableGame : givenLevel.disableGame ?? false,
         gradients : givenLevel.gradients || [
           {
             type: 'linear',
@@ -2003,9 +2034,10 @@ var Llemmings = (function () {
             Digger : givenLevel.resources?.Digger || 0,
         },
         ui : {
-          showScore : true,
-          showActions : true,
-          showGithub : true,
+          showScore : givenLevel.ui?.showScore ?? true,
+          showActions : givenLevel.ui?.showActions ?? true,
+          showObjective : givenLevel.ui?.showObjective ?? true,
+          showStartGame : givenLevel.ui?.showStartGame ?? false,
         },
         solution : givenLevel.solution || { },
         goal : { survivors : givenLevel.goal?.survivors || 30 },
@@ -2093,8 +2125,8 @@ var Llemmings = (function () {
       canvas.style.opacity = canvasOpacity;
       canvasFadeDirection = "in";
 
-      if (false && __DEBUG__) {
-        // Skip level-intro
+      if (levelData.ui.showObjective === false) {
+        // Skip showing objective animation
         start();
       } else {
         // Human: This is just for testing the morph text effect (debug more or less)
@@ -2134,7 +2166,7 @@ var Llemmings = (function () {
       // Retrieve from local storage
       let tmpPersisted = getFromLocalStorage('persisted');
 
-      if(resetLocalStorage || !tmpPersisted.levelScores) {
+      if(resetLocalStorage || !tmpPersisted || !tmpPersisted.levelScores) {
         console.warn("Resetting local storage. It was: ", tmpPersisted);
         tmpPersisted = null;
       }
@@ -2147,9 +2179,12 @@ var Llemmings = (function () {
       }
       console.log("Loaded persisted data...", persisted);
 
+      // Test inits
       // init(document.getElementById('canvas'), { seed : null, resources : { lemmings : 150, Bomber : 99 } }, true);
       // init(document.getElementById('canvas'), { seed : 1682936781219 }, true);
-      init(document.getElementById('canvas'), LlemmingsLevels[1], true);
+
+      // This is the real init for the intro
+      init(document.getElementById('canvas'), LlemmingsLevels[0], true);
 
       // This is the "real" init with level progression
       // init(document.getElementById('canvas'), LlemmingsLevels[persisted.currentLevel], true);
@@ -2164,7 +2199,9 @@ var Llemmings = (function () {
     }
 
     if(!EDITOR_MODE) {
-      runOnce(false);
+      document.fonts.ready.then(function () {
+        runOnce(true);
+      });
     }
 
     return {
@@ -2174,7 +2211,16 @@ var Llemmings = (function () {
       togglePause : togglePause,
       applyAction : applyAction,
       reset : reset,
-      restart : (canvasElt) => { reset(); init(canvasElt, levelData, true); start(); },
+      restart : (canvasElt) => { reset(); init(canvasElt, levelData, true); preStart(); },
+      startGame : () => {
+        // "Start game" button on intro screen
+        canvasFadeDirection = "out";
+        setTimeout(() => {
+          reset();
+          init(document.getElementById('canvas'), LlemmingsLevels[persisted.currentLevel], false);
+          preStart();
+        }, 2000);
+      },
       drawShapes : drawShapes,
     }
   })();

@@ -53,7 +53,7 @@ var TextEffectMorph = (function () {
             placeOverCanvas : givenSettings.placeOverCanvas,
             offsetX : givenSettings.offsetX || (givenSettings.placeOverCanvas.width / 2) - 100,
             offsetY : givenSettings.offsetY || (givenSettings.placeOverCanvas.height / 2) - (40 / 2),
-            font : givenSettings.font || "Arial",
+            font : givenSettings.font || "Henny Penny",
             fontSize : givenSettings.fontSize || 40,
             speed : givenSettings.speed || 4,
             pause : givenSettings.pause || 40,               // num frames

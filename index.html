@@ -60,6 +60,10 @@
           left: 50%;
         }
 
+        #lemming-actions {
+          display: none;
+        }
+
         #lemming-actions button {
             position: relative;
             cursor: pointer;
@@ -79,6 +83,7 @@
     </style>
 </head>
 <body>
+  <div style="font-family: Henny Penny; overflow: hidden; position: absolute; height: 0px; width: 0px;">`</div>
   <canvas id="canvas" width="800" height="600"></canvas>
 
   <div id="coordinatesDiv"></div>
@@ -97,6 +102,8 @@
     <button onclick="Llemmings.restart(document.getElementById('canvas'))">🔄</button>
     <a href="https://github.com/romland/llemmings/" target="_blank"><img style="width: 30px;" src="github/github.svg"/></a>
   </div>
+
+  <div id="start-game" style="display: none;" onclick="Llemmings.startGame()">Start game</div>
 
   <script type="text/javascript" src="utils/texteffect-morph.js"></script>
   <script type="text/javascript" src="utils/organics.js"></script>

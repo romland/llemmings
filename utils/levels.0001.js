@@ -5,6 +5,44 @@ var LlemmingsLevels = [
         "level" : 0,
         "name" : "Intro",
         "seed" : 49153,
+        "__DEBUG__" : false,
+        "disableGame" : true,  // set to true to disable objectives / game over / etc
+        "spawnInterval": 2500,
+        "resources": {
+            "lemmings": 50,
+        },
+        "shapes" : [
+            {
+                "type": "text",
+                "filled": true,
+                "color": "rgb(74, 46, 0)",
+                "lineWidth": 1,
+                "fontName": "Henny Penny",
+                "fontSize": 160,
+                "textBaseline": "hanging",
+                "string": "Llemmings",
+                "x": 27,
+                "y": 90
+            }
+        ],
+        "ui" : {
+            showScore : false,
+            showActions : false,
+            showObjective : false,
+            showStartGame : true,
+        },
+        "start": {
+            "x": 50,
+            "y": -20,
+            "radius" : 100,
+            "clear": true
+        },
+        "finish": {
+            "x": 750,
+            "y": 480,
+            "radius" : 100,
+            "clear": true
+        },
     },
     {
         "level": 1,
@@ -201,7 +239,7 @@ var LlemmingsLevels = [
                     "y": 175
                   }
                 ]
-              }            
+              }
         ],
         "solution" : {
             [1] : [
