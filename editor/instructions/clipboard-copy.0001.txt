@@ -1,0 +1,5 @@
+Given javascript and html.
+
+Give me the code for putting a stringified version of an object (variable called data) into the clipboard
+
+I don't need explanation, just give me the code this time.

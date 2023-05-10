@@ -727,6 +727,16 @@
     
       CRUD.create(levelData, levelDataCrudOpts, document.getElementById("levelData"), (evt, data) => {
         console.log("Saved:", data);
+        
+        // >>> Prompt: editor/instructions/clipboard-copy.0001.txt
+        navigator.clipboard.writeText(JSON.stringify(data, undefined, "\t"))
+          .then(() => {
+            console.log('Stringified data copied to clipboard successfully!');
+          })
+          .catch(err => {
+            console.log('Error in copying stringified data to clipboard: ', err);
+          });
+
         levelData = data;
         Llemmings.init(document.querySelector('#seededCanvas'), levelData, false);
       });
