@@ -1208,7 +1208,7 @@ var Llemmings = (function () {
       // Get the button element that was clicked
       // >>> Prompt: instructions/actions-resource-counter.0001.txt
       const btn = document.querySelector(`[data-resource="${action}"]`);
-      const countSpan = btn.querySelector('.count');
+      const countSpan = btn?.querySelector('.count');
 
       if(levelDataResources[action] <= 0) {
         console.log("out of resource", action);
@@ -1217,7 +1217,10 @@ var Llemmings = (function () {
 
       // Consume resource, update UI
       levelDataResources[action]--;
-      countSpan.innerText = levelDataResources[action];
+
+      if(countSpan) {
+        countSpan.innerText = levelDataResources[action];
+      }
 
       switch (action) {
         case 'Climber':
@@ -1583,59 +1586,62 @@ var Llemmings = (function () {
     {
       console.log("Success! You beat the level");
 
-      canvasFadeDirection = "out";
+      // If we're in editor, there is no 'persisted'
+      if(persisted) {
+        canvasFadeDirection = "out";
 
-      //
-      // Completion bonuses
-      //
+        //
+        // Completion bonuses
+        //
 
-      // ...extra lemmings
-      const extraLemmings = scoreKeeper.getSavedLemmings() - levelData.goal.survivors;
-      if(extraLemmings > 0) {
-        scoreKeeper.addScore( extraLemmings * 100, "More lemmings" );
+        // ...extra lemmings
+        const extraLemmings = scoreKeeper.getSavedLemmings() - levelData.goal.survivors;
+        if(extraLemmings > 0) {
+          scoreKeeper.addScore( extraLemmings * 100, "More lemmings" );
+        }
+
+        // ...extra resources
+        scoreKeeper.addScore(levelDataResources["Climber"] * 50, "Climbing");
+        scoreKeeper.addScore(levelDataResources["Floater"] * 50, "Floating");
+        scoreKeeper.addScore(levelDataResources["Bomber"] * 50, "Bombing");
+        scoreKeeper.addScore(levelDataResources["Blocker"] * 50, "Blocking");
+        scoreKeeper.addScore(levelDataResources["Builder"] * 50, "Building");
+        scoreKeeper.addScore(levelDataResources["Basher"] * 50, "Bashing");
+        scoreKeeper.addScore(levelDataResources["Miner"] * 50, "Mining");
+        scoreKeeper.addScore(levelDataResources["Digger"] * 50, "Digging");
+
+        // ...number of attempts needed
+        switch(persisted.currentLevelAttempts) {
+          case 3 : scoreKeeper.addScore(125, "Attempts 1"); break;
+          case 2 : scoreKeeper.addScore(250, "Attempts 2"); break;
+          case 1 : scoreKeeper.addScore(500, "Attempts 3"); break;
+        }
+
+        // ...time bonus (seconds remaining * 10)
+        scoreKeeper.addScore((levelData.resources.time - elapsedLevelTime) / 100, "Time");
+
+        // Store the score for the level (so that it can be improved at a later date)
+        persisted.levelScores[levelData.level] = scoreKeeper.getScore();
+
+        console.log("Level score:", scoreKeeper.getScore());
+        console.log("Overall score:", getOverallScore());
+
+        if(levelData.level === persisted.currentLevel) {
+          persisted.currentLevel++;
+        } else {
+          console.warn("Not adding to currentLevel as levelData.level does not match persisted.currentLevel (probably dev-mode)");
+        }
+
+        // Save to local storage
+        saveToLocalStorage('persisted', persisted);
+
+        TextEffectMorph.init({
+          text : "SUCCESS!",
+          placeOverCanvas:canvas,
+          onAnimationDone: () => effectsToUpdate.delete("TextEffectMorph")
+        });
+        effectsToUpdate.set("TextEffectMorph", TextEffectMorph.update);
       }
-
-      // ...extra resources
-      scoreKeeper.addScore(levelDataResources["Climber"] * 50, "Climbing");
-      scoreKeeper.addScore(levelDataResources["Floater"] * 50, "Floating");
-      scoreKeeper.addScore(levelDataResources["Bomber"] * 50, "Bombing");
-      scoreKeeper.addScore(levelDataResources["Blocker"] * 50, "Blocking");
-      scoreKeeper.addScore(levelDataResources["Builder"] * 50, "Building");
-      scoreKeeper.addScore(levelDataResources["Basher"] * 50, "Bashing");
-      scoreKeeper.addScore(levelDataResources["Miner"] * 50, "Mining");
-      scoreKeeper.addScore(levelDataResources["Digger"] * 50, "Digging");
-
-      // ...number of attempts needed
-      switch(persisted.currentLevelAttempts) {
-        case 3 : scoreKeeper.addScore(125, "Attempts 1"); break;
-        case 2 : scoreKeeper.addScore(250, "Attempts 2"); break;
-        case 1 : scoreKeeper.addScore(500, "Attempts 3"); break;
-      }
-
-      // ...time bonus (seconds remaining * 10)
-      scoreKeeper.addScore((levelData.resources.time - elapsedLevelTime) / 100, "Time");
-
-      // Store the score for the level (so that it can be improved at a later date)
-      persisted.levelScores[levelData.level] = scoreKeeper.getScore();
-
-      console.log("Level score:", scoreKeeper.getScore());
-      console.log("Overall score:", getOverallScore());
-
-      if(levelData.level === persisted.currentLevel) {
-        persisted.currentLevel++;
-      } else {
-        console.warn("Not adding to currentLevel as levelData.level does not match persisted.currentLevel (probably dev-mode)");
-      }
-
-      // Save to local storage
-      saveToLocalStorage('persisted', persisted);
-
-      TextEffectMorph.init({
-        text : "SUCCESS!",
-        placeOverCanvas:canvas,
-        onAnimationDone: () => effectsToUpdate.delete("TextEffectMorph")
-      });
-      effectsToUpdate.set("TextEffectMorph", TextEffectMorph.update);
     }
 
     // HUMAN TODO: Move this function
@@ -2097,8 +2103,10 @@ var Llemmings = (function () {
     
     function start()
     {
-      persisted.currentLevelAttempts++;
-      saveToLocalStorage('persisted', persisted);
+      if(persisted?.currentLevelAttempts) {
+        persisted.currentLevelAttempts++;
+        saveToLocalStorage('persisted', persisted);
+      }
 
       // Spawn a new lemming every interval
       gameIntervals["debugLemmingSpawner"] = setInterval(spawnLemming, levelData.spawnInterval);
@@ -2109,6 +2117,7 @@ var Llemmings = (function () {
 
     /**
      * Human: This is the entry point when page is loaded/refreshed.
+     * Human: Note that it is NOT run if in level editor.
      */
     function runOnce(resetLocalStorage = false)
     {
@@ -2139,7 +2148,10 @@ var Llemmings = (function () {
       preStart();
     }
 
-    runOnce(false);
+    // Don't run when in level editor
+    if(!document.location.href.endsWith("editor/index.html")) {
+      runOnce(false);
+    }
 
     return {
       getSeed : () => { return levelData.seed; },

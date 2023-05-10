@@ -28,7 +28,7 @@
  */
 var TextEffectMorph = (function () {
 
-    let canvas, ctx, particles, settings;
+    let canvas, ctx, particles = [], settings;
     const pixelPositions = [];
     let initialized = false;
 
