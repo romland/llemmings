@@ -14,12 +14,12 @@ _Phonetics:_
 <br clear="right"/>
 
 ## 👉 Blindly following comrades: Encouraged
-Llemmings is a game being made by Large Language Models (LLMs), like ChatGPT or GPT-4.
-The intention is that no code is written by a human.
+Llemmings is a game being made by Large Language Models (LLMs), like ChatGPT, LLaMA or GPT-4.
+The _intention_ is that no code is written by a human.
 
 **The job, as a human, is to copy and paste code.**
 
-It is (probably) not yet a game. But ... for **non-mobile devices**, the latest and greatest version is [here](https://romland.github.io/llemmings).   
+It is (probably) not yet a game. But ... for **non-mobile devices**, the latest and greatest version is [here](https://romland.github.io/llemmings).  
 
 ![Alt text](github/latest.png?raw=true "Screenshot of Llemmings")
 
@@ -40,8 +40,6 @@ fun.
 It's the journey!
 
 Your second job, as a human, is to give instructions to your language model of choice.
-
-(I must stress: non-OpenAI models are most welcome).
 
 
 ### 📝 Prompts
@@ -73,50 +71,43 @@ Sometimes you surprise yourself and just one-shot a prompt. It all just works on
 One such example was the death explosion. It was a happy moment.
 
 ### 🗃️ Organizing prompts
-The prompts are in the code now. This is not going to hold much longer. So I need to figure out how to
-best connect prompts to code to have them available for easy copy/pasting. It could be that I need
-to implement something outside of this project for that.  
-
-Once figured out, there should be notes here about how you organize your prompts with the code!  
-
+Prompts are stored in `instructions/` for the game, and in `editor/instructions/` for the editor.
+Code is marked with which prompt generated a snippet of code. Usually like this: `// >>> Prompt: instructions/...`. 
 
 ## 🔥 Code and quality
-Up til now, quality has not been a big concern. It's one giant steamy pile of spaghetti (llemming code?).
+There are no external dependencies (except a font), it is all plain old JavaScript.
 
-No external dependencies, it is all plain old Javascript.
-
-It's been handy to have everything in one file for prompting. The instructions to the LLMs
-will sadly have to be separated from the code in the near future, it's getting too much.
+Up til now, quality has not been a concern. It's one giant steamy pile of spaghetti (llemming code?).
 
 At some point down the line, probably soon, refactoring needs to be done by the LLM (😱). The `update` function in the `Lemming`
 object is especially unwieldy. To the point where I grin every time I see it.
 
 
 ### 🧠 Cheating
-All written by language models, I say: there are a few exceptions, like it's allowed to remove redeclared 
+I said "all written by language models". There are a few exceptions, like, it's allowed to remove redeclared 
 variables and similar small things. But other than that, the code should be written by the LLM.
 
-If you add/change code that you did not get from the LLM, make sure that it's marked 
-with something like:
+Sadly, due to context length, the glue between prompts will still need to be written by a human. There are ways around this issue, but I decided early that I will not go down that road for this project.  
 
-"// HUMAN: I Have no hair left. I ran out of patience. I, bad human, added this line."
+If you add/change code that you did not get from the LLM, it should be marked with something like:
+`"// HUMAN: I Have no hair left. I ran out of patience. I, bad human, added this line."`  
 
-This is essentially cheating. But we are humans, we cheat.
+This is cheating. But we are humans, we cheat.
 
-It turns out that the LLM is no better. It added this comment itself, making it look
-like it was actually debugging: `// HUMAN: modified this line from -1 to 0 (the first pixel we need to remove is on the same row)`  
+Beware that the LLM will sometimes to try blame the human. At one point it added a comment making it look
+like it was actually human and debugging: `// HUMAN: modified this line from -1 to 0 (the first pixel we need to remove is on the same row)`  
 
-Added to prompt: `You are not human. You are not allowed to make comments where you pretend to be one.`
+I had to add this doomsy bit to the prompt: `You are not human. You are not allowed to make comments where you pretend to be one.`
 
 
 ## 🚃 Contributing and pull requests
 You can contribute. Don't be afraid. Blame the LLM.
 
 Any pull requests are welcome, just make sure you  
-...say which prompt(s) you used  
-...say which LLM was used (if you want to be fancy, you can disclose temperature, etc)  
+- ...say which prompt(s) you used  
+- ...say which LLM was used (if you want to be fancy, you can disclose temperature, etc)  
 
-If you cheated, flag the line with a "HUMAN: ..." comment in the code.
+If you cheated, flag the line with a "HUMAN: ..." comment in the code. Also prefix the commit with "Human: ..."
 
 Currently I have settled for commit messages like this:
 ```
@@ -133,31 +124,35 @@ Preferably only one prompt per commit. But I failed in the beginning.
 
 _You can check the commit history and you'll get the gist._
 
-Maybe the commit history will be the most interesting part of this project.
-
 
 ## 🏃‍♀️ Compiling, installing, running
-Just open `index.html` in your favorite web-browser.
+Just open `index.html` in your favorite web-browser.  
 
 
 ## 🆙 Level editor
 There is also the beginnings of a [level editor](https://romland.github.io/llemmings/editor/).
+To use, open `editor/index.html` in your web-browser.  
 
 
 ## 🚧 TODO
 There is a lot. It would be nice if there was a list somewhere. There isn't. Just do what you want to do.
 
 Some thoughts:
-- [ ] start screen
+- [ ] start screen (don't just start first level)
+   - [ ] have it show creaturs walking/digging/working around a Llemmings "logo"
+   - [ ] music
 - [ ] make it pretty
    - [ ] textures
+   - [ ] UI: action buttons, goal, score
+- [ ] visual effects
+   - [ ] make the level/map feel more alive (animated water? ...)
+   - [ ] some particles flying when digging/building
 - [ ] make it work properly on mobile devices (seems to be map-gen related)
 - [ ] take up full browser window (possibly higher resolution)
 - [ ] wider maps + sideways scrolling of map
 - [ ] home/goal graphic
 - [ ] animations
    - [x] legs/feet
-   - [ ] "hair"
    - [ ] water
 - [ ] sound effects:
    - [ ] on spawn
