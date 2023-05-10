@@ -148,18 +148,35 @@ There is also the beginnings of a [level editor](https://romland.github.io/llemm
 There is a lot. It would be nice if there was a list somewhere. There isn't. Just do what you want to do.
 
 Some thoughts:
-- make it pretty,
-- make it work properly on mobile devices (seems to be map-gen related)
-- animations (maybe their green hair should move in the wind, maybe they have legs!),
-- shaders,
-- sound,
-- speech bubbles (Oh no!),
-- add the missing types of green-blue blocks (the builder looks particularly nasty on paper),
-- the goal of the game,
-- score,
-- better maps,
-- levels,
-- ... yeah ...
+- [ ] start screen
+- [ ] make it pretty
+   - [ ] textures
+- [ ] make it work properly on mobile devices (seems to be map-gen related)
+- [ ] take up full browser window (possibly higher resolution)
+- [ ] wider maps + sideways scrolling of map
+- [ ] home/goal graphic
+- [ ] animations
+   - [x] legs/feet
+   - [ ] "hair"
+   - [ ] water
+- [ ] sound effects:
+   - [ ] on spawn
+   - [ ] on action assignment
+   - [ ] on building/mining
+   - [ ] on reaching finish
+   - [ ] on death
+- [ ] speech bubbles (possibly built-in TTS?)
+   - [ ] "Oh no!" on creature exploding
+- [ ] add the missing types of green-blue blocks
+   - [ ] miner (diagonal digging)
+- [ ] visual feedback on pause
+- [ ] button for "progress to next level"
+- [x] the goal of the game
+- [x] level score
+- [ ] better maps
+- [x] level progression
+- [ ] create at least 10 levels (send to level editor when all levels are completed)
+- [ ] ... yeah, more ...
 
 
 ## ✍️ Example prompts
