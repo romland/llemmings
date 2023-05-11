@@ -1,0 +1,20 @@
+Give me either CSS/style or an SVG for the HTML element with ID "start-game".
+
+The looks should be:
+- wooden color (gradients?)
+- avoid very bright and very dark colors
+- darker when hovered over
+- a bit of shadow
+- a bit rounded
+
+It should:
+- have the text of it centered
+- have cursor: pointer
+- centered on screen, both on x and y (absolute position)
+- for centering, also use local transform, e.g.: transform: translate(-50%, -50%);
+- also add:
+    font-family: "Henny Penny";
+    font-size: 20px;
+    font-weight: bold;
+
+Give me only the CSS in a codeblock, no explanation needed this time.

@@ -68,12 +68,29 @@
             border-radius: 50%;
         }
 
+        /* instructions/css.0002.txt */
         #start-game {
           display: none;
           position: absolute;
-          /* TODO: Position 'start game' somewhere nice */
-          /* TODO: Make 'start game' say 'continue game' if you already solved a level */
+          top: 50%;
+          left: 50%;
+          transform: translate(-50%, -50%);
+          background: linear-gradient(to bottom, #8b5a2b, #c68642);
+          border-radius: 10px;
+          box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.3);
+          padding: 10px 20px;
+          color: #fff;
+          font-family: "Henny Penny";
+          font-size: 20px;
+          font-weight: bold;
+          text-align: center;
+          cursor: pointer;
         }
+
+        #start-game:hover {
+          background: linear-gradient(to bottom, #7a4f24, #af7a37);
+        }
+
     </style>
 </head>
 <body>
@@ -97,7 +114,7 @@
     <a href="https://github.com/romland/llemmings/" target="_blank"><img style="width: 30px;" src="github/github.svg"/></a>
   </div>
 
-  <div id="start-game" onclick="Llemmings.startGame()">Click to Play</div>
+  <div id="start-game" onclick="Llemmings.startGame()">Let's go!</div>
 
   <script type="text/javascript" src="utils/texteffect-morph.js"></script>
   <script type="text/javascript" src="utils/organics.js"></script>

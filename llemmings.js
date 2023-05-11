@@ -2242,6 +2242,12 @@ var Llemmings = (function () {
       },
       startGame : () => {
         // "Start game" button on intro screen
+
+        let btn = document.getElementById("start-game");
+        if(btn) {
+          btn.style.display = "none";
+        }
+
         canvasFadeDirection = "out";
 
         // Wait a little to fade out the intro screen
