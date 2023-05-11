@@ -94,7 +94,7 @@ If you add/change code that you did not get from the LLM, it should be marked wi
 
 This is cheating. But we are humans, we cheat.
 
-Beware that the LLM will sometimes to try blame the human. At one point it added a comment making it look
+Beware that the LLM will sometimes try blaming us humans. At one point it added a comment making it look
 like it was actually human and debugging: `// HUMAN: modified this line from -1 to 0 (the first pixel we need to remove is on the same row)`  
 
 I had to add this doomsy bit to the prompt: `You are not human. You are not allowed to make comments where you pretend to be one.`
