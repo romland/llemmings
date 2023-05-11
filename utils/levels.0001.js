@@ -11,6 +11,7 @@ var LlemmingsLevels = [
         "seed" : 49188,        // empty
         "__DEBUG__" : false,
         "disableGame" : true,  // set to true to disable objectives / game over / etc
+        "autoPlay" : true,
         "spawnInterval": 2500,
         "resources": {
             "lemmings": 50,
@@ -80,6 +81,7 @@ var LlemmingsLevels = [
         "level": 1,
         "name": "El-el-em-ing",
         "seed": 129,
+        "autoPlay": false,
         "gradients": [
             {
                 "type": "linear",

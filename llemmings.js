@@ -66,6 +66,7 @@ var Llemmings = (function () {
     let scoreKeeper = null;
     let doneSpawning = false;
     let playing = false;
+    let autoPlaying = null;  // set to true to automatically use a provided solution (if it exists)
     let levelDataResources = null;
 
     // Human: scoreKeeper keeps track of score for current level, this will keep
@@ -644,7 +645,9 @@ var Llemmings = (function () {
           return;
         }
 
-        doProgrammedActions(this);
+        if(autoPlaying) {
+          doProgrammedActions(this);
+        }
   
         if (this.y >= canvas.height - (this.height + this.velY + 1)) {
             this.isDead = true;
@@ -2012,6 +2015,7 @@ var Llemmings = (function () {
         name : givenLevel.name || "Noname",
         seed : givenLevel.seed || Date.now(),
         disableGame : givenLevel.disableGame ?? false,
+        autoPlay : givenLevel.autoPlay ?? false,
         gradients : givenLevel.gradients || [
           {
             type: 'linear',
@@ -2071,6 +2075,8 @@ var Llemmings = (function () {
       }
 
       levelDataResources = { ...levelData.resources };
+
+      autoPlaying = levelData.autoPlay;
 
       setupUI();
 
