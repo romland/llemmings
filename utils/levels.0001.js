@@ -4,7 +4,11 @@ var LlemmingsLevels = [
         // Note that the defaults may be different in game and editor.
         "level" : 0,
         "name" : "Intro",
-        "seed" : 49153,
+        // "seed" : 49153,        // tiny terrain on top
+        // "seed" : 49172,        // terrain on top half
+        // "seed" : 49181,        // terrain on left third
+        // "seed" : 1683811147696,// a lot of terrain on bottom half
+        "seed" : 49188,        // empty
         "__DEBUG__" : false,
         "disableGame" : true,  // set to true to disable objectives / game over / etc
         "spawnInterval": 2500,
@@ -16,6 +20,7 @@ var LlemmingsLevels = [
                 "type": "text",
                 "filled": true,
                 "color": "rgb(74, 46, 0)",
+                // "color": "rgb(136, 136, 136)",
                 "lineWidth": 1,
                 "fontName": "Henny Penny",
                 "fontSize": 140,
@@ -23,19 +28,6 @@ var LlemmingsLevels = [
                 "string": "Llemmings",
                 "x": 60,
                 "y": 90
-            },
-            {
-                "type": "text",
-                "filled": true,
-                // "color": "rgb(74, 46, 0)",
-                "color": "rgb(136, 136, 136)",
-                "lineWidth": 1,
-                "fontName": "Henny Penny",
-                "fontSize": 140,
-                "textBaseline": "hanging",
-                "string": "Llemmings",
-                "x": 55,
-                "y": 85
             },
         ],
         "gradients": [
@@ -61,7 +53,7 @@ var LlemmingsLevels = [
             {
                 "type": "organics",
                 "location": [
-                    "bottom"
+                    "bottom", "top"
                 ]
             }
         ],
