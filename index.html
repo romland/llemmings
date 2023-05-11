@@ -8,8 +8,14 @@
 
     <style type="text/css">
         canvas {
-            border: 1px solid black;
-            image-rendering: pixelated; 
+            border: 0px;
+            image-rendering: pixelated;
+
+            display: block;
+            height: 90vh;
+            width: auto;
+            max-width: 100vw;
+            margin: 0 auto;
         }
 
         button {
@@ -23,30 +29,9 @@
           color: #f0f0f0;
           margin: 0;
           padding: 0;
-          height: 100vh;
+          overflow-x: hidden;
         }
 
-        header {
-            background-color: black;
-            color: #F0F0F0;
-            padding: 10px;
-            text-align: center;
-        }
-
-        p {
-            font-size: 16px;
-            margin-top: 0;
-        }
-
-        a {
-            color: #F0F0F0;
-            text-decoration: none;
-        }
-
-        a:hover {
-            color: grey;
-        }
-        
         /* >>> Prompt: instructions/css.0001.txt prompt 2 */
         #coordinatesDiv {
           position: fixed;
@@ -62,6 +47,8 @@
 
         #lemming-actions {
           display: none;
+          width: auto;
+          margin: 0 auto;
         }
 
         #lemming-actions button {
@@ -80,11 +67,18 @@
             padding: 2px;
             border-radius: 50%;
         }
+
+        #start-game {
+          display: none;
+          position: absolute;
+          /* TODO: Position 'start game' somewhere nice */
+          /* TODO: Make 'start game' say 'continue game' if you already solved a level */
+        }
     </style>
 </head>
 <body>
   <div style="font-family: Henny Penny; overflow: hidden; position: absolute; height: 0px; width: 0px;">`</div>
-  <canvas id="canvas" width="800" height="600"></canvas>
+  <canvas id="canvas"></canvas>
 
   <div id="coordinatesDiv"></div>
   <div id="infoDiv"></div>
@@ -103,7 +97,7 @@
     <a href="https://github.com/romland/llemmings/" target="_blank"><img style="width: 30px;" src="github/github.svg"/></a>
   </div>
 
-  <div id="start-game" style="display: none;" onclick="Llemmings.startGame()">Start game</div>
+  <div id="start-game" onclick="Llemmings.startGame()">Click to Play</div>
 
   <script type="text/javascript" src="utils/texteffect-morph.js"></script>
   <script type="text/javascript" src="utils/organics.js"></script>

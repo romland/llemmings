@@ -18,6 +18,9 @@ var Llemmings = (function () {
     const lemmingHairColor = [0x00, 0xff, 0x00];
     const terrainColorBytes = [ rockColorBytes, dirtColorBytes ];
   
+    const RESOLUTION_X = 800;
+    const RESOLUTION_Y = 600;
+
     // Set up canvas (+related)
     let canvas, ctx;        // set by init().
     let background; // global variable to store canvas image data (restored in main loop below somewhere)
@@ -1573,7 +1576,7 @@ var Llemmings = (function () {
         canvasFadeDirection = null;
         return;        
       }
-      canvasOpacity += 0.01;
+      canvasOpacity += 0.02;
       canvas.style.opacity = canvasOpacity;
     }
     
@@ -1584,7 +1587,7 @@ var Llemmings = (function () {
         canvasFadeDirection = null;
         return;        
       }
-      canvasOpacity -= 0.01;
+      canvasOpacity -= 0.02;
       canvas.style.opacity = canvasOpacity;
     }    
     
@@ -1687,7 +1690,7 @@ var Llemmings = (function () {
         if(levelData.ui.showActions === false) {
           actions.style.display = "none";
         } else {
-          actions.style.display = "block";
+          actions.style.display = "table";
         }
       }
 
@@ -1824,9 +1827,18 @@ var Llemmings = (function () {
       // >>> Prompt: instructions/selectable.0001.txt
       // add this after declaring canvas and ctx
       canvas.addEventListener('click', (event) => {
+        if(levelData.disableGame) {
+          return;
+        }
+
         const rect = canvas.getBoundingClientRect();
-        const mouseX = event.clientX - rect.left;
-        const mouseY = event.clientY - rect.top;
+
+        // >>> Prompt: instructions/screen-coord-to-canvas.0001.txt
+        const scaleX = canvas.width / rect.width;
+        const scaleY = canvas.height / rect.height;
+      
+        const mouseX = (event.clientX - rect.left) * scaleX;
+        const mouseY = (event.clientY - rect.top) * scaleY;
   
         lemmings.forEach((lemming) => {
           if (mouseX >= lemming.x && mouseX <= lemming.x + lemming.width && mouseY >= lemming.y && mouseY <= lemming.y + lemming.height) {
@@ -1836,13 +1848,25 @@ var Llemmings = (function () {
           }
         });
       });
-  
+ 
+      window.addEventListener('keydown', (evt) => {
+        switch(evt.key) {
+          case "p": togglePause(); break;
+        }
+      });
+
       if (__DEBUG__) {
         // >>> Prompt: instructions/coordinates-div.0001.txt
         canvas.addEventListener("mousemove", function(event) {
-          const x = event.offsetX;
-          const y = event.offsetY;
-  
+          const rect = canvas.getBoundingClientRect();
+
+          // >>> Prompt: instructions/screen-coord-to-canvas.0001.txt
+          const scaleX = canvas.width / rect.width;
+          const scaleY = canvas.height / rect.height;
+        
+          const x = Math.floor((event.clientX - rect.left) * scaleX);
+          const y = Math.floor((event.clientY - rect.top) * scaleY);
+
           const imageData = ctx.getImageData(x, y, 1, 1);
           const pixel = imageData.data;
   
@@ -1984,7 +2008,7 @@ var Llemmings = (function () {
       */
       // levelData defaults
       levelData = {
-        level : givenLevel.level || -1,
+        level : givenLevel.level ?? -1,
         name : givenLevel.name || "Noname",
         seed : givenLevel.seed || Date.now(),
         disableGame : givenLevel.disableGame ?? false,
@@ -2008,9 +2032,9 @@ var Llemmings = (function () {
             "color": `rgb(${waterColorBytes.join(",")})`,
             "lineWidth": 1,
             "x1": 0,
-            "y1": 600 - WATER_HEIGHT,
-            "x2": 800,
-            "y2": 600 
+            "y1": canvas.height - WATER_HEIGHT,
+            "x2": canvas.width,
+            "y2": canvas.height 
           }
         ],
         decorations : givenLevel.decorations || [
@@ -2057,8 +2081,8 @@ var Llemmings = (function () {
         throw "no existing canvas and no element given";
       } else if(canvasElt) {
         canvas = canvasElt;
-        canvas.width = 800;
-        canvas.height = 600;
+        canvas.width = RESOLUTION_X;
+        canvas.height = RESOLUTION_Y;
 
         /*
         Human note: TOOD: Map-generation on mobile devices
@@ -2183,11 +2207,11 @@ var Llemmings = (function () {
       // init(document.getElementById('canvas'), { seed : null, resources : { lemmings : 150, Bomber : 99 } }, true);
       // init(document.getElementById('canvas'), { seed : 1682936781219 }, true);
 
+      // This is the init with level progression
+      // init(document.getElementById('canvas'), LlemmingsLevels[persisted.currentLevel], true);
+
       // This is the real init for the intro
       init(document.getElementById('canvas'), LlemmingsLevels[0], true);
-
-      // This is the "real" init with level progression
-      // init(document.getElementById('canvas'), LlemmingsLevels[persisted.currentLevel], true);
 
       // start();
       preStart();
@@ -2211,15 +2235,21 @@ var Llemmings = (function () {
       togglePause : togglePause,
       applyAction : applyAction,
       reset : reset,
-      restart : (canvasElt) => { reset(); init(canvasElt, levelData, true); preStart(); },
+      restart : (canvasElt) => {
+        reset();
+        init(canvasElt, levelData, true);
+        preStart();
+      },
       startGame : () => {
         // "Start game" button on intro screen
         canvasFadeDirection = "out";
+
+        // Wait a little to fade out the intro screen
         setTimeout(() => {
           reset();
           init(document.getElementById('canvas'), LlemmingsLevels[persisted.currentLevel], false);
           preStart();
-        }, 2000);
+        }, 1000);
       },
       drawShapes : drawShapes,
     }

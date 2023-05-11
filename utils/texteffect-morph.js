@@ -98,8 +98,8 @@ var TextEffectMorph = (function () {
         // Human: Added this "copy geometry" stuff
         const rect = settings.placeOverCanvas.getBoundingClientRect();
         canvas.style.position = "absolute";
-        canvas.style.top = rect.top;
-        canvas.style.left = rect.left;
+        canvas.style.top = rect.top + "px";
+        canvas.style.left = rect.left + "px";
 
         document.body.appendChild(canvas);
         ctx = canvas.getContext('2d');

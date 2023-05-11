@@ -18,11 +18,51 @@ var LlemmingsLevels = [
                 "color": "rgb(74, 46, 0)",
                 "lineWidth": 1,
                 "fontName": "Henny Penny",
-                "fontSize": 160,
+                "fontSize": 140,
                 "textBaseline": "hanging",
                 "string": "Llemmings",
-                "x": 27,
+                "x": 60,
                 "y": 90
+            },
+            {
+                "type": "text",
+                "filled": true,
+                // "color": "rgb(74, 46, 0)",
+                "color": "rgb(136, 136, 136)",
+                "lineWidth": 1,
+                "fontName": "Henny Penny",
+                "fontSize": 140,
+                "textBaseline": "hanging",
+                "string": "Llemmings",
+                "x": 55,
+                "y": 85
+            },
+        ],
+        "gradients": [
+            {
+                "type": "linear",
+                "x0": 0,
+                "y0": 0,
+                "x1": 0,
+                "y1": 600,
+                "stops": [
+                    {
+                        "offset": 0,
+                        "color": "#000000"
+                    },
+                    {
+                        "offset": 1,
+                        "color": "#003366"
+                    }
+                ]
+            }
+        ],
+        "decorations": [
+            {
+                "type": "organics",
+                "location": [
+                    "bottom"
+                ]
             }
         ],
         "ui" : {

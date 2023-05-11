@@ -1,0 +1,8 @@
+Given HTML canvas and javascript.
+
+I want to be able to click on objects on the canvas, but the canvas might be resized 
+with e.g. 'width: 100%' and repositioned (e.g. 'margin: 0 auto') using CSS so exact pixels will not work. 
+
+Make it a function to convert the screen coordinate to a canvas coordinate.
+
+This time, give me only the code, I don't need explanations.
