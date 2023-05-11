@@ -2248,6 +2248,9 @@ var Llemmings = (function () {
       },
       startGame : () => {
         // "Start game" button on intro screen
+        if(isPaused) {
+          togglePause();
+        }
 
         let btn = document.getElementById("start-game");
         if(btn) {
