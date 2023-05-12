@@ -84,6 +84,7 @@ var LlemmingsKeyBindings = (function () {
     
     function saveBindings() {
         localStorage.setItem("keybindings", JSON.stringify(bindings));
+        LlemmingsDialog.closeDialog();
     }
 
     function getActionIdForKey(key)
@@ -187,7 +188,13 @@ var LlemmingsKeyBindings = (function () {
         bindings = JSON.parse(localStorage.getItem("keybindings")) || { ...defaultKeybinds };
 
         // Human: To facilitate for adding new binds in the future, merging default binds with saved binds instead of just ||.
-        bindings = { ...bindings, ...defaultKeybinds };
+        bindings = { ...defaultKeybinds, ...bindings };
+
+        LlemmingsDialog.openDialog("Key Binds", keybindingEditor, () => {
+            keybindingEditor.innerHTML = "";
+            // Put the editor element back in body so we can use it again
+            document.body.append(keybindingEditor);
+        });
 
         generateHTML();
     }
@@ -198,7 +205,7 @@ var LlemmingsKeyBindings = (function () {
         bindings = JSON.parse(localStorage.getItem("keybindings")) || { ...defaultKeybinds };
 
         // Human: To facilitate for adding new binds in the future, merging default binds with saved binds instead of just ||.
-        bindings = { ...bindings, ...defaultKeybinds };
+        bindings = { ...defaultKeybinds, ...bindings };
 
         toCallOnKeyBindPress = _toCallOnKeyBindPress;
         document.addEventListener("keydown", handleKeyBinds);

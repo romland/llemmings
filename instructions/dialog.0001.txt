@@ -1,0 +1,11 @@
+Using plain HTML and no dependencies.
+
+Give me a very simple modal pop-over with a close icon in top-left corner.
+
+The modal should be initialized with javascript, using e.g.:
+openDialog(title, htmlContent)
+
+It should also:
+- center on the screen and be responsive (e.g. using max-width, min-width etc)
+
+Only give me the code, I don't need an explanation this time.
