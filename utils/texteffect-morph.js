@@ -100,6 +100,8 @@ var TextEffectMorph = (function () {
         canvas.style.position = "absolute";
         canvas.style.top = rect.top + "px";
         canvas.style.left = rect.left + "px";
+        canvas.style.width = rect.width + "px";
+        canvas.style.height = rect.height + "px";
 
         document.body.appendChild(canvas);
         ctx = canvas.getContext('2d');

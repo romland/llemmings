@@ -1,0 +1,30 @@
+Given javascript and 2D canvas. Give me a floating combat text implementation for a game.
+
+Each text should:
+- move upwards on screen
+- shrink
+- fade out
+- animate the above using cubic interpolation
+
+Requirements:
+- combat text instances should never overlap on the Y axis, a new one should always be placed
+  under any previous combat text
+- All code should be in a class or a function and any init should be done in init(canvas).
+- Add a cleanUp() function which frees any resources
+- Wrap all related code into:
+    var LlemmingsFCT = (function () {
+        ... code here ...
+    return {
+        init : init,
+        update : update,
+        cleanUp : cleanUp,
+        spawnCombatText : spawnCombatText,  // give all arguments sane defaults (start at middle of screen etc)
+    }
+- There are already things drawn on the canvas, so do not clear it (with rect or other means)
+
+Animation is done with update() which is called every frame (this is already implemented), 
+you can assume that it is called 60 frames per second, but use delta-time (milliseconds).
+
+You may not use any 3rd party dependencies.
+
+This time I don't need an explanation, just give me code.

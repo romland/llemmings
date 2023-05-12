@@ -1213,13 +1213,13 @@ var Llemmings = (function () {
   
       // HUMAN: I had to add this myself
       if(!selectedLemming) {
-        console.log("no selected lemming");
+        LlemmingsFCT.spawnCombatText("You have no target");
         return;
       }
   
       // HUMAN: I had to add this myself
       if(action !== "Bomber" && selectedLemming.action) {
-        console.log("lemming already had an action");
+        LlemmingsFCT.spawnCombatText("Lemming is busy");
         return;
       }
   
@@ -1229,7 +1229,7 @@ var Llemmings = (function () {
       const countSpan = btn?.querySelector('.count');
 
       if(levelDataResources[action] <= 0) {
-        console.log("out of resource", action);
+        LlemmingsFCT.spawnCombatText("Out of " + action + "s");
         return;
       }
 
@@ -1666,7 +1666,7 @@ var Llemmings = (function () {
         placeOverCanvas:canvas,
         onAnimationDone: () => effectsToUpdate.delete("TextEffectMorph")
       });
-      effectsToUpdate.set("TextEffectMorph", TextEffectMorph.update);
+      effectsToUpdate.set("TextEffectMorph", TextEffectMorph);
     }
 
     function levelFailed()
@@ -1682,7 +1682,7 @@ var Llemmings = (function () {
           placeOverCanvas:canvas,
           onAnimationDone: () => effectsToUpdate.delete("TextEffectMorph")
         });
-        effectsToUpdate.set("TextEffectMorph", TextEffectMorph.update);
+        effectsToUpdate.set("TextEffectMorph", TextEffectMorph);
       }
     }
 
@@ -1817,7 +1817,8 @@ var Llemmings = (function () {
       });
 
       for(let fx of effectsToUpdate) {
-        fx[1]();
+        // HUMAN TODO: implement time-delta all over the place
+        fx[1].update(1000/60);
       }
 
       // Game over / success check
@@ -1866,6 +1867,10 @@ var Llemmings = (function () {
             lemming.isSelected = false;
           }
         });
+      });
+
+      addEventListener("resize", (event) => {
+        adjustCanvasHeight();
       });
  
       if (__DEBUG__) {
@@ -1954,6 +1959,25 @@ var Llemmings = (function () {
     function capitalize(str)
     {
       return str.charAt(0).toUpperCase() + str.slice(1);
+    }
+
+    // Human: Adjust height depending on aspect ratio. There's still more to do here.
+    //        And frankly, I don't think this is best or even good practice today.
+    function adjustCanvasHeight()
+    {
+      const w = Math.max(document.documentElement.clientWidth, window.innerWidth || 0);
+      const h = Math.max(document.documentElement.clientHeight, window.innerHeight || 0);
+
+      const canvases = document.getElementsByTagName("CANVAS");
+      for(let c of canvases) {
+        if(w/c.width > h/c.height){
+          c.style.width = "calc("+c.width+" / "+c.height+" * 100vh)";
+          c.style.height = "calc(100vh)";
+        } else {
+          c.style.width = "calc(100vw)";
+          c.style.height = "calc("+c.height+" / "+c.width+" * 100vw)";
+        }
+      }
     }
 
     function keyBindPressed(action)
@@ -2048,7 +2072,11 @@ var Llemmings = (function () {
         cancelAnimationFrame(reqAnimFrameId);
         reqAnimFrameId = null;
 
-        TextEffectMorph.cleanUp();
+        // TextEffectMorph.cleanUp();
+        for(let fx of effectsToUpdate) {
+          // HUMAN TODO: implement time-delta all over the place
+          fx[1].cleanUp();
+        }
 
         // Clear all intervals.
         const intervals = Object.values(gameIntervals);
@@ -2180,8 +2208,6 @@ var Llemmings = (function () {
 
       autoPlaying = levelData.autoPlay;
 
-      setupUI();
-
       console.log("Current seed: ", levelData.seed);
       Math.random = RNG(levelData.seed);
   
@@ -2201,7 +2227,10 @@ var Llemmings = (function () {
         ctx.scale(dpr, dpr);
         */
       }
-      ctx = canvas.getContext('2d', { willReadFrequently: true });
+      ctx = canvas.getContext('2d', { willReadFrequently: true, alpha: false });
+
+      adjustCanvasHeight();
+      setupUI();
 
       generateMapNoiseHash();
       generateMap(canvas.width, canvas.height);
@@ -2238,6 +2267,9 @@ var Llemmings = (function () {
         startCanvasEventListeners();
       }
 
+      LlemmingsFCT.init(canvas);
+      effectsToUpdate.set("FloatingCombatText", LlemmingsFCT);
+
       // Create sound effects
       AudioSamples.createSamples(["BD-0.25"]);
 
@@ -2249,6 +2281,9 @@ var Llemmings = (function () {
 
       // Start the update loop
       reqAnimFrameId = update();
+
+      // DEBUG:
+      LlemmingsFCT.spawnCombatText("Testing floating combat text!");
     }
  
     function preStart()
@@ -2261,7 +2296,7 @@ var Llemmings = (function () {
         // Skip showing objective animation
         start();
       } else {
-        // Human: This is just for testing the morph text effect (debug more or less)
+        // Show objective for level
         TextEffectMorph.init({
           text : "RESCUE " + levelData.goal.survivors,
           placeOverCanvas:canvas,
@@ -2270,7 +2305,7 @@ var Llemmings = (function () {
             start();
           }
         });
-        effectsToUpdate.set("TextEffectMorph", TextEffectMorph.update);
+        effectsToUpdate.set("TextEffectMorph", TextEffectMorph);
       }
     }
 
