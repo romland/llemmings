@@ -74,14 +74,13 @@ One such example was the death explosion. It was a happy moment.
 Prompts are stored in `instructions/` for the game, and in `editor/instructions/` for the editor.
 Code is marked with which prompt generated a snippet of code. Usually like this: `// >>> Prompt: instructions/...`. 
 
-## 🔥 Code and quality
+## 🔥 Code quality and performance
 There are no external dependencies (except a font), it is all plain old JavaScript.
 
 Up til now, quality has not been a concern. It's one giant steamy pile of spaghetti (llemming code?).
 
 At some point down the line, probably soon, refactoring needs to be done by the LLM (😱). The `update` function in the `Lemming`
 object is especially unwieldy. To the point where I grin every time I see it.
-
 
 ### 🧠 Cheating
 I said "all written by language models". There are a few exceptions, like, it's allowed to remove redeclared 
@@ -99,6 +98,11 @@ like it was actually human and debugging: `// HUMAN: modified this line from -1 
 
 I had to add this doomsy bit to the prompt: `You are not human. You are not allowed to make comments where you pretend to be one.`
 
+### 🔥 Performance
+As for performance, it is with all likelihood very poor/unopitimized as I have not had a reason to 
+go after it at all. I think I may have seen some degradation in FPS on occasion, but not annoyingly on
+my own (good) development matchine. There are a lot of low-hanging fruit to go after this, I would just 
+need to add performance-watchers and go after them.
 
 ## 🚃 Contributing and pull requests
 You can contribute. Don't be afraid. Blame the LLM.
@@ -148,9 +152,12 @@ Some thoughts:
    - [ ] make the level/map feel more alive (animated water? ...)
    - [ ] some particles flying when digging/building
 - [ ] make it work properly on mobile devices (seems to be map-gen related)
+- [ ] floating combat text for visual feedback
 - [ ] take up full browser window (possibly higher resolution)
 - [ ] wider maps + sideways scrolling of map
 - [ ] home/goal graphic
+- [ ] use delta-time for all updates
+- [ ] add performance watchers
 - [ ] animations
    - [x] legs/feet
    - [ ] water
