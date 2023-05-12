@@ -18,7 +18,7 @@
             margin: 0 auto;
         }
 
-        button {
+        .actbtn {
           font-size: 40px;
         }
 
@@ -95,27 +95,32 @@
 </head>
 <body>
   <div style="font-family: Henny Penny; overflow: hidden; position: absolute; height: 0px; width: 0px;">`</div>
+
+  <div id="keybinding-editor"></div>
   <canvas id="canvas"></canvas>
 
   <div id="coordinatesDiv"></div>
   <div id="infoDiv"></div>
 
   <div id="lemming-actions">
-    <button onclick="Llemmings.applyAction('Climber')" data-resource="Climber">🧗<span class="count"></span></button>
-    <button onclick="Llemmings.applyAction('Floater')" data-resource="Floater">🪂<span class="count"></span></button>
-    <button onclick="Llemmings.applyAction('Bomber')" data-resource="Bomber">💣<span class="count"></span></button>
-    <button onclick="Llemmings.applyAction('Blocker')" data-resource="Blocker">🚫<span class="count"></span></button>
-    <button onclick="Llemmings.applyAction('Builder')" data-resource="Builder">🏗️<span class="count"></span></button>
-    <button onclick="Llemmings.applyAction('Basher')" data-resource="Basher">🤜<span class="count"></span></button>
-    <button onclick="Llemmings.applyAction('Miner')" data-resource="Miner">⛏️<span class="count"></span></button>
-    <button onclick="Llemmings.applyAction('Digger')" data-resource="Digger">🕳️<span class="count"></span></button>
-    <button onclick="Llemmings.togglePause()">⏸️</button>
-    <button onclick="Llemmings.restart(document.getElementById('canvas'))">🔄</button>
+    <button class="actbtn" onclick="Llemmings.applyAction('Climber')" data-resource="Climber">🧗<span class="count"></span></button>
+    <button class="actbtn" onclick="Llemmings.applyAction('Floater')" data-resource="Floater">🪂<span class="count"></span></button>
+    <button class="actbtn" onclick="Llemmings.applyAction('Bomber')" data-resource="Bomber">💣<span class="count"></span></button>
+    <button class="actbtn" onclick="Llemmings.applyAction('Blocker')" data-resource="Blocker">🚫<span class="count"></span></button>
+    <button class="actbtn" onclick="Llemmings.applyAction('Builder')" data-resource="Builder">🏗️<span class="count"></span></button>
+    <button class="actbtn" onclick="Llemmings.applyAction('Basher')" data-resource="Basher">🤜<span class="count"></span></button>
+    <button class="actbtn" onclick="Llemmings.applyAction('Miner')" data-resource="Miner">⛏️<span class="count"></span></button>
+    <button class="actbtn" onclick="Llemmings.applyAction('Digger')" data-resource="Digger">🕳️<span class="count"></span></button>
+    <button class="actbtn" onclick="Llemmings.togglePause()">⏸️</button>
+    <button class="actbtn" onclick="Llemmings.restart(document.getElementById('canvas'))">🔄</button>
     <a href="https://github.com/romland/llemmings/" target="_blank"><img style="width: 30px;" src="github/github.svg"/></a>
   </div>
 
   <div id="start-game" onclick="Llemmings.startGame()">Let's go!</div>
 
+  <span style="font-size: 60px;" onclick="LlemmingsKeyBindings.initKeyBindEditor()">⌨️</span>
+
+  <script type="text/javascript" src="utils/key-bindings.js"></script>
   <script type="text/javascript" src="utils/texteffect-morph.js"></script>
   <script type="text/javascript" src="utils/organics.js"></script>
   <script type="text/javascript" src="utils/levels.0001.js"></script>

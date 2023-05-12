@@ -1,0 +1,32 @@
+Using client-side javascript and given this structure:
+
+const defaultKeybinds = {
+    "select-next-creature": "tab",
+    "select-previous-creature": "shift+tab",
+    "deselect-creature": "space",
+    "restart-level": "escape",
+    "toggle-pause": "alt+p",
+    "apply-climber": "ctrl+1",
+    "apply-floater": "cmd+2",
+    'apply-bomber': "3",
+    'apply-blocker': "4",
+    'apply-builder': "5",
+    'apply-basher': "6",
+    'apply-miner': "7",
+    'apply-digger': "8"
+};
+
+This structure is pairs of { action : key-combination, ... }.
+
+Give me a function that will listen to key-event and when a matching key combination is pressed,
+execute the appropriate function, that is, an action named 'select-next-creature' would have a 
+function called selectNextCreature.
+
+Note that "shift+tab" is not an actual valid key in an event. You would need to check
+for the modifier shift and the actual key for tab.
+
+The structure is dynamic, generate the name of the function we need to call dynamically.
+
+You do not need to give me the functions for the actions, they already exist.
+
+I don't need an explanation of the code this time.

@@ -1,0 +1,38 @@
+>>> GPT-4: chatGPT missed quite a few details of the below specification
+>>> ChatGPT: After seeing GPT-4's output, I got a better idea on how I did the prompt wrong. So... the code is actually ChatGPT after all
+
+=====
+Ignore:
+- it's important that user is able to assign two keys-combinations for the same action
+- To support multiple key-combinations for a single action, I picture a key-binding structure like this: { "select-next-creature" : [ "key-combo-1", "key-combo-2" ], ... }
+=====
+
+Given a game written in JavaScript.
+
+I need a key-binding editor where I can view and set my keybindings. Make it so that I
+can press a key-combo in an input box to set it rather than having to type in the key-combo.
+
+Make sure:
+- the key-combination is valid when using client events
+- generate the HTML for the binds (e.g. name of the action and input field for setting the key for it)
+- place the generated HTML in the element with ID "keybinding-editor"
+- that when I press e.g. "shift+3" it does not generate a key-shortcut that says "shift+#", it should say "shift+3"
+- it's not possible to assign more than one action to the same key (any other actions using that key should become unassigned)
+- the key-combination is a plain key (a-z, 0-9) or a key in combination with shift/ctrl/cmd/alt
+- to add buttons for reverting to default and save
+- you cannot assign only a modifier key as a keybind
+- to bind event-listeners only to the input field, not the entire window
+- that it says "space" instead of " " for the spacebar key
+
+The following keybinds are there by default (ID of the action to perform : key-combination(s)):
+select-next-creature : tab
+select-previous-creature : shift+tab
+deselect-creature : space
+restart-level : escape
+toggle-pause : p 
+apply-climber : 1 
+apply-floater : 2
+
+Load and save the bindings using local storage.
+
+This time give me only the javascript code, I don't need any explanation.

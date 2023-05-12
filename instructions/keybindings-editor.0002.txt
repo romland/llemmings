@@ -1,0 +1,2 @@
+Give me a function to convert strings like "select-previous-creature" 
+to "Select Previous Creature". I don't need an explanation.

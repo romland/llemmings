@@ -1852,12 +1852,6 @@ var Llemmings = (function () {
         });
       });
  
-      window.addEventListener('keydown', (evt) => {
-        switch(evt.key) {
-          case "p": togglePause(); break;
-        }
-      });
-
       if (__DEBUG__) {
         // >>> Prompt: instructions/coordinates-div.0001.txt
         canvas.addEventListener("mousemove", function(event) {
@@ -1940,6 +1934,45 @@ var Llemmings = (function () {
         }
       }
     }
+
+
+    /*
+      "select-next-creature": "tab",
+      "select-previous-creature": "shift+tab",
+      "deselect-creature": "space",
+      "restart-level": "escape",
+      "toggle-pause": "p",
+      "apply-climber": "1",
+      "apply-floater": "2",
+      'apply-bomber': "3",
+      'apply-blocker': "4",
+      'apply-builder': "5",
+      'apply-basher': "6",
+      'apply-miner': "7",
+      'apply-digger': "8"
+    */
+    function keyBindPressed(action)
+    {
+      console.log("TODO: KEYBIND PRESSED:", action);
+
+      // This should always work.
+      if(action === "toggle-pause") {
+        togglePause();
+        return;
+      }
+
+      /*
+      TODO:
+      Pause and escape are exception to this:
+
+      only listen to keybinds if we are:
+          playing is true
+          autoPlaying is false
+          disableGame is false
+      */
+
+    }
+
 
     function reset()
     {
@@ -2190,6 +2223,7 @@ var Llemmings = (function () {
     /**
      * Human: This is the entry point when page is loaded/refreshed.
      * Human: Note that it is NOT run if in level editor.
+     * Human: It starts the intro screen of the game.
      */
     function runOnce(resetLocalStorage = false)
     {
@@ -2209,6 +2243,8 @@ var Llemmings = (function () {
       }
       console.log("Loaded persisted data...", persisted);
 
+      LlemmingsKeyBindings.startKeyBinds(keyBindPressed);
+
       // Test inits
       // init(document.getElementById('canvas'), { seed : null, resources : { lemmings : 150, Bomber : 99 } }, true);
       // init(document.getElementById('canvas'), { seed : 1682936781219 }, true);
@@ -2218,6 +2254,8 @@ var Llemmings = (function () {
 
       // This is the real init for the intro
       init(document.getElementById('canvas'), LlemmingsLevels[0], true);
+
+      // console.warn("DEBUG: Pausing intro by default!"); togglePause();
 
       // start();
       preStart();
