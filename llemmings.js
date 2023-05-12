@@ -1706,6 +1706,15 @@ var Llemmings = (function () {
         }
       }
 
+      const settingsElt = document.getElementById("settings");
+      if(settingsElt) {
+        if(levelData.ui.showSettings === true) {
+          settingsElt.style.display = "block";
+        } else {
+          settingsElt.style.display = "none";
+        }
+      }
+
       // Update resource-count on the HTML buttons
       let spans = document.querySelectorAll('#lemming-actions .count');
       if(!spans) {
@@ -1843,9 +1852,16 @@ var Llemmings = (function () {
         const mouseX = (event.clientX - rect.left) * scaleX;
         const mouseY = (event.clientY - rect.top) * scaleY;
   
+        let gotOne = false;
         lemmings.forEach((lemming) => {
-          if (mouseX >= lemming.x && mouseX <= lemming.x + lemming.width && mouseY >= lemming.y && mouseY <= lemming.y + lemming.height) {
+          if(!gotOne 
+              && mouseX >= lemming.x 
+              && mouseX <= lemming.x + lemming.width 
+              && mouseY >= lemming.y 
+              && mouseY <= lemming.y + lemming.height)
+          {
             lemming.isSelected = true;
+            gotOne = true;
           } else {
             lemming.isSelected = false;
           }
@@ -1935,44 +1951,96 @@ var Llemmings = (function () {
       }
     }
 
-
-    /*
-      "select-next-creature": "tab",
-      "select-previous-creature": "shift+tab",
-      "deselect-creature": "space",
-      "restart-level": "escape",
-      "toggle-pause": "p",
-      "apply-climber": "1",
-      "apply-floater": "2",
-      'apply-bomber': "3",
-      'apply-blocker': "4",
-      'apply-builder': "5",
-      'apply-basher': "6",
-      'apply-miner': "7",
-      'apply-digger': "8"
-    */
-    function keyBindPressed(action)
+    function capitalize(str)
     {
-      console.log("TODO: KEYBIND PRESSED:", action);
-
-      // This should always work.
-      if(action === "toggle-pause") {
-        togglePause();
-        return;
-      }
-
-      /*
-      TODO:
-      Pause and escape are exception to this:
-
-      only listen to keybinds if we are:
-          playing is true
-          autoPlaying is false
-          disableGame is false
-      */
-
+      return str.charAt(0).toUpperCase() + str.slice(1);
     }
 
+    function keyBindPressed(action)
+    {
+      // Global actions
+      switch(action) {
+        case "toggle-pause":  togglePause();  return;
+        case "restart-level": restartLevel(); return;
+        case "exit-game": exitGame(); return;
+      }
+
+      if(playing && !autoPlaying && !levelData.disableGame) {
+        switch(action) {
+          case "select-next-creature":
+            selectNextLemming();
+            return;
+          case "select-previous-creature":
+            selectPreviousLemming();
+            return;
+          case "deselect-creature":
+            deselectLemmings();
+            return;
+        }
+
+        if(action.startsWith("apply-")) {
+          let actName = capitalize(action.split("-")[1]);
+          applyAction(actName);
+        }
+      }
+    }
+
+    // >>> Prompt: instructions/select-lemming.0001.txt
+    function selectNextLemming() {
+      const index = lemmings.findIndex(lemming => lemming.isSelected);
+      let nextIndex = index === -1 ? 0 : index + 1;
+      if (nextIndex >= lemmings.length) {
+        nextIndex = 0;
+      }
+      deselectLemmings();
+      while (nextIndex !== index) {
+        if (lemmings[nextIndex].isSpawned && !lemmings[nextIndex].isDead && !lemmings[nextIndex].rescued) {
+          lemmings[nextIndex].isSelected = true;
+          return;
+        }
+        nextIndex = (nextIndex + 1) % lemmings.length;
+      }
+    }
+    
+    // >>> Prompt: instructions/select-lemming.0001.txt
+    function selectPreviousLemming() {
+      const index = lemmings.findIndex(lemming => lemming.isSelected);
+      let previousIndex = index === -1 ? lemmings.length - 1 : index - 1;
+      if (previousIndex < 0) {
+        previousIndex = lemmings.length - 1;
+      }
+      deselectLemmings();
+      while (previousIndex !== index) {
+        if (lemmings[previousIndex].isSpawned && !lemmings[previousIndex].isDead && !lemmings[previousIndex].rescued) {
+          lemmings[previousIndex].isSelected = true;
+          return;
+        }
+        previousIndex = (previousIndex - 1 + lemmings.length) % lemmings.length;
+      }
+    }
+    
+    // >>> Prompt: instructions/select-lemming.0001.txt
+    function deselectLemmings() {
+      lemmings.forEach(lemming => {
+        if (lemming.isSelected) {
+          lemming.isSelected = false;
+        }
+      });
+    }
+    
+    function restartLevel(canvasElt)
+    {
+      reset();
+      init(canvasElt, levelData, true);
+      preStart();
+    }
+
+    function exitGame()
+    {
+      reset();
+      init(document.getElementById('canvas'), LlemmingsLevels[0], true);
+      preStart();
+    }
 
     function reset()
     {
@@ -2099,6 +2167,7 @@ var Llemmings = (function () {
           showActions : givenLevel.ui?.showActions ?? true,
           showObjective : givenLevel.ui?.showObjective ?? true,
           showStartGame : givenLevel.ui?.showStartGame ?? false,
+          showSettings : givenLevel.ui?.showSettings ?? false,
         },
         solution : givenLevel.solution || { },
         goal : { survivors : givenLevel.goal?.survivors || 30 },
@@ -2268,7 +2337,7 @@ var Llemmings = (function () {
 
     if(!EDITOR_MODE) {
       document.fonts.ready.then(function () {
-        runOnce(true);
+        runOnce(false);
       });
     }
 
@@ -2279,11 +2348,7 @@ var Llemmings = (function () {
       togglePause : togglePause,
       applyAction : applyAction,
       reset : reset,
-      restart : (canvasElt) => {
-        reset();
-        init(canvasElt, levelData, true);
-        preStart();
-      },
+      restart : restartLevel,
       startGame : () => {
         // "Start game" button on intro screen
         if(isPaused) {

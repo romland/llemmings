@@ -1,18 +1,20 @@
+// >>> Prompt: instructions/keybindings-editor.0001.txt
 var LlemmingsKeyBindings = (function () {
     const defaultKeybinds = {
-        "select-next-creature": "tab",
-        "select-previous-creature": "shift+tab",
-        "deselect-creature": "space",
+        "exit-game": "x",
         "restart-level": "escape",
+        "select-next-creature": "q",
+        "select-previous-creature": "e",
+        "deselect-creature": "space",
         "toggle-pause": "p",
         "apply-climber": "1",
         "apply-floater": "2",
         'apply-bomber': "3",
         'apply-blocker': "4",
-        'apply-builder': "5",
-        'apply-basher': "6",
-        'apply-miner': "7",
-        'apply-digger': "8"
+        'apply-builder': "shift+1",
+        'apply-basher': "shift+2",
+        'apply-miner': "shift+3",
+        'apply-digger': "shift+4"
     };
     
     let keybindingEditor, bindings, toCallOnKeyBindPress;
@@ -183,6 +185,10 @@ var LlemmingsKeyBindings = (function () {
     {
         keybindingEditor = document.getElementById("keybinding-editor");
         bindings = JSON.parse(localStorage.getItem("keybindings")) || { ...defaultKeybinds };
+
+        // Human: To facilitate for adding new binds in the future, merging default binds with saved binds instead of just ||.
+        bindings = { ...bindings, ...defaultKeybinds };
+
         generateHTML();
     }
 
@@ -190,6 +196,9 @@ var LlemmingsKeyBindings = (function () {
     function startKeyBinds(_toCallOnKeyBindPress)
     {
         bindings = JSON.parse(localStorage.getItem("keybindings")) || { ...defaultKeybinds };
+
+        // Human: To facilitate for adding new binds in the future, merging default binds with saved binds instead of just ||.
+        bindings = { ...bindings, ...defaultKeybinds };
 
         toCallOnKeyBindPress = _toCallOnKeyBindPress;
         document.addEventListener("keydown", handleKeyBinds);

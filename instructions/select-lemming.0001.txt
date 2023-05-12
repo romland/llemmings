@@ -1,0 +1,27 @@
+Given Javascript and an array called 'lemmings' containing lemming objects.
+
+A lemming object has the following attributes:
+- isSpawned
+- isDead
+- rescued
+- isSelected
+
+I want three functions:
+selectNextLemming()
+selectPreviousLemming()
+deselectLemmings()
+
+At most, one lemming can be selected at any given time. But obviously there might
+be situations where no lemmings are selected.
+
+A lemming can only be selected if it is spawned
+A lemming can NOT be selected if it is dead or rescued.
+
+Don't use any global properties, use only 'isSelected' to determine whether a 
+lemming is selected.
+
+Important: If selecting next or previous go past array bounds, loop around
+to select either first or last of the array (provided the spawned/dead/rescued
+attributes are okay).
+
+This time I don't need an explanation, just give me the code.

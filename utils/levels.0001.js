@@ -63,6 +63,7 @@ var LlemmingsLevels = [
             showActions : false,
             showObjective : false,
             showStartGame : true,
+            showSettings : true,
         },
         "start": {
             "x": 50,

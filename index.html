@@ -91,6 +91,10 @@
           background: linear-gradient(to bottom, #7a4f24, #af7a37);
         }
 
+        #settings {
+          display: none;
+        }
+
     </style>
 </head>
 <body>
@@ -118,7 +122,9 @@
 
   <div id="start-game" onclick="Llemmings.startGame()">Let's go!</div>
 
-  <span style="font-size: 60px;" onclick="LlemmingsKeyBindings.initKeyBindEditor()">⌨️</span>
+  <div id="settings">
+    <span style="font-size: 60px;" onclick="LlemmingsKeyBindings.initKeyBindEditor()">⌨️</span>
+  </div>
 
   <script type="text/javascript" src="utils/key-bindings.js"></script>
   <script type="text/javascript" src="utils/texteffect-morph.js"></script>
