@@ -25,6 +25,7 @@ var Llemmings = (function () {
     let canvas, ctx;        // set by init().
     let background; // global variable to store canvas image data (restored in main loop below somewhere)
     let oldImgData; // check collisions against this (array of 4 bytes / pixel)
+    let gradientsData; // contains a backup of the gradients for when we blow stuff up
 
     // Kept around for clean-up reasons
     let reqAnimFrameId = null;
@@ -475,6 +476,34 @@ var Llemmings = (function () {
       }
     }
 
+
+    /**
+     * >>> Prompt: instructions/gradients-backup.0001.txt
+     * Creates a temporary 2d HTML canvas using same size as global variable 'canvas',
+     * calls the function setGradients on it, takes a byte-array backup of it to return,
+     * destroy the temporary canvas.
+     * @param {Array} gradients - array of gradient objects
+     * @returns {Uint8ClampedArray} - byte-array backup of the gradient
+     */
+    function backupGradients(gradients) {
+      // create temporary canvas with same size as global variable 'canvas'
+      const tmpCanvas = document.createElement('canvas');
+      tmpCanvas.width = canvas.width;
+      tmpCanvas.height = canvas.height;
+      const tmpCtx = tmpCanvas.getContext('2d');
+
+      // call setGradients function on the temporary canvas
+      setGradients(tmpCtx, gradients);
+
+      // take backup of temporary canvas as byte-array
+      const imageData = tmpCtx.getImageData(0, 0, tmpCanvas.width, tmpCanvas.height);
+      const backup = new Uint8ClampedArray(imageData.data);
+
+      // destroy temporary canvas
+      tmpCanvas.remove();
+
+      return backup;
+    }
 
     // >>> Prompt: editor/instructions/gradient-serialize.0001.txt
     // HUMAN: Crivens, I forgot I had an LLM to ask to implement this function,
@@ -1096,19 +1125,14 @@ var Llemmings = (function () {
           var yCoord = y + yOffset
           
           if (xCoord >= 0 && xCoord < canvas.width && yCoord >= 0 && yCoord < canvas.height) {
-            var noiseValue = 255;
-            var alpha = Math.round(noiseValue * 255);
+            // var noiseValue = 255;
+            var alpha = 0;//Math.round(noiseValue * 255);
             
             // Set r, g, b, and a channels of pixel
-            background.data[(yCoord * canvas.width + xCoord) * 4] = 0;
-            background.data[(yCoord * canvas.width + xCoord) * 4 + 1] = 0;
-            background.data[(yCoord * canvas.width + xCoord) * 4 + 2] = 0;
-            background.data[(yCoord * canvas.width + xCoord) * 4 + 3] = alpha;
-  
-            oldImgData.data[(yCoord * canvas.width + xCoord) * 4] = 0;
-            oldImgData.data[(yCoord * canvas.width + xCoord) * 4 + 1] = 0;
-            oldImgData.data[(yCoord * canvas.width + xCoord) * 4 + 2] = 0;
-            oldImgData.data[(yCoord * canvas.width + xCoord) * 4 + 3] = alpha;
+            background.data[(yCoord * canvas.width + xCoord) * 4] = gradientsData[(yCoord * canvas.width + xCoord) * 4];
+            background.data[(yCoord * canvas.width + xCoord) * 4 + 1] = gradientsData[(yCoord * canvas.width + xCoord) * 4 + 1];
+            background.data[(yCoord * canvas.width + xCoord) * 4 + 2] = gradientsData[(yCoord * canvas.width + xCoord) * 4 + 2];
+            background.data[(yCoord * canvas.width + xCoord) * 4 + 3] = gradientsData[(yCoord * canvas.width + xCoord) * 4 + 3];
           }
         }
       }
@@ -1222,6 +1246,10 @@ var Llemmings = (function () {
         LlemmingsFCT.spawnCombatText("Lemming is busy");
         return;
       }
+
+      if(levelData.unlimitedResources === true) {
+        levelDataResources[action] = 99;
+      }
   
       // Get the button element that was clicked
       // >>> Prompt: instructions/actions-resource-counter.0001.txt
@@ -1245,18 +1273,21 @@ var Llemmings = (function () {
           // >>> Prompt: instructions/climber.0001.txt
           selectedLemming.action = "Climber";
           selectedLemming.isSelected = false;
+          LlemmingsFCT.spawnCombatText("Climbing!");
           break;
   
         case 'Floater':
           // >>> Prompt: instructions/floater.0001.txt
           selectedLemming.action = "Floater";
           selectedLemming.isSelected = false;
+          LlemmingsFCT.spawnCombatText("Whee. Floating!");
           break;
   
         case 'Bomber':
           // >>> Prompt: instructions/bomber.0001.txt
           selectedLemming.action = "Bomber";
           selectedLemming.isSelected = false;
+          LlemmingsFCT.spawnCombatText("Aw yeah! BOOM!");
           break;
   
         case 'Blocker':
@@ -1266,6 +1297,7 @@ var Llemmings = (function () {
           selectedLemming.velX = 0;
           moveOverlappingLemmingsToRandomSideOfBlocker(selectedLemming);
           selectedLemming.isSelected = false;
+          LlemmingsFCT.spawnCombatText("Halt!");
           break;
   
         case 'Builder':
@@ -1274,6 +1306,7 @@ var Llemmings = (function () {
   
           selectedLemming.action = "Builder";     // HUMAN: Added this.
           // selectedLemming.isSelected = false;  // HUMAN: Let builders remain selected for now
+          LlemmingsFCT.spawnCombatText("Everything's a nail!");
           break;
   
         case 'Basher':
@@ -1281,18 +1314,21 @@ var Llemmings = (function () {
           selectedLemming.action = "Basher";     // HUMAN: Added this.
           selectedLemming.isSelected = false;
           console.log("Assigned basher to", selectedLemming.id);  // HUMAN: debug
+          LlemmingsFCT.spawnCombatText("Ugh ugh. Bashing!");
           break;
   
         case 'Miner':
           // >>> Prompt: ./instructions/digger-miner-basher.0001.txt
           selectedLemming.action = "Miner";     // HUMAN: Added this.
           selectedLemming.isSelected = false;
+          LlemmingsFCT.spawnCombatText("Hey ho, hey ho!");
           break;
   
         case 'Digger':
           // >>> Prompt: ./instructions/digger-miner-basher.0001.txt
           selectedLemming.action = "Digger";     // HUMAN: Added this.
           selectedLemming.isSelected = false;
+          LlemmingsFCT.spawnCombatText("Digging!");
           break;
   
         default:
@@ -2145,6 +2181,7 @@ var Llemmings = (function () {
         seed : givenLevel.seed || Date.now(),
         disableGame : givenLevel.disableGame ?? false,
         autoPlay : givenLevel.autoPlay ?? false,
+        unlimitedResources : givenLevel.unlimitedResources ?? false,
         gradients : givenLevel.gradients || [
           {
             type: 'linear',
@@ -2254,6 +2291,7 @@ var Llemmings = (function () {
       setupStartFinish();
 
       setGradients(ctx, levelData.gradients);
+      gradientsData = backupGradients(levelData.gradients);     // needed for when we blow stuff up
 
       renderDecorations();
 
@@ -2281,9 +2319,6 @@ var Llemmings = (function () {
 
       // Start the update loop
       reqAnimFrameId = update();
-
-      // DEBUG:
-      LlemmingsFCT.spawnCombatText("Testing floating combat text!");
     }
  
     function preStart()

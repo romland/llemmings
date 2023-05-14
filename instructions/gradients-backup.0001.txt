@@ -1,0 +1,6 @@
+Using javascript, I need a function that:
+- creates a temporary 2d HTML canvas using same size as global variable 'canvas'
+- calls this function on it: setGradients(context, gradients),
+- takes a byte-array backup of it to return
+- destroy the temporary canvas
+- name the function backupGradients(gradients)

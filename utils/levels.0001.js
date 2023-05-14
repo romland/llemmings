@@ -9,8 +9,9 @@ var LlemmingsLevels = [
         // "seed" : 49181,        // terrain on left third
         // "seed" : 1683811147696,// a lot of terrain on bottom half
         "seed" : 49188,        // empty
-        "__DEBUG__" : false,
+        "__DEBUG__" : true,
         "disableGame" : true,  // set to true to disable objectives / game over / etc
+        "unlimitedResources" : true,
         "autoPlay" : true,
         "spawnInterval": 2500,
         "resources": {
@@ -77,6 +78,49 @@ var LlemmingsLevels = [
             "radius" : 100,
             "clear": true
         },
+        "solution" : {
+            [1] : [
+                {
+                    x: 150, y: 200, r: 10,
+                    action : "Bomber"
+                },
+            ],
+            [2] : [
+                {
+                    x: 115, y: 118, r: 5,
+                    action : "Builder"
+                },
+            ],
+            [3] : [
+                {
+                    x: 193, y: 204, r: 5,
+                    action : "Floater"
+                },
+            ],
+            [4] : [
+                {
+                    x: 238, y: 130, r: 10,
+                    action : "Builder"
+                },
+            ],
+            [5] : [
+                {
+                    x: 329, y: 141, r: 10,
+                    action : "Builder"
+                },
+                {
+                    x: 288, y: 192, r: 5,
+                    action : "Bomber"
+                },
+            ],
+            [9] : [
+                {
+                    x: 424, y: 139, r: 10,
+                    action : "Builder"
+                },
+            ],
+        }
+
     },
     {
         "level": 1,
