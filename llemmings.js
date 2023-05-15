@@ -1291,7 +1291,7 @@ var Llemmings = (function () {
           // >>> Prompt: instructions/bomber.0001.txt
           selectedLemming.action = "Bomber";
           selectedLemming.isSelected = false;
-          LlemmingsFCT.spawnCombatText("Aw yeah! BOOM!");
+          LlemmingsFCT.spawnCombatText("Oh no! BOOM!");
           break;
   
         case 'Blocker':
@@ -1910,6 +1910,9 @@ var Llemmings = (function () {
       });
 
       addEventListener("resize", (event) => {
+        if(EDITOR_MODE) {
+          return;
+        }
         adjustCanvasHeight();
       });
  
@@ -2270,7 +2273,9 @@ var Llemmings = (function () {
       }
       ctx = canvas.getContext('2d', { willReadFrequently: true, alpha: false });
 
-      adjustCanvasHeight();
+      if(!EDITOR_MODE) {
+        adjustCanvasHeight();
+      }
       setupUI();
 
       generateMapNoiseHash();
