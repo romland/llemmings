@@ -1757,6 +1757,11 @@ var Llemmings = (function () {
       if(settingsElt) {
         if(levelData.ui.showSettings === true) {
           settingsElt.style.display = "block";
+          const rect = canvas.getBoundingClientRect();
+          console.log("RECT", rect)
+          settingsElt.style.position = "absolute";
+          settingsElt.style.top = (rect.bottom - 120) + "px";
+          settingsElt.style.left = (rect.right - 140) + "px";
         } else {
           settingsElt.style.display = "none";
         }
