@@ -1758,7 +1758,6 @@ var Llemmings = (function () {
         if(levelData.ui.showSettings === true) {
           settingsElt.style.display = "block";
           const rect = canvas.getBoundingClientRect();
-          console.log("RECT", rect)
           settingsElt.style.position = "absolute";
           settingsElt.style.top = (rect.bottom - 120) + "px";
           settingsElt.style.left = (rect.right - 140) + "px";
@@ -1769,11 +1768,10 @@ var Llemmings = (function () {
 
       // Update resource-count on the HTML buttons
       let spans = document.querySelectorAll('#lemming-actions .count');
-      if(!spans) {
-        return;
-      }
-      for(let span of spans) {
-        span.innerHTML = levelDataResources[span.parentElement.getAttribute("data-resource")]
+      if(spans) {
+        for(let span of spans) {
+          span.innerHTML = levelDataResources[span.parentElement.getAttribute("data-resource")]
+        }
       }
     }
 
@@ -1926,6 +1924,7 @@ var Llemmings = (function () {
           return;
         }
         adjustCanvasHeight();
+        setupUI();        
       });
  
       if (__DEBUG__) {
