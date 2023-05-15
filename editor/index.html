@@ -69,6 +69,7 @@
 
     <script type="text/javascript" src="../utils/texteffect-morph.js"></script>
     <script type="text/javascript" src="../utils/audio-samples.js"></script>
+    <script type="text/javascript" src="../utils/floating-combat-text.js"></script>
     <script type="text/javascript" src="../utils/crud.js"></script>
     <script type="text/javascript" src="../utils/organics.js"></script>
     <script type="text/javascript" src="../utils/levels.0001.js"></script>
@@ -526,6 +527,7 @@
         if(!levelData.shapes.length) return;
         redoStack.push(levelData.shapes.pop());
         draw();
+        renderLevel();
       }
 
       function redo()
@@ -533,6 +535,7 @@
         if(!redoStack.length) return;
         levelData.shapes.push(redoStack.pop());
         draw();
+        renderLevel();
       }
 
       function preview()
