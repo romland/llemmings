@@ -1125,14 +1125,18 @@ var Llemmings = (function () {
           var yCoord = y + yOffset
           
           if (xCoord >= 0 && xCoord < canvas.width && yCoord >= 0 && yCoord < canvas.height) {
-            // var noiseValue = 255;
-            var alpha = 0;//Math.round(noiseValue * 255);
-            
+           
             // Set r, g, b, and a channels of pixel
             background.data[(yCoord * canvas.width + xCoord) * 4] = gradientsData[(yCoord * canvas.width + xCoord) * 4];
             background.data[(yCoord * canvas.width + xCoord) * 4 + 1] = gradientsData[(yCoord * canvas.width + xCoord) * 4 + 1];
             background.data[(yCoord * canvas.width + xCoord) * 4 + 2] = gradientsData[(yCoord * canvas.width + xCoord) * 4 + 2];
             background.data[(yCoord * canvas.width + xCoord) * 4 + 3] = gradientsData[(yCoord * canvas.width + xCoord) * 4 + 3];
+
+            // Delete collision data
+            oldImgData.data[(yCoord * canvas.width + xCoord) * 4] = 0;
+            oldImgData.data[(yCoord * canvas.width + xCoord) * 4 + 1] = 0;
+            oldImgData.data[(yCoord * canvas.width + xCoord) * 4 + 2] = 0;
+            oldImgData.data[(yCoord * canvas.width + xCoord) * 4 + 3] = 0;
           }
         }
       }
@@ -1408,7 +1412,7 @@ var Llemmings = (function () {
     // The LLM kept getting tiny parts of this wrong over and over, so I lifted this implementation
     // to make it a bit easier to get something useful.
     // >>> Prompt: digger-miner-basher.0001.txt
-    function clearPixel(x, y, col = 0) {
+    function clearPixel(x, y, grayScale = 0) {
       if (x >= canvas.width || y >= canvas.height || x < 0 || y < 0) {
         return;
       }
@@ -1420,10 +1424,10 @@ var Llemmings = (function () {
       oldImgData.data[pixelIndex + 3] = 255;
 
       if(background) {
-        background.data[pixelIndex] = col;
-        background.data[pixelIndex + 1] = col;
-        background.data[pixelIndex + 2] = col;
-        background.data[pixelIndex + 3] = (col ? 64 : 0);
+        background.data[pixelIndex] = grayScale || gradientsData[pixelIndex];
+        background.data[pixelIndex + 1] = grayScale || gradientsData[pixelIndex + 1];
+        background.data[pixelIndex + 2] = grayScale || gradientsData[pixelIndex + 2];
+        background.data[pixelIndex + 3] = gradientsData[pixelIndex + 3];
       }
     }
   
