@@ -65,6 +65,7 @@ var LlemmingsLevels = [
             showObjective : false,
             showStartGame : true,
             showSettings : true,
+            showFCT : false,
         },
         "start": {
             "x": 50,
@@ -73,18 +74,12 @@ var LlemmingsLevels = [
             "clear": true
         },
         "finish": {
-            "x": 750,
-            "y": 480,
-            "radius" : 100,
+            "x": 690,
+            "y": 260,
+            "radius" : 50,
             "clear": true
         },
         "solution" : {
-            [1] : [
-                {
-                    x: 150, y: 200, r: 10,
-                    action : "Bomber"
-                },
-            ],
             [2] : [
                 {
                     x: 115, y: 118, r: 5,
@@ -110,7 +105,13 @@ var LlemmingsLevels = [
                 },
                 {
                     x: 288, y: 192, r: 5,
-                    action : "Bomber"
+                    action : "Digger"
+                },
+            ],
+            [8] : [
+                {
+                    x: 398, y: 109, r: 10,
+                    action : "Builder"
                 },
             ],
             [9] : [
@@ -119,6 +120,36 @@ var LlemmingsLevels = [
                     action : "Builder"
                 },
             ],
+            [11] : [
+                {
+                    x: 485, y: 108, r: 10,
+                    action : "Bomber"
+                },
+            ],
+            [12] : [
+                {
+                    x: 470, y: 121, r: 10,
+                    action : "Builder"
+                },
+            ],
+            [13] : [
+                {
+                    x: 550, y: 138, r: 5,
+                    action : "Builder"
+                },
+                {
+                    x: 518, y: 155, r: 5,
+                    action : "Digger"
+                },
+            ],
+/*
+            [15] : [
+                {
+                    x: 640, y: 131, r: 5,
+                    action : "Builder"
+                },
+            ],
+*/
         }
 
     },

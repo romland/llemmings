@@ -1233,6 +1233,13 @@ var Llemmings = (function () {
       ctx.fillRect(this.x, this.y, 2, 2);
     };
   
+    function spawnCombatText(text)
+    {
+      if(levelData.ui.showFCT === false) {
+        return;
+      }
+      LlemmingsFCT.spawnCombatText(text);
+    }
   
     // >>> Prompt: instructions/actions.0001.txt
     function applyAction(action)
@@ -1241,13 +1248,13 @@ var Llemmings = (function () {
   
       // HUMAN: I had to add this myself
       if(!selectedLemming) {
-        LlemmingsFCT.spawnCombatText("You have no target");
+        spawnCombatText("You have no target");
         return;
       }
   
       // HUMAN: I had to add this myself
       if(action !== "Bomber" && selectedLemming.action) {
-        LlemmingsFCT.spawnCombatText("Lemming is busy");
+        spawnCombatText("Lemming is busy");
         return;
       }
 
@@ -1261,7 +1268,7 @@ var Llemmings = (function () {
       const countSpan = btn?.querySelector('.count');
 
       if(levelDataResources[action] <= 0) {
-        LlemmingsFCT.spawnCombatText("Out of " + action + "s");
+        spawnCombatText("Out of " + action + "s");
         return;
       }
 
@@ -1277,21 +1284,21 @@ var Llemmings = (function () {
           // >>> Prompt: instructions/climber.0001.txt
           selectedLemming.action = "Climber";
           selectedLemming.isSelected = false;
-          LlemmingsFCT.spawnCombatText("Climbing!");
+          spawnCombatText("Climbing!");
           break;
   
         case 'Floater':
           // >>> Prompt: instructions/floater.0001.txt
           selectedLemming.action = "Floater";
           selectedLemming.isSelected = false;
-          LlemmingsFCT.spawnCombatText("Whee. Floating!");
+          spawnCombatText("Whee. Floating!");
           break;
   
         case 'Bomber':
           // >>> Prompt: instructions/bomber.0001.txt
           selectedLemming.action = "Bomber";
           selectedLemming.isSelected = false;
-          LlemmingsFCT.spawnCombatText("Oh no! BOOM!");
+          spawnCombatText("Oh no! BOOM!");
           break;
   
         case 'Blocker':
@@ -1301,7 +1308,7 @@ var Llemmings = (function () {
           selectedLemming.velX = 0;
           moveOverlappingLemmingsToRandomSideOfBlocker(selectedLemming);
           selectedLemming.isSelected = false;
-          LlemmingsFCT.spawnCombatText("Halt!");
+          spawnCombatText("Halt!");
           break;
   
         case 'Builder':
@@ -1310,7 +1317,7 @@ var Llemmings = (function () {
   
           selectedLemming.action = "Builder";     // HUMAN: Added this.
           // selectedLemming.isSelected = false;  // HUMAN: Let builders remain selected for now
-          LlemmingsFCT.spawnCombatText("Everything's a nail!");
+          spawnCombatText("Everything's a nail!");
           break;
   
         case 'Basher':
@@ -1318,21 +1325,21 @@ var Llemmings = (function () {
           selectedLemming.action = "Basher";     // HUMAN: Added this.
           selectedLemming.isSelected = false;
           console.log("Assigned basher to", selectedLemming.id);  // HUMAN: debug
-          LlemmingsFCT.spawnCombatText("Ugh ugh. Bashing!");
+          spawnCombatText("Ugh ugh. Bashing!");
           break;
   
         case 'Miner':
           // >>> Prompt: ./instructions/digger-miner-basher.0001.txt
           selectedLemming.action = "Miner";     // HUMAN: Added this.
           selectedLemming.isSelected = false;
-          LlemmingsFCT.spawnCombatText("Hey ho, hey ho!");
+          spawnCombatText("Hey ho, hey ho!");
           break;
   
         case 'Digger':
           // >>> Prompt: ./instructions/digger-miner-basher.0001.txt
           selectedLemming.action = "Digger";     // HUMAN: Added this.
           selectedLemming.isSelected = false;
-          LlemmingsFCT.spawnCombatText("Digging!");
+          spawnCombatText("Digging!");
           break;
   
         default:
@@ -2240,6 +2247,7 @@ var Llemmings = (function () {
           showObjective : givenLevel.ui?.showObjective ?? true,
           showStartGame : givenLevel.ui?.showStartGame ?? false,
           showSettings : givenLevel.ui?.showSettings ?? false,
+          showFCT :  givenLevel.ui?.showFCT ?? true,
         },
         solution : givenLevel.solution || { },
         goal : { survivors : givenLevel.goal?.survivors || 30 },
