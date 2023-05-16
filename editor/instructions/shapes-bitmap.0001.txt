@@ -1,0 +1,37 @@
+>>> Human:
+The need for this arose due to rendering of text on canvases differ between
+browsers. We need to render some pixel-perfect text on the intro screen so
+that pre-programmed lemmings walk the same way in every browser.
+
+>>> Prompt:
+Given Javascript and HTML canvas and the following snippet:
+
+    ctx.font = shape.fontSize + "px " + shape.fontName;
+    ctx.fillStyle = shape.color;
+    ctx.textBaseline = shape.textBaseline;
+    ctx.fillText(shape.string, lastX, lastY);
+
+Render this to a temporary 800x600 canvas using a single color.
+
+Based on this, create an array of BITS for all pixels that should be set.
+Each pixel can be a single bit since it will always be a single color. 
+
+Use the bounds of the text as the size of the bitmap. Ignore everything 
+before and after these positions on both X and Y axis as it is a waste of space.
+Just remember that for that to work when re-rendering this, each line
+(on X axis) must be of the same length.
+
+Again, as we want to minimize the size this will take, it's important that it's
+_bits_, I want 8 pixels per byte. You need to do bit-twiddling/fiddling.
+
+Name the function: generateTextBitmap(...) and return a structure like this:
+{
+    width : ...,
+    data : flat-sequence-of-bits (probably base-64 encoded)
+}
+
+In addition, give me the function to render above structure at a later stage.
+For this function, don't use fillRect, set pixels directly using getImageData 
+and putImageData. Name this function renderBitmap(bitmap, context, x, y) .
+
+This time I don't need any explanation, just give me the code.

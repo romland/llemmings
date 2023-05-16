@@ -63,6 +63,43 @@ var GameUtils = (function () {
       return true;
     }
 
+    // >>> Prompt: editor/instructions/shapes-bitmap.0001.txt
+    // HUMAN TODO: Cache imageData for use in editor (so we don't have to go from b64 to bitmap all the time)
+    function renderBitmap(bitmap, context, x, y) {
+      let rgb;
+      if(bitmap.color && bitmap.color.includes("rgb")) {
+        rgb = bitmap.color.replace("rgb(", "").replace(")", "").split(",");
+      } else {
+        console.warn("no color for bitmap, using white -- might mean that it's not visible")
+        rgb = [255,255,255];
+      }
+
+      const bytes = atob(bitmap.data).split('').map(char => char.charCodeAt(0));
+      const imageData = context.createImageData(bitmap.width, Math.ceil(bytes.length*8 / bitmap.width));
+      const data = imageData.data;
+      let byteIndex = 0;
+      let bitIndex = 0;
+      for (let i = 0; i < data.length; i += 4) {
+        const byte = bytes[byteIndex];
+        const bit = (byte >> bitIndex) & 1;
+        const alpha = bit * 255;
+
+        data[i] = rgb[0];
+        data[i + 1] = rgb[1];
+        data[i + 2] = rgb[2];
+        data[i + 3] = alpha;
+        
+        bitIndex += 1;
+        if (bitIndex === 8) {
+          byteIndex += 1;
+          bitIndex = 0;
+        }
+      }
+
+      // Human note: This will overwrite any data that is already at this location of context.
+      //             Which is fine. For now. As it is only used on intro screen.
+      context.putImageData(imageData, x, y);
+    }
 
     // >>> Prompt: instructions/score.0001.txt
     class ScoreKeeper {
@@ -147,6 +184,7 @@ var GameUtils = (function () {
 
     return {
       ScoreKeeper : ScoreKeeper,
-      matchesCondition : matchesCondition
+      matchesCondition : matchesCondition,
+      renderBitmap : renderBitmap,
     }
 })();

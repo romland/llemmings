@@ -472,6 +472,13 @@ var Llemmings = (function () {
             context.restore();
             break;
 
+          case "bitmap":
+            if(shape.x === undefined || shape.y === undefined) {
+              console.warn("no position for bitmap?")
+              break;
+            }
+            GameUtils.renderBitmap(shape, context, shape.x, shape.y);
+            break;
         }
       }
     }

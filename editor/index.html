@@ -89,6 +89,7 @@
       <button id="shape-draw">∿</button>
       <button id="shape-triangle">⊿</button>
       <button id="shape-text">A</button>
+      <button id="shape-bitmap">B</button>
   
       <input type="checkbox" id="fill"/>Fill
 
@@ -233,6 +234,11 @@
               ctx.fillText(shape.string, lastX, lastY);
               break;
 
+            case "bitmap" :
+              // >>> Prompt: editor/instructions/shapes-bitmap.0001.txt
+              GameUtils.renderBitmap(shape, ctx, lastX, lastY);
+              break;
+
             case "select" :
               break;
 
@@ -260,10 +266,23 @@
           // TODO: Make this configurable
           newShape.fontName = "Henny Penny";
           newShape.filled = true;
-          newShape.fontSize = 160;
+          newShape.fontSize = 140;
           newShape.textBaseline = "hanging";
           newShape.color = "rgb(74, 46, 0)";
           newShape.string = "Llemmings";
+
+        } else if(currToolType === "bitmap") {
+          // >>> Prompt: editor/instructions/shapes-bitmap.0001.txt
+          newShape.fontName = "Henny Penny";
+          newShape.filled = true;
+          newShape.fontSize = 140;
+          newShape.textBaseline = "hanging";
+          newShape.color = "rgb(74, 46, 0)";
+          newShape.string = "Llemmings";
+
+          const bitmap = generateTextBitmap(newShape);
+          newShape.width = bitmap.width;
+          newShape.data = bitmap.data;
         }
 
         levelData.shapes.push(newShape);
@@ -323,6 +342,11 @@
             shape.y = lastY;
             break;
 
+          case "bitmap" :
+            shape.x = lastX;
+            shape.y = lastY;
+            break;
+
           case "select" :
             break;
 
@@ -376,6 +400,13 @@
             minY = shape.y;
             maxX = shape.x + w;
             maxY = shape.y + h;
+            break;
+
+          case 'bitmap':
+            minX = shape.x;
+            minY = shape.y;
+            maxX = shape.x + shape.width;
+            maxY = shape.y + Math.ceil(shape.data.length * 8 / shape.width);
             break;
 
           default:
@@ -489,10 +520,75 @@
               shape.x += x;
               shape.y += y;
               break;
+            case "bitmap":
+              shape.x += x;
+              shape.y += y;
+              break;
             default:
               console.log("Unknown shape type.");
               break;
           }
+      }
+
+      // >>> Prompt: editor/instructions/shapes-bitmap.0001.txt
+      function generateTextBitmap(shape) {
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        const font = shape.fontSize + 'px ' + shape.fontName;
+        const color = shape.color;
+        const baseline = shape.textBaseline;
+        
+        // Set font and fill style
+        ctx.font = font;
+        ctx.fillStyle = color;
+        ctx.textBaseline = baseline;
+        
+        // Draw text to canvas
+        const metrics = ctx.measureText(shape.string);
+        canvas.width = Math.ceil(metrics.width);
+        canvas.height = Math.ceil(shape.fontSize * 1.5);
+        ctx.font = font; // Need to set again after resizing canvas
+        ctx.fillStyle = color; // Need to set again after resizing canvas
+        ctx.textBaseline = baseline; // Need to set again after resizing canvas
+        ctx.fillText(shape.string, 0, 0);
+        
+        // Create the bitmap data
+        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        const data = imageData.data;
+        const bits = [];
+        for (let i = 0; i < data.length; i += 4) {
+          const alpha = data[i + 3];
+          const bit = alpha > 0 ? 1 : 0;
+          bits.push(bit);
+        }
+        
+        // Pack bits into bytes
+        const width = canvas.width;
+        const bytesPerRow = Math.ceil(width / 8);
+        const byteData = new Uint8Array(bytesPerRow * canvas.height);
+        let byteIndex = 0;
+        let bitIndex = 0;
+        let currentByte = 0;
+        for (let i = 0; i < bits.length; i++) {
+          if (bitIndex === 8) {
+            byteData[byteIndex] = currentByte;
+            byteIndex += 1;
+            currentByte = 0;
+            bitIndex = 0;
+          }
+          currentByte |= bits[i] << bitIndex;
+          bitIndex += 1;
+        }
+        if (bitIndex > 0) {
+          byteData[byteIndex] = currentByte;
+        }
+        
+        // Encode to base64
+        const base64 = btoa(String.fromCharCode.apply(null, byteData));
+        return {
+          width,
+          data: base64,
+        };
       }
 
       function serialize()
@@ -649,6 +745,11 @@
         getById("shape-text").addEventListener("click", function() {
           deselectSelected();
           currToolType = "text";
+        });
+
+        getById("shape-bitmap").addEventListener("click", function() {
+          deselectSelected();
+          currToolType = "bitmap";
         });
 
         getById("undo").addEventListener("click", function() {
@@ -835,7 +936,6 @@
         // Do this for every level to be loaded
         initLevel(0);
       });
-
     </script>
 
     <div style="font-family: Henny Penny; overflow: hidden; position: absolute; height: 0px; width: 0px;">`</div>
