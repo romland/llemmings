@@ -1,16 +1,10 @@
 var LlemmingsLevels = [
     {
-        // Level 0 is all defaults with random seed.
-        // Note that the defaults may be different in game and editor.
         "level" : 0,
         "name" : "Intro",
-        // "seed" : 49153,        // tiny terrain on top
-        // "seed" : 49172,        // terrain on top half
-        // "seed" : 49181,        // terrain on left third
-        // "seed" : 1683811147696,// a lot of terrain on bottom half
         "seed" : 49188,        // empty
         "__DEBUG__" : true,
-        "disableGame" : true,  // set to true to disable objectives / game over / etc
+        "disableGame" : true,
         "unlimitedResources" : true,
         "autoPlay" : true,
         "spawnInterval": 2500,
@@ -18,21 +12,7 @@ var LlemmingsLevels = [
             "lemmings": 50,
         },
         "shapes" : [
-            /* Works in Chrome, not so much in other browsers
-            {
-                "type": "text",
-                "filled": true,
-                "color": "rgb(74, 46, 0)",
-                // "color": "rgb(136, 136, 136)",
-                "lineWidth": 1,
-                "fontName": "Henny Penny",
-                "fontSize": 140,
-                "textBaseline": "hanging",
-                "string": "Llemmings",
-                "x": 60,
-                "y": 90
-            },
-            */
+            /* Llemmings logo */
             {
                 "type": "bitmap",
                 "x": 60,
