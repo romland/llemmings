@@ -13,6 +13,8 @@ _Phonetics:_
 
 <br clear="right"/>
 
+You can check [commit history here](https://llemmings.com).
+
 ## 👉 Blindly following comrades: Encouraged
 Llemmings is a game being made by Large Language Models (LLMs), like ChatGPT, LLaMA or GPT-4.
 The _intention_ is that no code is written by a human.

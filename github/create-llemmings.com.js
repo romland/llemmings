@@ -112,6 +112,7 @@ commits.forEach((commit, index) => {
   <!DOCTYPE html>
   <html>
     <head>
+      <meta charset="utf-8">
       <title>Making of LLemMings: ${title}</title>
       <link href="./_style.css" rel="stylesheet">
     </head>
@@ -143,12 +144,13 @@ const indexHtml = `
 <!DOCTYPE html>
 <html>
   <head>
+    <meta charset="utf-8">
     <title>Making of LLemMings</title>
     <link href="./_style.css" rel="stylesheet">
     </head>
   <body>
     <h1>Making of LL<span class="vague">em</span>M<span class="vague">ings</span></h1>
-    <img src="https://github.com/romland/llemmings/raw/main/github/llemming360.png" align="right"/>
+    <img src="https://github.com/romland/llemmings/raw/main/github/llemming360.png" align="right">
     
     <p>
         This is the story that created <a href="https://github.com/romland/llemmings" target="_blank">Llemmings</a>,
