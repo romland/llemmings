@@ -1195,7 +1195,9 @@ var Llemmings = (function () {
     function isPointWithinCircle(x,y,a,b,radius) {
       // calculate the distance between the point (x,y) and the center point (a,b) using Pythagorean theorem
       let distance = Math.abs(x - a) + Math.abs(y - b); 
-      
+      if(isNaN(distance)) {
+        throw "not a number";
+      }
       // compare the distance with the radius of the circle
       return distance <= radius;
     }
@@ -1979,8 +1981,15 @@ var Llemmings = (function () {
 
     // >>> Prompt: score.0001.txt
     function checkLemmingFinish(lemming, finish) {
-      const distance = Math.abs(lemming.x - finish.x) + Math.abs(lemming.y - finish.y);
-      const isReached = distance <= finish.radius;
+      // Human: hardcoded stuff, it should be around where the door is on the house
+      const isReached = isPointWithinCircle(
+        lemming.x + lemming.width / 2,
+        lemming.y + lemming.height,
+        finish.x + finish.radius - 20,
+        finish.y + finish.radius - 20,
+        20
+      );
+
       return isReached;
     }
 
@@ -2003,22 +2012,25 @@ var Llemmings = (function () {
         clearSquare(levelData.finish.x, levelData.finish.y, levelData.finish.radius);
       }
 
+      // Draw platform underneath finish area
       ctx.save();
       ctx.fillStyle = `rgb(${rockColorBytes.join(",")})`;
       ctx.fillRect(
           levelData.finish.x - levelData.finish.radius,
-          levelData.finish.y + levelData.finish.radius - 10,
+          levelData.finish.y + levelData.finish.radius,
           levelData.finish.radius*2,
           10
       );
       ctx.restore();
 
+      // Draw house on top and left side of finish area's platform
       const houseWidth = levelData.finish.radius;
       const houseHeight = levelData.finish.radius;
+      // Human: Bug. Why is it drawn slightly above the platform? (added + 3)
       GameUtils.drawSvgOnCanvas(
         LlemmingsArt.getHouse(houseWidth, houseHeight),
-        levelData.finish.x + (levelData.finish.radius) - houseWidth,
-        levelData.finish.y + (levelData.finish.radius) - houseHeight,
+        levelData.finish.x + levelData.finish.radius - houseWidth,
+        levelData.finish.y + levelData.finish.radius - houseHeight + 3,
         houseWidth,
         houseHeight,
         ctx

@@ -127,19 +127,21 @@ var LlemmingsLevels = [
                     x: 550, y: 138, r: 5,
                     action : "Builder"
                 },
+                /*
                 {
                     x: 518, y: 155, r: 5,
                     action : "Digger"
                 },
+                */
             ],
-/*
-            [15] : [
+
+            [1] : [ // should be 14
                 {
-                    x: 640, y: 131, r: 5,
-                    action : "Builder"
+                    x: 684, y: 218, r: 5,
+                    action : "Digger"
                 },
             ],
-*/
+
         }
 
     },
