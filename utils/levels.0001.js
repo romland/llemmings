@@ -135,7 +135,7 @@ var LlemmingsLevels = [
                 */
             ],
 
-            [1] : [ // should be 14
+            [14] : [
                 {
                     x: 684, y: 218, r: 5,
                     action : "Digger"
