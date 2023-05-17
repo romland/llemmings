@@ -97,7 +97,7 @@ commits.forEach((commit, index) => {
                     : ''
                 }
             </li>
-            <li><a href="./_index.html"> 🏠 </a></li>
+            <li><a href="./index.html"> 🏠 </a></li>
             <li>${
                 index < commits.length - 1
                     ? `<a href="${commits[index + 1].filename}">Next ➡️</a>`
@@ -118,7 +118,7 @@ commits.forEach((commit, index) => {
     </head>
     <body>
       <h1>
-        <a href="./_index.html">Making of LL<span class="vague">em</span>M<span class="vague">ings</span></a>
+        <a href="./index.html">Making of LL<span class="vague">em</span>M<span class="vague">ings</span></a>
       </h1>
       ${links}
       <h2>${title}</h2>

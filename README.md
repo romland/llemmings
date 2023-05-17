@@ -13,8 +13,6 @@ _Phonetics:_
 
 <br clear="right"/>
 
-You can check [commit history here](https://llemmings.com).
-
 ## 👉 Blindly following comrades: Encouraged
 Llemmings is a game being made by Large Language Models (LLMs), like ChatGPT, LLaMA or GPT-4.
 The _intention_ is that no code is written by a human.
@@ -22,6 +20,8 @@ The _intention_ is that no code is written by a human.
 **The job, as a human, is to copy and paste code.**
 
 It is (probably) not yet fun and there be bugs. But the latest and greatest version with one level is [here](https://romland.github.io/llemmings).  
+
+Possible more interesting, the _commit story_ is found [here](https://llemmings.com) (last updated 17-May-2023).  
 
 ![Alt text](github/latest.png?raw=true "Screenshot of Llemmings")
 
