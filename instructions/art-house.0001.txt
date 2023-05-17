@@ -1,0 +1,3 @@
+Give me an SVG that depicts a house.
+
+>>> Human note: It's a house. But it turned out pretty hideous.

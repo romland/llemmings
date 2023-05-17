@@ -101,6 +101,19 @@ var GameUtils = (function () {
       context.putImageData(imageData, x, y);
     }
 
+    // >>> Prompt: instructions/svg-to-canvas.0001.txt
+    function drawSvgOnCanvas(svgString, x, y, width, height, context)
+    {
+        const dataUrl = 'data:image/svg+xml;base64,' + btoa(svgString);
+        const img = new Image();
+        img.src = dataUrl;
+        img.onload = () => {
+          context.drawImage(img, x, y, width, height);
+          console.log("drawn")
+        };
+    }
+
+
     // >>> Prompt: instructions/score.0001.txt
     class ScoreKeeper {
       constructor(canvas, initialLemmingsToSave = 0, initialScore = 0, hidden = false) {
@@ -186,5 +199,6 @@ var GameUtils = (function () {
       ScoreKeeper : ScoreKeeper,
       matchesCondition : matchesCondition,
       renderBitmap : renderBitmap,
+      drawSvgOnCanvas : drawSvgOnCanvas,
     }
 })();

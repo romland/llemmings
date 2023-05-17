@@ -1,0 +1,1 @@
+Using Javascript, I want to draw an inline SVG on a canvas

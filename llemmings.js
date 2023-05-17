@@ -1432,10 +1432,12 @@ var Llemmings = (function () {
       }
       
       const pixelIndex = getPixelIndex(x, y, canvas.width);
-      oldImgData.data[pixelIndex] = 0;
-      oldImgData.data[pixelIndex + 1] = 0;
-      oldImgData.data[pixelIndex + 2] = 0;
-      oldImgData.data[pixelIndex + 3] = 255;
+      if(oldImgData) {
+        oldImgData.data[pixelIndex] = 0;
+        oldImgData.data[pixelIndex + 1] = 0;
+        oldImgData.data[pixelIndex + 2] = 0;
+        oldImgData.data[pixelIndex + 3] = 255;
+      }
 
       if(background) {
         background.data[pixelIndex] = grayScale || gradientsData[pixelIndex];
@@ -2000,6 +2002,27 @@ var Llemmings = (function () {
       if(levelData.finish.clear) {
         clearSquare(levelData.finish.x, levelData.finish.y, levelData.finish.radius);
       }
+
+      ctx.save();
+      ctx.fillStyle = `rgb(${rockColorBytes.join(",")})`;
+      ctx.fillRect(
+          levelData.finish.x - levelData.finish.radius,
+          levelData.finish.y + levelData.finish.radius - 10,
+          levelData.finish.radius*2,
+          10
+      );
+      ctx.restore();
+
+      const houseWidth = levelData.finish.radius;
+      const houseHeight = levelData.finish.radius;
+      GameUtils.drawSvgOnCanvas(
+        LlemmingsArt.getHouse(houseWidth, houseHeight),
+        levelData.finish.x + (levelData.finish.radius) - houseWidth,
+        levelData.finish.y + (levelData.finish.radius) - houseHeight,
+        houseWidth,
+        houseHeight,
+        ctx
+      );
     }
 
     function renderDecorations()
@@ -2305,6 +2328,8 @@ var Llemmings = (function () {
         ctx.lineWidth = 1;
       }
 
+      setupStartFinish();
+
       clearSmoothingOfTerrain(canvas, [...terrainColorBytes, waterColorBytes]);
       // console.log("Unique colors:", getUniqueColors(canvas));
 
@@ -2316,18 +2341,13 @@ var Llemmings = (function () {
       //    example of the need to keep track of these things.
       oldImgData = ctx.getImageData(0,0,canvas.width,canvas.height);
 
-      setupStartFinish();
-
       setGradients(ctx, levelData.gradients);
       gradientsData = backupGradients(levelData.gradients);     // needed for when we blow stuff up
 
       renderDecorations();
-
       renderDirtTexture();
       renderRockTexture();
       renderWaterTexture();
-
-      setBackgroundBuffer();
 
       if(!canvasEventsListening) {
         startCanvasEventListeners();
@@ -2345,8 +2365,16 @@ var Llemmings = (function () {
       // HUMAN: Pre-create lemmings -- we need this early to determine level failure/success
       createLemmings(levelDataResources.lemmings);
 
-      // Start the update loop
-      reqAnimFrameId = update();
+      // Human HACK: Wait a little for any images to be drawn before we set background buffer.
+      //             The _proper_ way to do this is set something up that actually waits
+      //             for all possible images to be drawn before setting the background and
+      //             after that start the update loop.
+      setTimeout( () => {
+        setBackgroundBuffer();
+
+        // Start the update loop
+        reqAnimFrameId = update();
+      }, 60);
     }
  
     function preStart()
@@ -2456,6 +2484,11 @@ var Llemmings = (function () {
         let btn = document.getElementById("start-game");
         if(btn) {
           btn.style.display = "none";
+        }
+
+        let settings = document.getElementById("settings");
+        if(settings) {
+          settings.style.display = "none";
         }
 
         canvasFadeDirection = "out";

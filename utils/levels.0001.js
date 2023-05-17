@@ -407,7 +407,7 @@ var LlemmingsLevels = [
         "finish": {
             "x": 750,
             "y": 480,
-            "radius" : 100,
+            "radius" : 50,
             "clear": true
         }
     }
