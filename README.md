@@ -21,7 +21,7 @@ The _intention_ is that no code is written by a human.
 
 **The job, as a human, is to copy and paste code.**
 
-It is (probably) not yet fun. But the latest and greatest version with one level is [here](https://romland.github.io/llemmings).  
+It is (probably) not yet fun and there be bugs. But the latest and greatest version with one level is [here](https://romland.github.io/llemmings).  
 
 ![Alt text](github/latest.png?raw=true "Screenshot of Llemmings")
 
