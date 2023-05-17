@@ -87,6 +87,13 @@ var LlemmingsLevels = [
                     x: 238, y: 130, r: 10,
                     action : "Builder"
                 },
+                {
+                    x: 192, y: 199, r: 10,
+                    conditions : [
+                        "age > 4500",
+                    ],
+                    action : "Bomber"
+                },
             ],
             [5] : [
                 {
