@@ -1,0 +1,81 @@
+@import url('https://fonts.googleapis.com/css2?family=Henny+Penny&display=swap');
+
+h1 {
+    font-family: "Henny Penny";
+    text-align: center;
+}
+
+h2 {
+    font-weight: bold;
+}
+
+html {
+    background-color: #181818;
+}
+
+a:link {color:#8888ff;}
+a:visited {color:#ff8888;}
+a:hover {color:#ffff00;}
+a:active {color:#ffff00;}
+
+body {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 10px;
+    font-family:'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
+    background-color: #282828;
+    color: rgb(218, 211, 199);
+}
+
+.links ul {
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+    text-align: center;
+}
+
+.links ul > li {
+    display: inline-block;
+}
+
+.index .smaller {
+    font-size: smaller;
+    display: block;
+    width: 500px;
+    text-overflow: ellipsis ellipsis;
+    overflow: hidden;
+    white-space: nowrap;
+}
+
+.vague {
+    color: rgba(218, 211, 199, 0.3);
+}
+
+.prompt {
+    color: red;
+}
+.human {
+    color: rgb(100,100,255);
+}
+.github-link {
+    padding: 10px;
+    text-align: center;
+}
+
+h1 a {
+    color: rgb(218, 211, 199);
+    text-decoration: none;
+}
+.hide {
+    display: none;
+}
+.human-change a {
+    color: rgba(218, 211, 199, 0.3);
+    font-size: smaller; 
+}
+
+.author, pre {
+    margin: 30px 0 30px 0;
+    color: rgba(218, 211, 199, 0.6);
+    font-size: smaller;
+}
