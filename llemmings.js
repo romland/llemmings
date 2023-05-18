@@ -70,6 +70,12 @@ var Llemmings = (function () {
     let autoPlaying = null;  // set to true to automatically use a provided solution (if it exists)
     let levelDataResources = null;
 
+    // Game settings
+    // TODO: Store in local storage (like keybindings)
+    let settings = {
+      soundEffects : false
+    }
+
     // Human: scoreKeeper keeps track of score for current level, this will keep
     //        track of it between levels -- it gets updated only on completion or 
     //        failure of a level.
@@ -187,7 +193,7 @@ var Llemmings = (function () {
         if(!lemmings[i].isSpawned) {
           lemmings[i].isSpawned = true;
           spawned = true;
-          AudioSamples.playSample("BD-0.25");
+          playSoundEffect("BD-0.25");
           break;
         }
       }
@@ -196,6 +202,15 @@ var Llemmings = (function () {
         doneSpawning = true;
         console.log("Done spawning lemmings");
       }
+    }
+
+    function playSoundEffect(name)
+    {
+      if(!settings.soundEffects) {
+        return;
+      }
+
+      AudioSamples.playSample(name);
     }
  
     // isSpawned
@@ -1288,6 +1303,12 @@ var Llemmings = (function () {
     {
       isPaused = !isPaused;
     }
+
+    function toggleSetting(setting)
+    {
+      settings[setting] = !settings[setting];
+      LlemmingsFCT.spawnCombatText("Sound effects " + (settings[setting] ? "on" : "off") );
+    }
   
     // >>> Prompt: instructions/particle-explosion.0001.txt
     function Particle(x, y) {
@@ -1851,7 +1872,7 @@ var Llemmings = (function () {
           const rect = canvas.getBoundingClientRect();
           settingsElt.style.position = "absolute";
           settingsElt.style.top = (rect.bottom - 120) + "px";
-          settingsElt.style.left = (rect.right - 140) + "px";
+          settingsElt.style.left = (rect.right - 180) + "px";
         } else {
           settingsElt.style.display = "none";
         }
@@ -2512,6 +2533,7 @@ var Llemmings = (function () {
       getSeed : () => { return levelData.seed; },
       init : init,
       start : start,
+      toggleSetting : toggleSetting,
       togglePause : togglePause,
       applyAction : applyAction,
       reset : reset,
