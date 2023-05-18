@@ -164,7 +164,7 @@ var Llemmings = (function () {
         },
         objects : givenLevel.objects || [],
         start : givenLevel.start || { x : null, y : -20, radius : 50, clear: false },
-        finish : givenLevel.finish || { x : 750, y : 500, radius : 50, clear: true },
+        finish : givenLevel.finish || { x : 750, y : RESOLUTION_Y - WATER_HEIGHT - 50 - 10, radius : 50, clear: true },
       };      
     }
     
