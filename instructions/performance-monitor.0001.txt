@@ -1,0 +1,15 @@
+>>> Prompt:
+In javascript without 3rd party dependencies. Give me a reusable module for 
+an arbitrary amount labels for measuring performance of code. It should output
+the results to a div in HTML which the module should generate itself too
+
+E.g. I want to be able to do:
+perfMonitor.start("bkg-rest")
+... arbitrary code I want to check performance of...
+perfMonitor.end("bkg-rest")
+
+It should add a minimum amount of overhead, showing of results will happen
+continuously and very often. So the showing of results should be very efficient,
+e.g. any HTML elements should have been created on initialization.
+
+Be concise. This time I don't need an explanation, just give me the code.

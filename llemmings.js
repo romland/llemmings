@@ -85,6 +85,7 @@ var Llemmings = (function () {
     const FPS = 60; // Set the desired FPS
     let frameInterval = 1000 / FPS; // Calculate the interval in milliseconds
     let lastFrameUpdate = 0;
+    let lastFrameUpdateReal = 0;    // Without subtracting modulo-time
     let elapsedLevelTime = 0;
 
     // Fade
@@ -1877,7 +1878,6 @@ var Llemmings = (function () {
       return remaining;
     }
 
-
     // >>> Prompt: instructions/main-loop.0001.txt
     // >>> Prompt: instructions/main-loop.0002.txt
     // >>> Prompt: instructions/main-loop.0003.txt (throttling)
@@ -1898,7 +1898,11 @@ var Llemmings = (function () {
         return;
       }
 
+      perfMonitor.setLabel("FPS", 1000/(currentTime - lastFrameUpdateReal), 30);
+      perfMonitor.start("all-of-update");
+
       lastFrameUpdate = currentTime - (currentTime % frameInterval);
+      lastFrameUpdateReal = currentTime;
       elapsedLevelTime += frameInterval;
 
       // Restore the background
@@ -1913,6 +1917,7 @@ var Llemmings = (function () {
 
       if(playing) {
         // Update and draw each lemming
+        perfMonitor.start("lemmings-update");
         lemmings.forEach((lemming) => {
           lemming.update();
           lemming.draw();
@@ -1947,8 +1952,10 @@ var Llemmings = (function () {
             // HUMAN TODO: Do some effect here (also sound?)
           }
         });
+        perfMonitor.end("lemmings-update");
       }
 
+      perfMonitor.start("particles-update");
       particles.forEach((particle) => {
           particle.update();
           particle.draw();
@@ -1959,11 +1966,14 @@ var Llemmings = (function () {
             particles.splice(index, 1);
           }
       });
+      perfMonitor.end("particles-update");
 
+      perfMonitor.start("effects-update");
       for(let fx of effectsToUpdate) {
         // HUMAN TODO: implement time-delta all over the place
         fx[1].update(1000/60);
       }
+      perfMonitor.end("effects-update");
 
       // Game over / success check
       if(levelData.disableGame === false && playing && ((levelDataResources.time - elapsedLevelTime) <= 0 || getLemmingsRemaining() === 0)) {
@@ -1977,6 +1987,8 @@ var Llemmings = (function () {
 
       // Schedule the next frame
       reqAnimFrameId = requestAnimationFrame(update);
+
+      perfMonitor.end("all-of-update");
     }
 
     function startCanvasEventListeners()
@@ -2311,6 +2323,10 @@ var Llemmings = (function () {
       // Override by givenLevel if it specifies it
       if(givenLevel.__DEBUG__ !== undefined && givenLevel.__DEBUG__ !== null) {
         __DEBUG__ = givenLevel.__DEBUG__;
+      }
+
+      if(!EDITOR_MODE) {
+        perfMonitor.init(__DEBUG__);
       }
     
       levelData = getDefaultLevelData(givenLevel);
