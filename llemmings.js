@@ -91,6 +91,84 @@ var Llemmings = (function () {
     let canvasOpacity = 0;  // Initialize the opacity to 0
     let canvasFadeDirection = null;
 
+    function getDefaultLevelData(givenLevel = {})
+    {
+      /*
+        Some seeds used in the past:
+        1681139505452;  // llemmings.com
+      */
+      // levelData defaults
+      return {
+        level : givenLevel.level ?? -1,
+        name : givenLevel.name || "Noname",
+        seed : givenLevel.seed || Date.now(),
+        disableGame : givenLevel.disableGame ?? false,
+        autoPlay : givenLevel.autoPlay ?? false,
+        unlimitedResources : givenLevel.unlimitedResources ?? false,
+        gradients : givenLevel.gradients || [
+          {
+            type: 'linear',
+            x0: 0,
+            y0: 0,
+            x1: 0,
+            y1: 600,
+            stops: [
+              { offset: 0, color: 'black' },
+              { offset: 1, color: '#000066' }
+            ]
+          }
+        ],
+        shapes : givenLevel.shapes || [
+          {
+            "type": "rectangle",
+            "filled": true,
+            "color": `rgb(${waterColorBytes.join(",")})`,
+            "lineWidth": 1,
+            "x1": 0,
+            "y1": RESOLUTION_Y - WATER_HEIGHT,
+            "x2": RESOLUTION_X,
+            "y2": RESOLUTION_Y 
+          }
+        ],
+        decorations : givenLevel.decorations || [
+          {
+            type: "organics",
+            location: ["top"],
+          }
+        ],
+        spawnInterval : givenLevel.spawnInterval || 100,
+        resources : {
+            lemmings : givenLevel.resources?.lemmings || 5,
+            time : givenLevel.resources?.time || 120 * 1000,
+
+            Climber : givenLevel.resources?.Climber || 0,
+            Floater : givenLevel.resources?.Floater || 0,
+            Bomber : givenLevel.resources?.Bomber || 0,
+            Blocker : givenLevel.resources?.Blocker || 0,
+            Builder : givenLevel.resources?.Builder || 0,
+            Basher : givenLevel.resources?.Basher || 0,
+            Miner : givenLevel.resources?.Miner || 0,
+            Digger : givenLevel.resources?.Digger || 0,
+        },
+        ui : {
+          showScore : givenLevel.ui?.showScore ?? true,
+          showActions : givenLevel.ui?.showActions ?? true,
+          showObjective : givenLevel.ui?.showObjective ?? true,
+          showStartGame : givenLevel.ui?.showStartGame ?? false,
+          showSettings : givenLevel.ui?.showSettings ?? false,
+          showFCT :  givenLevel.ui?.showFCT ?? true,
+        },
+        solution : givenLevel.solution || { },
+        goal : {
+          survivors : givenLevel.goal?.survivors || 5
+        },
+        objects : givenLevel.objects || [],
+        start : givenLevel.start || { x : null, y : -20, radius : 50, clear: false },
+        finish : givenLevel.finish || { x : 750, y : 500, radius : 50, clear: true },
+      };      
+    }
+    
+
     // Create a new lemming and add it to the array of lemmings
     // HUMAN: This is just for easy testing for now.
     // HUMAN: This could be used to 'cheat' as this method will only be called
@@ -1196,6 +1274,7 @@ var Llemmings = (function () {
       // calculate the distance between the point (x,y) and the center point (a,b) using Pythagorean theorem
       let distance = Math.abs(x - a) + Math.abs(y - b); 
       if(isNaN(distance)) {
+        console.warn("vals:", x, y, a, b, radius);
         throw "not a number";
       }
       // compare the distance with the radius of the circle
@@ -2220,7 +2299,6 @@ var Llemmings = (function () {
         console.log("Reset done.");
     }
     
-    
     function init(canvasElt, givenLevel = {}, debug = false)
     {
       __DEBUG__ = debug;
@@ -2230,77 +2308,7 @@ var Llemmings = (function () {
         __DEBUG__ = givenLevel.__DEBUG__;
       }
     
-      /*
-        Some seeds used in the past:
-        1681139505452;  // llemmings.com
-      */
-      // levelData defaults
-      levelData = {
-        level : givenLevel.level ?? -1,
-        name : givenLevel.name || "Noname",
-        seed : givenLevel.seed || Date.now(),
-        disableGame : givenLevel.disableGame ?? false,
-        autoPlay : givenLevel.autoPlay ?? false,
-        unlimitedResources : givenLevel.unlimitedResources ?? false,
-        gradients : givenLevel.gradients || [
-          {
-            type: 'linear',
-            x0: 0,
-            y0: 0,
-            x1: 0,
-            y1: 600,
-            stops: [
-              { offset: 0, color: 'black' },
-              { offset: 1, color: '#000066' }
-            ]
-          }
-        ],
-        shapes : givenLevel.shapes || [
-          {
-            "type": "rectangle",
-            "filled": true,
-            "color": `rgb(${waterColorBytes.join(",")})`,
-            "lineWidth": 1,
-            "x1": 0,
-            "y1": canvas.height - WATER_HEIGHT,
-            "x2": canvas.width,
-            "y2": canvas.height 
-          }
-        ],
-        decorations : givenLevel.decorations || [
-          {
-            type: "organics",
-            location: ["top"],
-          }
-        ],
-        spawnInterval : givenLevel.spawnInterval || 100,
-        resources : {
-            lemmings : givenLevel.resources?.lemmings || 5,
-            time : givenLevel.resources?.time || 120 * 1000,
-
-            Climber : givenLevel.resources?.Climber || 0,
-            Floater : givenLevel.resources?.Floater || 0,
-            Bomber : givenLevel.resources?.Bomber || 0,
-            Blocker : givenLevel.resources?.Blocker || 0,
-            Builder : givenLevel.resources?.Builder || 0,
-            Basher : givenLevel.resources?.Basher || 0,
-            Miner : givenLevel.resources?.Miner || 0,
-            Digger : givenLevel.resources?.Digger || 0,
-        },
-        ui : {
-          showScore : givenLevel.ui?.showScore ?? true,
-          showActions : givenLevel.ui?.showActions ?? true,
-          showObjective : givenLevel.ui?.showObjective ?? true,
-          showStartGame : givenLevel.ui?.showStartGame ?? false,
-          showSettings : givenLevel.ui?.showSettings ?? false,
-          showFCT :  givenLevel.ui?.showFCT ?? true,
-        },
-        solution : givenLevel.solution || { },
-        goal : { survivors : givenLevel.goal?.survivors || 30 },
-        objects : givenLevel.objects || [],
-        start : givenLevel.start || { x : null, y : -20, clear: false },
-        finish : givenLevel.finish || { x : 750, y : 500, clear: true },
-      }
+      levelData = getDefaultLevelData(givenLevel);
 
       levelDataResources = { ...levelData.resources };
 
@@ -2372,7 +2380,7 @@ var Llemmings = (function () {
       AudioSamples.createSamples(["BD-0.25"]);
 
       // Create an instance of the ScoreKeeper class
-      scoreKeeper = new GameUtils.ScoreKeeper(canvas, levelData.goal.survivors, 0, !levelData.ui.showScore);
+      scoreKeeper = new GameUtils.ScoreKeeper(canvas, levelData.goal.survivors, 0, !levelData.ui.showScore || EDITOR_MODE);
 
       // HUMAN: Pre-create lemmings -- we need this early to determine level failure/success
       createLemmings(levelDataResources.lemmings);
@@ -2487,6 +2495,7 @@ var Llemmings = (function () {
       applyAction : applyAction,
       reset : reset,
       restart : restartLevel,
+      getDefaultLevelData : getDefaultLevelData,
       startGame : () => {
         // "Start game" button on intro screen
         if(isPaused) {

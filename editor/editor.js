@@ -743,49 +743,13 @@ var LevelEditor = (function () {
     function initLevel(lvl = 1)
     {
       // >>> Prompt: editor/instructions/gradient-serialize.0001.txt
-      const defaultLevelData = {
-        level : 1,
-        name : "New Level",
-        seed : null, //1681139505452,
-        gradients : [
-          {
-            type: 'linear',
-            x0: 0,
-            y0: 0,
-            x1: 0,
-            y1: 600,
-            stops: [
-              { offset: 0, color: 'black' },
-              { offset: 1, color: '#660000' }
-            ]
-          }
-        ],
-        decorations : [
-          {
-            type: "organics",
-            location: ["top"],
-          }
-        ],
-        shapes : [],
-        objects : [],
-        resources : {
-            lemmings : 40,
-            Climber : 3,
-            Floater : 3,
-            Bomber : 3,
-            Blocker : 3,
-            Builder : 3,
-            Basher : 3,
-            Miner : 3,
-            Digger : 3,
-        },
-        spawnInterval : 500,
-        goal : { survivors : 30 },
-        start : { x : 25, y : -20, clear: true },
-        finish : { x : 750, y : 500, clear: true },
-      }
+      const defaultLevelData = Llemmings.getDefaultLevelData(
+        {
+            // You can pass in any variables that should be overridden in default data
+        }
+      );
 
-      // Set which level to load!
+      // Set which level to load (or null to create new)!
       if(lvl === null) {
         levelData = defaultLevelData;
         levelData.level = LlemmingsLevels.length;
