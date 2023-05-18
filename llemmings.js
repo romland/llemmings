@@ -1938,7 +1938,7 @@ var Llemmings = (function () {
         setupUI();        
       });
  
-      if (__DEBUG__) {
+      if (__DEBUG__ && coordinatesDiv) {
         // >>> Prompt: instructions/coordinates-div.0001.txt
         canvas.addEventListener("mousemove", function(event) {
           const rect = canvas.getBoundingClientRect();

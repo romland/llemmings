@@ -21,7 +21,7 @@ The _intention_ is that no code is written by a human.
 
 It is (probably) not yet fun and there be bugs. But the latest and greatest version with one level is [here](https://romland.github.io/llemmings).  
 
-Possible more interesting, the _commit story_ is found [here](https://llemmings.com) (last updated 17-May-2023).  
+Possibly more interesting, the _commit story_ is found [here](https://llemmings.com) (last updated 17-May-2023).  
 
 ![Alt text](github/latest.png?raw=true "Screenshot of Llemmings")
 
@@ -136,7 +136,7 @@ Just open `index.html` in your favorite web-browser.
 
 
 ## 🆙 Level editor
-There is also the beginnings of a [level editor](https://romland.github.io/llemmings/editor/).
+There is also the beginnings of a [level editor](https://romland.github.io/llemmings/editor/index.html).
 To use, open `editor/index.html` in your web-browser.  
 
 
@@ -144,8 +144,8 @@ To use, open `editor/index.html` in your web-browser.
 There is a lot. It would be nice if there was a list somewhere. There isn't. Just do what you want to do.
 
 Some thoughts:
-- [ ] start screen (don't just start first level)
-   - [ ] have it show creaturs walking/digging/working around a Llemmings "logo"
+- [x] start screen (don't just start first level)
+   - [x] have it show creaturs walking/digging/working around a Llemmings "logo"
    - [ ] music
 - [ ] make it pretty
    - [ ] textures
@@ -154,10 +154,10 @@ Some thoughts:
    - [ ] make the level/map feel more alive (animated water? ...)
    - [ ] some particles flying when digging/building
 - [ ] make it work properly on mobile devices (seems to be map-gen related)
-- [ ] floating combat text for visual feedback
-- [ ] take up full browser window (possibly higher resolution)
+- [x] floating combat text for visual feedback
+- [x] take up full browser window (possibly higher resolution)
 - [ ] wider maps + sideways scrolling of map
-- [ ] home/goal graphic
+- [x] home/goal graphic
 - [ ] use delta-time for all updates
 - [ ] add performance watchers
 - [ ] animations
