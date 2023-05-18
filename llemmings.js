@@ -1882,6 +1882,10 @@ var Llemmings = (function () {
     // >>> Prompt: instructions/main-loop.0002.txt
     // >>> Prompt: instructions/main-loop.0003.txt (throttling)
     function update() {
+      if(!background) {
+        return;
+      }
+      
       if (isPaused) {
         reqAnimFrameId = requestAnimationFrame(update);
         return;
@@ -2243,6 +2247,7 @@ var Llemmings = (function () {
 
     function reset()
     {
+        console.log("Resetting");
         // Stop requestAnimationFrame
         cancelAnimationFrame(reqAnimFrameId);
         reqAnimFrameId = null;
