@@ -54,8 +54,9 @@ const perfMonitor = (() => {
       return;
     }
     
+    // to output latest value (no avg): ${lastVals[lastVals.length-1].toFixed(2)}
     containerEl.textContent = Object.entries(labels)
-      .map(([label, { time, unit }]) => `${label}: ${time.toFixed(2)}${unit}`)
+      .map(([label, { time, unit, lastVals }]) => `${label}: ${time.toFixed(2)}${unit}`)
       .join("\n");
     requestAnimationFrame(updateDisplay);
   }

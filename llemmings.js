@@ -2349,10 +2349,16 @@ var Llemmings = (function () {
     function init(canvasElt, givenLevel = {}, debug = false)
     {
       __DEBUG__ = debug;
-
+  
       // Override by givenLevel if it specifies it
       if(givenLevel.__DEBUG__ !== undefined && givenLevel.__DEBUG__ !== null) {
         __DEBUG__ = givenLevel.__DEBUG__;
+      }
+
+      // Override always.
+      if(document.location.search.includes("?DEBUG")) {
+        console.warn("Forcing debug due to location")
+        __DEBUG__ = true;
       }
 
       if(!EDITOR_MODE) {
