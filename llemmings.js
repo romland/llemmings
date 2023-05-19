@@ -2562,7 +2562,7 @@ var Llemmings = (function () {
      */
 
     // Don't run when in level editor
-    if(document.location.href.endsWith("editor/index.html")) {
+    if(document.location.href.includes("/editor/")) {
       EDITOR_MODE = true;
     }
 

@@ -62,35 +62,56 @@ const perfMonitor = (() => {
 
   function start(label)
   {
-    if(!enabled) return;
+    if(!enabled) {
+      return;
+    }
 
     if (!labels[label]) {
       labels[label] = {
         time: 0,
+        count: 1,
+        lastVals: [],
         unit: "ms",
       };
     }
     labels[label].start = performance.now();
   }
 
-  function end(label)
+  function end(label, avgLen = 30)
   {
-    if(!enabled) return;
+    if(!enabled) {
+      return;
+    }
 
     const { start } = labels[label];
     if (!start) {
       return;
     }
-    const end = performance.now();
-    const duration = end - start;
+    const duration = performance.now() - start;
 
-    labels[label].time = duration;
+    if(avgLen) {
+      labels[label].lastVals.push(duration);
+      labels[label].time = getAndAdjustAverage(label, avgLen);
+    } else {
+      labels[label].time = duration;
+    }
+
     labels[label].start = undefined;
   }
 
-  function setLabel(label, val, avgLen = null)
+  function getAndAdjustAverage(label, avgLen)
   {
-    if(!enabled) return;
+    if(labels[label].lastVals.length > avgLen) {
+      labels[label].lastVals.splice(0, 1);
+    }
+    return (labels[label].lastVals.reduce((a, b) => a + b, 0) / labels[label].lastVals.length);
+  }
+
+  function setLabel(label, val, avgLen = null, round = true)
+  {
+    if(!enabled) {
+      return;
+    }
 
     if (!labels[label]) {
       labels[label] = {
@@ -103,12 +124,13 @@ const perfMonitor = (() => {
 
     if(avgLen) {
       labels[label].lastVals.push(val);
-      if(labels[label].lastVals.length > avgLen) {
-        labels[label].lastVals.splice(0, 1);
-      }
-      labels[label].time = Math.round(labels[label].lastVals.reduce((a, b) => a + b, 0) / labels[label].lastVals.length);
+      labels[label].time = getAndAdjustAverage(label, avgLen);
     } else {
       labels[label].time = val;
+    }
+
+    if(round) {
+      labels[label].time = Math.round(labels[label].time);
     }
   }
 
