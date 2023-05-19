@@ -186,6 +186,14 @@ var GameUtils = (function () {
       setLemmingsToSave(amount) {
         this.targetLemmingsToSave = amount;
       }
+
+      cleanUp()
+      {
+        if(this.scoreElement && this.scoreElement.parentElement) {
+          this.scoreElement.parentElement.removeChild(this.scoreElement);
+          this.scoreElement = null;
+        }
+      }
   
       // Update the score UI element with the current score
       updateUI() {

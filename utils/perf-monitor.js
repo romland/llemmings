@@ -35,10 +35,25 @@ const perfMonitor = (() => {
     document.body.appendChild(containerEl);
   
     requestAnimationFrame(updateDisplay);
-  };
+  }
+
+  function cleanUp()
+  {
+    if(containerEl) {
+      document.body.removeChild(containerEl);
+      containerEl = null;
+    }
+
+    labels = {};
+    enabled = false;
+  }
 
   function updateDisplay()
   {
+    if(!enabled) {
+      return;
+    }
+    
     containerEl.textContent = Object.entries(labels)
       .map(([label, { time, unit }]) => `${label}: ${time.toFixed(2)}${unit}`)
       .join("\n");
@@ -102,5 +117,6 @@ const perfMonitor = (() => {
     setLabel: setLabel,
     start: start,
     end: end,
+    cleanUp : cleanUp,
   };
 })();

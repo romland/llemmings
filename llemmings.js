@@ -764,8 +764,10 @@ var Llemmings = (function () {
             ctx.strokeStyle = "white";
             ctx.strokeText(this.id, this.x + 1, this.y + 13);
             if (this.action) {
-            ctx.font = "7px Arial";
-            ctx.strokeText(this.action, this.x - 5, this.y - 5);
+              ctx.save();
+              ctx.font = "7px Arial";
+              ctx.strokeText(this.action, this.x - 5, this.y - 5);
+              ctx.restore();
             }
         }
       }
@@ -2266,8 +2268,12 @@ var Llemmings = (function () {
     
     function restartLevel(canvasElt)
     {
+      const remember = {
+        __DEBUG__ : __DEBUG__
+      }
+
       reset();
-      init(canvasElt, levelData, true);
+      init(canvasElt, levelData, remember.__DEBUG__);
       preStart();
     }
 
@@ -2297,6 +2303,8 @@ var Llemmings = (function () {
             clearInterval(intervals[i]);
         }
 
+        perfMonitor.cleanUp();
+
         // clear particles
         particles = [];
 
@@ -2311,6 +2319,7 @@ var Llemmings = (function () {
         // clear canvas
         ctx.clearRect(0, 0, canvas.width, canvas.height);
 
+        scoreKeeper.cleanUp();
         scoreKeeper = null;
 
         // Unpause
@@ -2447,7 +2456,7 @@ var Llemmings = (function () {
 
       if (levelData.ui.showObjective === false) {
         // Skip showing objective animation
-        start();
+        _start();
       } else {
         // Show objective for level
         TextEffectMorph.init({
@@ -2455,7 +2464,7 @@ var Llemmings = (function () {
           placeOverCanvas:canvas,
           onAnimationDone: () => {
             effectsToUpdate.delete("TextEffectMorph");
-            start();
+            _start();
           }
         });
         effectsToUpdate.set("TextEffectMorph", TextEffectMorph);
@@ -2463,7 +2472,7 @@ var Llemmings = (function () {
     }
 
     
-    function start()
+    function _start()
     {
       if(!EDITOR_MODE) {
         persisted.currentLevelAttempts++;
@@ -2482,7 +2491,7 @@ var Llemmings = (function () {
      * Human: Note that it is NOT run if in level editor.
      * Human: It starts the intro screen of the game.
      */
-    function runOnce(resetLocalStorage = false)
+    function _runOnce(resetLocalStorage = false)
     {
       // Retrieve from local storage
       let tmpPersisted = getFromLocalStorage('persisted');
@@ -2518,6 +2527,40 @@ var Llemmings = (function () {
       preStart();
     }
 
+    function startGame()
+    {
+      console.log(ctx.font)
+      // "Start game" button on intro screen
+      if(isPaused) {
+        togglePause();
+      }
+
+      let btn = document.getElementById("start-game");
+      if(btn) {
+        btn.style.display = "none";
+      }
+
+      let settings = document.getElementById("settings");
+      if(settings) {
+        settings.style.display = "none";
+      }
+
+      canvasFadeDirection = "out";
+
+      // Wait a little to fade out the intro screen
+      setTimeout(() => {
+        reset();
+        init(document.getElementById('canvas'), LlemmingsLevels[persisted.currentLevel], false);
+        preStart();
+      }, 1000);
+    }
+
+
+    /**
+     * Statements below this are to be run when this file is included.
+     * Keep at a minimum.
+     */
+
     // Don't run when in level editor
     if(document.location.href.endsWith("editor/index.html")) {
       EDITOR_MODE = true;
@@ -2525,45 +2568,21 @@ var Llemmings = (function () {
 
     if(!EDITOR_MODE) {
       document.fonts.ready.then(function () {
-        runOnce(false);
+        _runOnce(false);
       });
     }
 
     return {
       getSeed : () => { return levelData.seed; },
       init : init,
-      start : start,
+      start : _start,
+      startGame : startGame,          // call when "Start game" is clicked on intro screen
       toggleSetting : toggleSetting,
       togglePause : togglePause,
       applyAction : applyAction,
       reset : reset,
       restart : restartLevel,
       getDefaultLevelData : getDefaultLevelData,
-      startGame : () => {
-        // "Start game" button on intro screen
-        if(isPaused) {
-          togglePause();
-        }
-
-        let btn = document.getElementById("start-game");
-        if(btn) {
-          btn.style.display = "none";
-        }
-
-        let settings = document.getElementById("settings");
-        if(settings) {
-          settings.style.display = "none";
-        }
-
-        canvasFadeDirection = "out";
-
-        // Wait a little to fade out the intro screen
-        setTimeout(() => {
-          reset();
-          init(document.getElementById('canvas'), LlemmingsLevels[persisted.currentLevel], false);
-          preStart();
-        }, 1000);
-      },
       drawShapes : drawShapes,
     }
   })();
