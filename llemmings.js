@@ -2486,7 +2486,9 @@ var Llemmings = (function () {
     function _start()
     {
       if(!EDITOR_MODE) {
-        persisted.currentLevelAttempts++;
+        if(persisted.currentLevel === levelData.level) {
+          persisted.currentLevelAttempts++;
+        }
         saveToLocalStorage('persisted', persisted);
       }
 
