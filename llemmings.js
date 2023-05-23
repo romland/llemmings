@@ -24,7 +24,7 @@ var Llemmings = (function () {
     // Set up canvas (+related)
     let canvas, ctx;        // set by init().
     let background; // global variable to store canvas image data (restored in main loop below somewhere)
-    let oldImgData; // check collisions against this (array of 4 bytes / pixel)
+    let collisionLayer; // check collisions against this (array of 4 bytes / pixel)
     let gradientsData; // contains a backup of the gradients for when we blow stuff up
 
     // Kept around for clean-up reasons
@@ -411,7 +411,7 @@ var Llemmings = (function () {
       // generate dirt texture
       for (let x = 0; x < canvas.width; x++) {
         for (let y = 0; y < canvas.height; y++) {
-          if(!isColorOneOf(getPixelColor(oldImgData, x, y), dirtColorBytes)) {
+          if(!isColorOneOf(getPixelColor(collisionLayer, x, y), dirtColorBytes)) {
             continue;
           }
           let noiseValue = PerlinNoise2D(x / dirtGrainSize, y / dirtGrainSize);
@@ -431,7 +431,7 @@ var Llemmings = (function () {
     {
       for (let y = 0; y < canvas.height; y++) {
         for (let x = 0; x < canvas.width; x++) {
-          if(!isColorOneOf(getPixelColor(oldImgData, x, y), waterColorBytes)) continue;
+          if(!isColorOneOf(getPixelColor(collisionLayer, x, y), waterColorBytes)) continue;
           
           let noiseValue = PerlinNoise2D(x / 100, y / 100);
           let blue = Math.floor(200 + noiseValue * 55);
@@ -452,7 +452,7 @@ var Llemmings = (function () {
       
       for (let x = 0; x < canvas.width; x++) {
         for (let y = 0; y < canvas.height; y++) {
-          if(!isColorOneOf(getPixelColor(oldImgData, x, y), rockColorBytes)) {
+          if(!isColorOneOf(getPixelColor(collisionLayer, x, y), rockColorBytes)) {
             continue;
           }
   
@@ -638,7 +638,7 @@ var Llemmings = (function () {
     {
       let heightAdjustment = 0;
       for(let i = 0; i < 6; i++) {
-        if(isPixelOneOf(oldImgData, lem.x + lem.width / 2, lem.y + lem.height - i, terrainColorBytes)) {
+        if(isPixelOneOf(collisionLayer, lem.x + lem.width / 2, lem.y + lem.height - i, terrainColorBytes)) {
           heightAdjustment--;
         } else {
           break;
@@ -798,12 +798,12 @@ var Llemmings = (function () {
         }
   
         // Check if ground is under us or not
-        let isGroundUnderneath = isPixelOneOf(oldImgData, this.x + this.width / 2, this.y + this.height + 1, terrainColorBytes);
+        let isGroundUnderneath = isPixelOneOf(collisionLayer, this.x + this.width / 2, this.y + this.height + 1, terrainColorBytes);
   
         // Check if we hit a wall on the x axis
         // >>> Prompt: instructions/wall-hit-fix.0001.txt
-        let hitWallOnLeft = this.velX < 0 && isPixelOneOf(oldImgData, this.x - 1, this.y + this.height / 2, terrainColorBytes);
-        let hitWallOnRight = this.velX > 0 && isPixelOneOf(oldImgData, this.x + this.width + 1, this.y + this.height / 2, terrainColorBytes);
+        let hitWallOnLeft = this.velX < 0 && isPixelOneOf(collisionLayer, this.x - 1, this.y + this.height / 2, terrainColorBytes);
+        let hitWallOnRight = this.velX > 0 && isPixelOneOf(collisionLayer, this.x + this.width + 1, this.y + this.height / 2, terrainColorBytes);
         let blockedByBlocker = false;
 
         let heightAdjustment = 0;
@@ -832,7 +832,7 @@ var Llemmings = (function () {
         }
   
         // Check if we've fallen in water
-        const isWaterBelow = pixelIsColor(oldImgData, this.x + this.width / 2, this.y + this.height + 1, waterColorBytes);
+        const isWaterBelow = pixelIsColor(collisionLayer, this.x + this.width / 2, this.y + this.height + 1, waterColorBytes);
   
         // Determine if the lemming should climb
         let shouldClimb = false;
@@ -970,7 +970,7 @@ var Llemmings = (function () {
 
       // Find offsetY for initial obstruction forgiveness
       for (let i = 0; i <= 4; i++) {
-        if (isPixelOneOf(oldImgData, rectX, rectY - i, collisionColors)) {
+        if (isPixelOneOf(collisionLayer, rectX, rectY - i, collisionColors)) {
           offsetY = i;
           break;
         }
@@ -987,7 +987,7 @@ var Llemmings = (function () {
             newX < canvas.width &&
             newY >= 0 &&
             newY < canvas.height &&
-            !isPixelOneOf(oldImgData, newX, newY, collisionColors)
+            !isPixelOneOf(collisionLayer, newX, newY, collisionColors)
           ) {
             // points.push({ x: Math.round(newX), y: Math.round(newY) });
             points[Math.round(newX) +"|"+ Math.round(newY)] = true;
@@ -1009,7 +1009,7 @@ var Llemmings = (function () {
                 pixel.x < canvas.width &&
                 pixel.y >= 0 &&
                 pixel.y < canvas.height &&
-                !isPixelOneOf(oldImgData, pixel.x, pixel.y, collisionColors)
+                !isPixelOneOf(collisionLayer, pixel.x, pixel.y, collisionColors)
               ) {
                 // points.push({ x: Math.round(pixel.x), y: Math.round(pixel.y) });
                 points[Math.round(pixel.x) +"|"+ Math.round(pixel.y)] = true;
@@ -1067,7 +1067,7 @@ var Llemmings = (function () {
             break;
           }
 
-          if(isPixelOneOf(oldImgData, lemming.x + (lemming.width / 2), lemming.y + (lemming.height / 2), [rockColorBytes])) {
+          if(isPixelOneOf(collisionLayer, lemming.x + (lemming.width / 2), lemming.y + (lemming.height / 2), [rockColorBytes])) {
             console.log("Skipping dig due to rock in the center");
             break;
           }
@@ -1075,7 +1075,7 @@ var Llemmings = (function () {
           let startX = (lemming.velX > 0 ? lemming.width - 2 : - 2);
           let endX = lemming.velX > 0 ? lemming.width + 2 : 2;
           for(let offsetX = startX; offsetX < endX; offsetX++) {
-            if(isPixelOneOf(oldImgData, Math.round(lemming.x + offsetX), Math.round(lemming.y + offsetY), [rockColorBytes, blackColorBytes])) {
+            if(isPixelOneOf(collisionLayer, Math.round(lemming.x + offsetX), Math.round(lemming.y + offsetY), [rockColorBytes, blackColorBytes])) {
               // setPixel((lemming.x + offsetX), (lemming.y + offsetY), [255, 255, 255]);
               continue;
             }
@@ -1118,13 +1118,13 @@ var Llemmings = (function () {
             break;
           }
 
-          if(isPixelOneOf(oldImgData, lemming.x + (lemming.width / 2), lemming.y + lemming.height, [rockColorBytes])) {
+          if(isPixelOneOf(collisionLayer, lemming.x + (lemming.width / 2), lemming.y + lemming.height, [rockColorBytes])) {
             console.log("Skipping dig due to rock in the center");
             break;
           }
 
           for(let offsetX = -2; offsetX < lemming.width + 2; offsetX++) {
-            if(isPixelOneOf(oldImgData, Math.round(lemming.x + offsetX), Math.round(lemming.y + lemming.height + offsetY), [rockColorBytes, blackColorBytes])) {
+            if(isPixelOneOf(collisionLayer, Math.round(lemming.x + offsetX), Math.round(lemming.y + lemming.height + offsetY), [rockColorBytes, blackColorBytes])) {
               continue;
             }
             clearPixel(Math.round(lemming.x + offsetX), Math.round(lemming.y + lemming.height + offsetY));
@@ -1221,7 +1221,7 @@ var Llemmings = (function () {
       y = Math.floor(y);
             
       
-      // Clear pixels in background and oldImgData arrays
+      // Clear pixels in background and collision arrays
       for (var yOffset = -holeSize/2; yOffset < holeSize/2; yOffset++) {
         for (var xOffset = -holeSize/2; xOffset < holeSize/2; xOffset++) {
           var xCoord = x + xOffset;
@@ -1236,10 +1236,10 @@ var Llemmings = (function () {
             background.data[(yCoord * canvas.width + xCoord) * 4 + 3] = gradientsData[(yCoord * canvas.width + xCoord) * 4 + 3];
 
             // Delete collision data
-            oldImgData.data[(yCoord * canvas.width + xCoord) * 4] = 0;
-            oldImgData.data[(yCoord * canvas.width + xCoord) * 4 + 1] = 0;
-            oldImgData.data[(yCoord * canvas.width + xCoord) * 4 + 2] = 0;
-            oldImgData.data[(yCoord * canvas.width + xCoord) * 4 + 3] = 0;
+            collisionLayer.data[(yCoord * canvas.width + xCoord) * 4] = 0;
+            collisionLayer.data[(yCoord * canvas.width + xCoord) * 4 + 1] = 0;
+            collisionLayer.data[(yCoord * canvas.width + xCoord) * 4 + 2] = 0;
+            collisionLayer.data[(yCoord * canvas.width + xCoord) * 4 + 3] = 0;
           }
         }
       }
@@ -1516,10 +1516,10 @@ var Llemmings = (function () {
       }
       
       const pixelIndex = getPixelIndex(x, y, canvas.width);
-      oldImgData.data[pixelIndex] = colorBytes[0];
-      oldImgData.data[pixelIndex + 1] = colorBytes[1];
-      oldImgData.data[pixelIndex + 2] = colorBytes[2];
-      oldImgData.data[pixelIndex + 3] = 255;
+      collisionLayer.data[pixelIndex] = colorBytes[0];
+      collisionLayer.data[pixelIndex + 1] = colorBytes[1];
+      collisionLayer.data[pixelIndex + 2] = colorBytes[2];
+      collisionLayer.data[pixelIndex + 3] = 255;
   
       background.data[pixelIndex] = colorBytes[0];
       background.data[pixelIndex + 1] = colorBytes[1];
@@ -1537,11 +1537,11 @@ var Llemmings = (function () {
       }
       
       const pixelIndex = getPixelIndex(x, y, canvas.width);
-      if(oldImgData) {
-        oldImgData.data[pixelIndex] = 0;
-        oldImgData.data[pixelIndex + 1] = 0;
-        oldImgData.data[pixelIndex + 2] = 0;
-        oldImgData.data[pixelIndex + 3] = 255;
+      if(collisionLayer) {
+        collisionLayer.data[pixelIndex] = 0;
+        collisionLayer.data[pixelIndex + 1] = 0;
+        collisionLayer.data[pixelIndex + 2] = 0;
+        collisionLayer.data[pixelIndex + 3] = 255;
       }
 
       if(background) {
@@ -2339,10 +2339,10 @@ var Llemmings = (function () {
         if(infoDiv) {
           infoDiv.innerHTML = "";
         }
-              
+
         // for clarity
         background = undefined;
-        oldImgData = undefined;
+        collisionLayer = undefined;
         console.log("Reset done.");
     }
     
@@ -2411,12 +2411,10 @@ var Llemmings = (function () {
       // console.log("Unique colors:", getUniqueColors(canvas));
 
       // Human notes:
-      // 1. Everything that is collidable terrain should be above this
-      // 2. oldImgData will be used for collision checking
-      // 3. This should be renamed, but I don't want to do it now since it would make some 
-      //    prompts invalid (for demonstration purposes). It does nicely to illustrate the 
-      //    example of the need to keep track of these things.
-      oldImgData = ctx.getImageData(0,0,canvas.width,canvas.height);
+      // collisionLayer will be used for collision checking.
+      // Everything that is collidable terrain should be above this
+      //
+      collisionLayer = ctx.getImageData(0,0,canvas.width,canvas.height);
 
       setGradients(ctx, levelData.gradients);
       gradientsData = backupGradients(levelData.gradients);     // needed for when we blow stuff up

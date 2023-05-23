@@ -147,6 +147,9 @@ Some thoughts:
 - [x] start screen (don't just start first level)
    - [x] have it show creaturs walking/digging/working around a Llemmings "logo"
    - [ ] music
+- [ ] performance
+   - [x] add performance watchers
+   - [ ] Get rid of getImageData()/putImageData() for background and use a canvas as buffer instead. It might take some juggling to combine this with the collision array?
 - [ ] make it pretty
    - [ ] textures
    - [ ] UI: action buttons, goal, score
@@ -159,12 +162,12 @@ Some thoughts:
 - [ ] wider maps + sideways scrolling of map
 - [x] home/goal graphic
 - [ ] use delta-time for all updates
-- [ ] add performance watchers
 - [ ] animations
+   - [ ] start hatch
    - [x] legs/feet
    - [ ] water
 - [ ] sound effects:
-   - [ ] on spawn
+   - [x] on spawn
    - [ ] on action assignment
    - [ ] on building/mining
    - [ ] on reaching finish
