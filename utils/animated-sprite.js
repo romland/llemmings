@@ -1,4 +1,12 @@
 "use strict";
+/*
+>>> Prompt: instructions/art-hatch.0001.txt
+>>> Prompt: instructions/art-hatch.0002.txt
+>>> Prompt: instructions/art-hatch.0003.txt
+>>> Prompt: instructions/art-animation.0001.txt
+>>> Prompt: instructions/art-animation.0002.txt
+>>> Prompt: instructions/art-animation.0003.txt
+*/
 class AnimatedSprite
 {
     settings = {
