@@ -1215,12 +1215,10 @@ var Llemmings = (function () {
     // HUMAN: This hole sucks, but well, at least it's a hole. And well, there's a lot of things going wrong here. It's a bad prompt apparently.
     function createHole(x, y) {
       var holeSize = 50;
-      var rands = [];
   
       x = Math.floor(x);
       y = Math.floor(y);
             
-      
       // Clear pixels in background and collision arrays
       for (var yOffset = -holeSize/2; yOffset < holeSize/2; yOffset++) {
         for (var xOffset = -holeSize/2; xOffset < holeSize/2; xOffset++) {
@@ -1228,18 +1226,7 @@ var Llemmings = (function () {
           var yCoord = y + yOffset
           
           if (xCoord >= 0 && xCoord < canvas.width && yCoord >= 0 && yCoord < canvas.height) {
-           
-            // Set r, g, b, and a channels of pixel
-            background.data[(yCoord * canvas.width + xCoord) * 4] = gradientsData[(yCoord * canvas.width + xCoord) * 4];
-            background.data[(yCoord * canvas.width + xCoord) * 4 + 1] = gradientsData[(yCoord * canvas.width + xCoord) * 4 + 1];
-            background.data[(yCoord * canvas.width + xCoord) * 4 + 2] = gradientsData[(yCoord * canvas.width + xCoord) * 4 + 2];
-            background.data[(yCoord * canvas.width + xCoord) * 4 + 3] = gradientsData[(yCoord * canvas.width + xCoord) * 4 + 3];
-
-            // Delete collision data
-            collisionLayer.data[(yCoord * canvas.width + xCoord) * 4] = 0;
-            collisionLayer.data[(yCoord * canvas.width + xCoord) * 4 + 1] = 0;
-            collisionLayer.data[(yCoord * canvas.width + xCoord) * 4 + 2] = 0;
-            collisionLayer.data[(yCoord * canvas.width + xCoord) * 4 + 3] = 0;
+            clearPixel(xCoord, yCoord);
           }
         }
       }
