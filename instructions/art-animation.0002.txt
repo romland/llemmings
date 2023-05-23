@@ -1,0 +1,2 @@
+>>> Prompt: (same context window as previous prompt)
+can you give me other easing methods too?

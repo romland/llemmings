@@ -71,6 +71,10 @@ var Llemmings = (function () {
     let autoPlaying = null;  // set to true to automatically use a provided solution (if it exists)
     let levelDataResources = null;
 
+    // Sprites
+    const animationFrames = {};   // kept intact between levels so we don't have to re-generate all the time
+    const sprites = [];           // cleared between levels
+
     // Game settings
     // TODO: Store in local storage (like keybindings)
     let settings = {
@@ -1970,6 +1974,12 @@ var Llemmings = (function () {
         perfMonitor.end("lemmings-update");
       }
 
+      perfMonitor.start("sprites-update");
+      for(let i = 0; i < sprites.length; i++) {
+        sprites[i].update();
+      }
+      perfMonitor.end("sprites-update");
+
       perfMonitor.start("particles-update");
       particles.forEach((particle) => {
           particle.update();
@@ -2116,6 +2126,10 @@ var Llemmings = (function () {
       } else if(levelData.start.clear) {
         // clear start zone
         clearSquare(levelData.start.x, levelData.start.y, levelData.start.radius);
+
+        sprites.push(
+          new AnimatedSprite(ctx, levelData.start.x - 30, Math.max(0, levelData.start.y), animationFrames["hatch"], { speed : 1, /* default settings */ })
+        );
       }
 
       if(levelData.finish.clear) {
@@ -2295,6 +2309,12 @@ var Llemmings = (function () {
             clearInterval(intervals[i]);
         }
 
+        for(let i = 0; i < sprites.length; i++) {
+          sprites[i].cleanUp();
+        }
+        // clear sprites array
+        sprites.length = 0;
+
         perfMonitor.cleanUp();
 
         // clear particles
@@ -2351,7 +2371,7 @@ var Llemmings = (function () {
       background.fillRect(0, 0, offScreenCanvas.width, offScreenCanvas.height);      
     }
 
-    function init(canvasElt, givenLevel = {}, debug = false)
+    async function init(canvasElt, givenLevel = {}, debug = false)
     {
       __DEBUG__ = debug;
   
@@ -2396,6 +2416,12 @@ var Llemmings = (function () {
         */
       }
       ctx = canvas.getContext('2d', { willReadFrequently: true, alpha: false });
+
+      // Create sprites (for now just one!)
+      if(!animationFrames["hatch"]) {
+        animationFrames["hatch"] = await GameUtils.generateAnimationFrames(96, 32, 90, LlemmingsArt.drawHatch);
+        console.log("Created animation for hatch");
+      }
 
       if(!EDITOR_MODE) {
         adjustCanvasHeight();

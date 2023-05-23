@@ -202,10 +202,46 @@ var GameUtils = (function () {
       }
     }
 
+    // >>> Prompt: instructions/art-animation.0001.txt
+    // >>> Prompt: instructions/art-animation.0002.txt
+    // >>> Prompt: instructions/art-animation.0003.txt
+    async function generateAnimationFrames(width, height, frameCount = 90, drawFunc)
+    {
+        const frameImages = [];
+        const canvas = document.createElement('canvas');
+        canvas.width = width;
+        canvas.height = height;
+        const context = canvas.getContext('2d');
+        
+        const framePromises = [];
+        
+        for (let i = 0; i <= frameCount; i++) {
+            context.clearRect(0, 0, canvas.width, canvas.height);
+            
+            drawFunc(context, width, height, i, frameCount);
+            
+            const frame = new Image();
+            frame.src = canvas.toDataURL();
+            framePromises.push(
+                frame.decode().then(() => {
+                    return createImageBitmap(frame, 0, 0, canvas.width, canvas.height).then((bmp) => {
+                        frameImages.push(bmp);
+                    });
+                })
+            );
+        }
+        
+        await Promise.all(framePromises);
+        
+        return frameImages;
+    }
+
+
     return {
       ScoreKeeper : ScoreKeeper,
       matchesCondition : matchesCondition,
       renderBitmap : renderBitmap,
       drawSvgOnCanvas : drawSvgOnCanvas,
+      generateAnimationFrames : generateAnimationFrames,
     }
 })();

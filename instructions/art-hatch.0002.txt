@@ -1,0 +1,17 @@
+Given JS and canvas, I want an animation stored in an array 'frameImages'. Each
+frame should be an image (new Image).
+
+Two rectangles (doors) of 10 pixel height, simulating a hatch opening downwards,
+like this:
+Start position (closed):
+ __
+End position (open):
+/  \
+
+Note how only their angle changes, not position or size. Center of rotation is
+left and right edge for left and right door respectively.
+
+Go from start to end in 30 frames (but make configurable).
+Wrap it in a function called 'generateAnimation', return 'frameImages'.
+
+This time I don't need an explanation, just give me the code.

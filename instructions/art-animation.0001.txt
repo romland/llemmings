@@ -1,0 +1,13 @@
+>>> Prompt: easing
+The following snippet plays an animation linearly. I want to be able to play it in sine, cubic, bicubic, elasitc too
+
+function animate() {
+  context.clearRect(0, 0, canvas.width, canvas.height);
+  context.drawImage(frameImages[currentFrame], 0, 0);
+  currentFrame++;
+  if (currentFrame >= frameImages.length) {
+    currentFrame = 0;
+    return
+  }
+  window.requestAnimationFrame(animate);
+}

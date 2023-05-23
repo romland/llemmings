@@ -1,0 +1,2 @@
+I want this function to generate and populate frameImages asynchronously (all at the same time)
+< code of generateAnimationFrames() here >

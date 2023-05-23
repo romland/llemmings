@@ -1,0 +1,9 @@
+Given javascript and 2D canvas, we're making a game.
+
+I want a system where I draw e.g. a door going from closed to open state
+over 30 frames.
+
+I want each frame to be cut out from the temporary canvas and stored in
+an array to be replayed at a later stage.
+
+Give me the code to both generate and replay this animation on a canvas context of choice.

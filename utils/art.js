@@ -75,8 +75,30 @@ var LlemmingsArt = (function ()
       </svg>`;
     }
 
+    // >>> Prompt: art-hatch.0001.txt
+    // >>> Prompt: art-hatch.0002.txt
+    function drawHatch(context, width, height, currentFrameNum, totalFrameCount)
+    {
+        // calculate angle of rotation for each door (Human: 1.34 is just because i want it slightly more than 90 degrees)
+        const angle = (currentFrameNum / totalFrameCount * 1.34) * Math.PI / 2;
+    
+        context.save();
+        context.translate(16, 5);
+        context.rotate(angle);
+        context.fillRect(0, -5, 30, 5);
+        context.restore();
+    
+        context.save();
+        context.translate(76, 5);
+        context.scale(-1, 1);   // mirror
+        context.rotate(angle);
+        context.fillRect(0, -5, 30, 5);
+        context.restore();
+    }
+    
 
     return {
-        getHouse : getHouse
+        getHouse : getHouse,
+        drawHatch : drawHatch,
     }
 })();
