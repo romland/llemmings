@@ -1,0 +1,61 @@
+I want the functions below changed.
+They should no longer use putImageData or getImageData for the background. It is too expensive,
+instead it should use an offscreen canvas. Feel free to use fillRect() for single pixel manipulation.
+
+The collisionLayer should still use a pixelarray.
+
+No need for explanation this time. Just give me the code.
+
+function setBackgroundBuffer() {
+  background = ctx.getImageData(0, 0, canvas.width, canvas.height);
+}
+
+function update() {
+  ctx.putImageData(background, 0, 0);
+  lemmings.update();
+  lemmings.draw();
+  reqAnimFrameId = requestAnimationFrame(update);
+}
+
+function setPixel(x, y, colorBytes)
+{
+  if (x >= canvas.width || y >= canvas.height || x < 0 || y < 0) {
+    return;
+  }
+  
+  const pixelIndex = getPixelIndex(x, y, canvas.width);
+  if(collisionLayer) {
+    collisionLayer.data[pixelIndex] = colorBytes[0];
+    collisionLayer.data[pixelIndex + 1] = colorBytes[1];
+    collisionLayer.data[pixelIndex + 2] = colorBytes[2];
+    collisionLayer.data[pixelIndex + 3] = 255;
+  }
+
+  if(background) {
+    background.data[pixelIndex] = colorBytes[0];
+    background.data[pixelIndex + 1] = colorBytes[1];
+    background.data[pixelIndex + 2] = colorBytes[2];
+    background.data[pixelIndex + 3] = 255;
+  }
+}
+
+function clearPixel(x, y, grayScale = 0) {
+  if (x >= canvas.width || y >= canvas.height || x < 0 || y < 0) {
+    return;
+  }
+  
+  const pixelIndex = getPixelIndex(x, y, canvas.width);
+  if(collisionLayer) {
+    collisionLayer.data[pixelIndex] = 0;
+    collisionLayer.data[pixelIndex + 1] = 0;
+    collisionLayer.data[pixelIndex + 2] = 0;
+    collisionLayer.data[pixelIndex + 3] = 255;
+  }
+
+  if(background) {
+    background.data[pixelIndex] = grayScale || gradientsData[pixelIndex];
+    background.data[pixelIndex + 1] = grayScale || gradientsData[pixelIndex + 1];
+    background.data[pixelIndex + 2] = grayScale || gradientsData[pixelIndex + 2];
+    background.data[pixelIndex + 3] = gradientsData[pixelIndex + 3];
+  }
+}

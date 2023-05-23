@@ -70,6 +70,12 @@ var LlemmingsLevels = [
             "clear": true
         },
         "solution" : {
+            // [1] : [
+            //     {
+            //         x: 155, y: 283, r: 15,
+            //         action : "Bomber"
+            //     },
+            // ],
             [2] : [
                 {
                     x: 115, y: 118, r: 5,

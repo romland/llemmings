@@ -23,9 +23,10 @@ var Llemmings = (function () {
 
     // Set up canvas (+related)
     let canvas, ctx;        // set by init().
-    let background; // global variable to store canvas image data (restored in main loop below somewhere)
-    let collisionLayer; // check collisions against this (array of 4 bytes / pixel)
-    let gradientsData; // contains a backup of the gradients for when we blow stuff up
+    const offScreenCanvas = document.createElement('canvas');
+    let background;         // background offscreen canvas context
+    let collisionLayer;     // check collisions against this (array of 4 bytes / pixel)
+    let gradientsData;      // contains a backup of the gradients for when we blow stuff up
 
     // Kept around for clean-up reasons
     let reqAnimFrameId = null;
@@ -351,7 +352,7 @@ var Llemmings = (function () {
                     // dirt
                     color = dirtColorBytes;
                 } else {
-                    // background
+                    // void
                     color = blackColorBytes;
                 }
   
@@ -1218,7 +1219,7 @@ var Llemmings = (function () {
   
       x = Math.floor(x);
       y = Math.floor(y);
-            
+
       // Clear pixels in background and collision arrays
       for (var yOffset = -holeSize/2; yOffset < holeSize/2; yOffset++) {
         for (var xOffset = -holeSize/2; xOffset < holeSize/2; xOffset++) {
@@ -1496,51 +1497,53 @@ var Llemmings = (function () {
   
   
     // HUMAN: Added this to make it easier for the LLM (copy of clearPixel)
-    function setPixel(x, y, colorBytes)
-    {
-      if (x >= canvas.width || y >= canvas.height || x < 0 || y < 0) {
+    // >>> Prompt: instructions/optimization-putImageData-prune.0001.txt
+    function setPixel(x, y, colorBytes) {
+      if (x >= offScreenCanvas.width || y >= offScreenCanvas.height || x < 0 || y < 0) {
         return;
       }
-      
-      const pixelIndex = getPixelIndex(x, y, canvas.width);
-      collisionLayer.data[pixelIndex] = colorBytes[0];
-      collisionLayer.data[pixelIndex + 1] = colorBytes[1];
-      collisionLayer.data[pixelIndex + 2] = colorBytes[2];
-      collisionLayer.data[pixelIndex + 3] = 255;
-  
-      background.data[pixelIndex] = colorBytes[0];
-      background.data[pixelIndex + 1] = colorBytes[1];
-      background.data[pixelIndex + 2] = colorBytes[2];
-      background.data[pixelIndex + 3] = 255;
+
+      background.fillStyle = `rgba(${colorBytes.join(',')},1)`;
+      background.fillRect(x, y, 1, 1);
+
+      if(collisionLayer) {
+        const pixelIndex = getPixelIndex(x, y, canvas.width);
+        collisionLayer.data[pixelIndex] = colorBytes[0];
+        collisionLayer.data[pixelIndex + 1] = colorBytes[1];
+        collisionLayer.data[pixelIndex + 2] = colorBytes[2];
+        collisionLayer.data[pixelIndex + 3] = 255;
+      }
     }
-  
+
     // HUMAN: this came from _one_ of the discarded Digger/Miner/Basher implementations.
     // The LLM kept getting tiny parts of this wrong over and over, so I lifted this implementation
     // to make it a bit easier to get something useful.
     // >>> Prompt: digger-miner-basher.0001.txt
+    // >>> Prompt: instructions/optimization-putImageData-prune.0001.txt
     function clearPixel(x, y, grayScale = 0) {
-      if (x >= canvas.width || y >= canvas.height || x < 0 || y < 0) {
+      if (x >= offScreenCanvas.width || y >= offScreenCanvas.height || x < 0 || y < 0) {
         return;
       }
-      
+
       const pixelIndex = getPixelIndex(x, y, canvas.width);
+      let col;
+      if(gradientsData) {
+        col = `rgb(${gradientsData[pixelIndex]},${gradientsData[pixelIndex+1]},${gradientsData[pixelIndex+2]},${gradientsData[pixelIndex+3]})`;
+      } else {
+        col = "black";
+      }
+
+      background.fillStyle = grayScale ? `rgba(${[grayScale, grayScale, grayScale, 1].join(',')})` : col;
+      background.fillRect(x, y, 1, 1);
+
       if(collisionLayer) {
         collisionLayer.data[pixelIndex] = 0;
         collisionLayer.data[pixelIndex + 1] = 0;
         collisionLayer.data[pixelIndex + 2] = 0;
         collisionLayer.data[pixelIndex + 3] = 255;
       }
-
-      if(background) {
-        background.data[pixelIndex] = grayScale || gradientsData[pixelIndex];
-        background.data[pixelIndex + 1] = grayScale || gradientsData[pixelIndex + 1];
-        background.data[pixelIndex + 2] = grayScale || gradientsData[pixelIndex + 2];
-        background.data[pixelIndex + 3] = gradientsData[pixelIndex + 3];
-      }
     }
-  
-  
-  
+
     // >>> Prompt: instructions/unique-colors.0001.txt
     function getUniqueColors(canvas) {
       const ctx = canvas.getContext("2d");
@@ -1553,7 +1556,7 @@ var Llemmings = (function () {
         const g = imageData[i + 1];
         const b = imageData[i + 2];
   
-        if(!r && !g && !b) continue;  // skip background color.
+        if(!r && !g && !b) continue;  // skip 'void' color.
         
         const colorKey = `${r},${g},${b}`;
         
@@ -1694,8 +1697,9 @@ var Llemmings = (function () {
         }
     }
   
+    // update the background buffer function 
     function setBackgroundBuffer() {
-      background = ctx.getImageData(0, 0, canvas.width, canvas.height);
+      background.drawImage(canvas, 0, 0);
     }
 
     // >>> Prompt: instructions/serialization-localstorage.0001.txt
@@ -1891,6 +1895,7 @@ var Llemmings = (function () {
     // >>> Prompt: instructions/main-loop.0001.txt
     // >>> Prompt: instructions/main-loop.0002.txt
     // >>> Prompt: instructions/main-loop.0003.txt (throttling)
+    // >>> Prompt: instructions/optimization-putImageData-prune.0001.txt
     function update() {
       if(!background) {
         return;
@@ -1916,7 +1921,7 @@ var Llemmings = (function () {
       elapsedLevelTime += frameInterval;
 
       // Restore the background
-      ctx.putImageData(background, 0, 0);
+      ctx.drawImage(offScreenCanvas, 0, 0);
 
       // Handle fading
       if (canvasFadeDirection === "in") {
@@ -2067,7 +2072,7 @@ var Llemmings = (function () {
       canvasEventsListening = true;
     }
 
-
+    // Human: This is very inefficient, but it is used rarely and only in init().
     function clearSquare(x, y, radius)
     {
       const clrHalfRad = radius / 2;
@@ -2333,6 +2338,19 @@ var Llemmings = (function () {
         console.log("Reset done.");
     }
     
+    // >>> Prompt: instructions/optimization-putImageData-prune.0001.txt
+    function initBackground()
+    {
+      // create an offscreen canvas as the buffer for the background
+      offScreenCanvas.width = canvas.width;
+      offScreenCanvas.height = canvas.height;
+      background = offScreenCanvas.getContext('2d');
+
+      // set the buffer with a background color
+      background.fillStyle = 'black';
+      background.fillRect(0, 0, offScreenCanvas.width, offScreenCanvas.height);      
+    }
+
     function init(canvasElt, givenLevel = {}, debug = false)
     {
       __DEBUG__ = debug;
@@ -2384,6 +2402,8 @@ var Llemmings = (function () {
       }
       setupUI();
 
+      initBackground();
+
       generateMapNoiseHash();
       generateMap(canvas.width, canvas.height);
 
@@ -2404,7 +2424,7 @@ var Llemmings = (function () {
       collisionLayer = ctx.getImageData(0,0,canvas.width,canvas.height);
 
       setGradients(ctx, levelData.gradients);
-      gradientsData = backupGradients(levelData.gradients);     // needed for when we blow stuff up
+      gradientsData = backupGradients(levelData.gradients);     // needed for when we blow stuff up or dig
 
       renderDecorations();
       renderDirtTexture();
