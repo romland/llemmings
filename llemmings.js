@@ -2491,7 +2491,7 @@ var Llemmings = (function () {
       }
 
       // Spawn a new lemming every interval
-      gameIntervals["debugLemmingSpawner"] = setInterval(spawnLemming, levelData.spawnInterval);
+      gameIntervals["lemmingSpawner"] = setInterval(spawnLemming, levelData.spawnInterval);
       
       playing = true;
       console.log("Starting level", levelData.level);
@@ -2540,7 +2540,6 @@ var Llemmings = (function () {
 
     function startGame()
     {
-      console.log(ctx.font)
       // "Start game" button on intro screen
       if(isPaused) {
         togglePause();

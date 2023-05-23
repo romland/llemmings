@@ -109,7 +109,6 @@ var GameUtils = (function () {
         img.src = dataUrl;
         img.onload = () => {
           context.drawImage(img, x, y, width, height);
-          console.log("drawn")
         };
     }
 

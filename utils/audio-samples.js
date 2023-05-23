@@ -151,7 +151,6 @@ var AudioSamples = (function ()
 			}
 		}
 		
-		console.log("Bass drum sound generated");
 		return buffer;
 	}
 	
@@ -309,7 +308,7 @@ var AudioSamples = (function ()
 			}
 			
 			let [instrument, octave, note, len] = sampleNames[i].split("-");
-			console.log("Generating", sampleNames[i]);
+			// console.log("Generating", sampleNames[i]);
 			
 			if(instrument === "HH" || instrument === "BD") {
 				len = parseFloat(octave);
