@@ -2392,6 +2392,12 @@ var Llemmings = (function () {
     
       levelData = getDefaultLevelData(givenLevel);
 
+      if(false) {
+        // lots of lemmings test (lemmings-update is at around 11-13ms at peak; 9-10ms without draw (!?))
+        levelData.spawnInterval = 17;
+        levelData.resources.lemmings = 6000;
+      }
+
       levelDataResources = { ...levelData.resources };
 
       autoPlaying = levelData.autoPlay;

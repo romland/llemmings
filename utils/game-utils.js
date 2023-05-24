@@ -76,6 +76,7 @@ var GameUtils = (function () {
 
       const bytes = atob(bitmap.data).split('').map(char => char.charCodeAt(0));
       const imageData = context.createImageData(bitmap.width, Math.ceil(bytes.length*8 / bitmap.width));
+
       const data = imageData.data;
       let byteIndex = 0;
       let bitIndex = 0;
@@ -84,11 +85,13 @@ var GameUtils = (function () {
         const bit = (byte >> bitIndex) & 1;
         const alpha = bit * 255;
 
-        data[i] = rgb[0];
-        data[i + 1] = rgb[1];
-        data[i + 2] = rgb[2];
-        data[i + 3] = alpha;
-        
+        if(alpha) {
+          data[i] = rgb[0];
+          data[i + 1] = rgb[1];
+          data[i + 2] = rgb[2];
+          data[i + 3] = alpha;
+        }
+
         bitIndex += 1;
         if (bitIndex === 8) {
           byteIndex += 1;

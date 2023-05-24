@@ -20,7 +20,7 @@ class AnimatedSprite
         repeat: false,
 
         // speed (1 = normal speed, one image / frame)
-        speed: 0.5,
+        speed: 1,
 
         // callback for when animation finished
         onAnimationDone : () => {
