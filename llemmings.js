@@ -2329,10 +2329,14 @@ var Llemmings = (function () {
         mapNoiseHash.length = 0;
 
         // clear canvas
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        if(ctx) {
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+        }
 
-        scoreKeeper.cleanUp();
-        scoreKeeper = null;
+        if(scoreKeeper) {
+          scoreKeeper.cleanUp();
+          scoreKeeper = null;
+        }
 
         // Unpause
         isPaused = false;
@@ -2371,7 +2375,7 @@ var Llemmings = (function () {
       background.fillRect(0, 0, offScreenCanvas.width, offScreenCanvas.height);      
     }
 
-    async function init(canvasElt, givenLevel = {}, debug = false)
+    function init(canvasElt, givenLevel = {}, debug = false)
     {
       __DEBUG__ = debug;
   
@@ -2389,7 +2393,7 @@ var Llemmings = (function () {
       if(!EDITOR_MODE) {
         perfMonitor.init(__DEBUG__);
       }
-    
+
       levelData = getDefaultLevelData(givenLevel);
 
       if(false) {
@@ -2422,12 +2426,6 @@ var Llemmings = (function () {
         */
       }
       ctx = canvas.getContext('2d', { willReadFrequently: true, alpha: false });
-
-      // Create sprites (for now just one!)
-      if(!animationFrames["hatch"]) {
-        animationFrames["hatch"] = await GameUtils.generateAnimationFrames(96, 32, 90, LlemmingsArt.drawHatch);
-        console.log("Created animation for hatch");
-      }
 
       if(!EDITOR_MODE) {
         adjustCanvasHeight();
@@ -2531,12 +2529,21 @@ var Llemmings = (function () {
       console.log("Starting level", levelData.level);
     }
 
+    async function generateSprites()
+    {
+      // Create sprites (for now just one!)
+      if(!animationFrames["hatch"]) {
+        animationFrames["hatch"] = await GameUtils.generateAnimationFrames(96, 32, 90, LlemmingsArt.drawHatch);
+        console.log("Created animation for hatch");
+      }
+    }
+
     /**
      * Human: This is the entry point when page is loaded/refreshed.
      * Human: Note that it is NOT run if in level editor.
      * Human: It starts the intro screen of the game.
      */
-    function _runOnce(resetLocalStorage = false)
+    async function _runOnce(resetLocalStorage = false)
     {
       // Retrieve from local storage
       let tmpPersisted = getFromLocalStorage('persisted');
@@ -2553,6 +2560,8 @@ var Llemmings = (function () {
         persisted = tmpPersisted;
       }
       console.log("Loaded persisted data...", persisted);
+
+      await generateSprites();
 
       LlemmingsKeyBindings.startKeyBinds(keyBindPressed);
 
@@ -2628,5 +2637,6 @@ var Llemmings = (function () {
       restart : restartLevel,
       getDefaultLevelData : getDefaultLevelData,
       drawShapes : drawShapes,
+      generateSprites : generateSprites,
     }
   })();

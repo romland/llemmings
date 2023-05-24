@@ -729,6 +729,10 @@ var LevelEditor = (function () {
       });
 
       selectionDiv.addEventListener('mouseup', () => {
+        if(!isDragging) {
+          return;
+        }
+
         isDragging = false;
         renderLevel();
       });
@@ -737,6 +741,7 @@ var LevelEditor = (function () {
     // Note: This is expensive.
     function renderLevel()
     {
+      Llemmings.reset();
       Llemmings.init(document.querySelector('#seededCanvas'), levelData, false);
     }
 
@@ -802,17 +807,24 @@ var LevelEditor = (function () {
         document.getElementById("levelData").innerHTML = "";
     }
 
-    function createNewLevel()
+    async function createNewLevel()
     {
+        await Llemmings.generateSprites();
+        
         reset();
         Llemmings.reset();
         initLevel(null);
         draw();
     }
 
-    function openLevel()
+    async function openLevel(lvl)
     {
-        let lvl = prompt("Level to open (0-" + (LlemmingsLevels.length - 1) + ":");
+        if(lvl === undefined || lvl === null) {
+          lvl = prompt("Level to open (0-" + (LlemmingsLevels.length - 1) + ":");
+        }
+
+        await Llemmings.generateSprites();
+
         reset();
         Llemmings.reset();
         initLevel(parseInt(lvl, 10));
@@ -822,6 +834,7 @@ var LevelEditor = (function () {
     return {
       preview : preview,
       initEditor : initEditor,
-      initLevel: initLevel,
+      // initLevel: initLevel,
+      openLevel : openLevel,
     }
 })();

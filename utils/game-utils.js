@@ -90,6 +90,11 @@ var GameUtils = (function () {
           data[i + 1] = rgb[1];
           data[i + 2] = rgb[2];
           data[i + 3] = alpha;
+        } else {
+          data[i] = 0;
+          data[i + 1] = 0;
+          data[i + 2] = 0;
+          data[i + 3] = 0;
         }
 
         bitIndex += 1;
@@ -238,7 +243,6 @@ var GameUtils = (function () {
         
         return frameImages;
     }
-
 
     return {
       ScoreKeeper : ScoreKeeper,
