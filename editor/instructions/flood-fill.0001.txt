@@ -1,0 +1,8 @@
+Give me a high-performance flood-fill for html canvas. Be concise. 
+The, by far, most important thing is high performance. Look at 
+super-fast C implementations and make it javascript. 
+
+Note, though: Don't do unnecessary bitshifts to avoid division or
+multiplication as the browser will easily optimize that itself.
+
+Name it: floodFill(x, y, targetColor, fillColor, ctx)
