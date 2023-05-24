@@ -54,14 +54,6 @@ var EditorUtils = (function () {
       const width = imageData.width;
       const height = imageData.height;
       const targetIndex = (y * width + x) * 4;
-      const hasSameColor = (index) => {
-        return (
-          pixels[index] === targetColor.r &&
-          pixels[index + 1] === targetColor.g &&
-          pixels[index + 2] === targetColor.b &&
-          pixels[index + 3] === targetColor.a
-        );
-      };
 
       if (!targetColor) {
         const targetIndex = (y * width + x) * 4;
@@ -77,7 +69,12 @@ var EditorUtils = (function () {
       const queue = [targetIndex];
       while (queue.length) {
         const currentIndex = queue.pop();
-        if (hasSameColor(currentIndex)) {
+        if(
+          pixels[currentIndex] === targetColor.r &&
+          pixels[currentIndex + 1] === targetColor.g &&
+          pixels[currentIndex + 2] === targetColor.b &&
+          pixels[currentIndex + 3] === targetColor.a
+        ) {
           pixels[currentIndex] = fillColorData[0];
           pixels[currentIndex + 1] = fillColorData[1];
           pixels[currentIndex + 2] = fillColorData[2];
