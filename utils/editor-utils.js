@@ -46,54 +46,7 @@ var EditorUtils = (function () {
         return numerator / denominator;
     }
 
-    // >>> Prompt: editor/instructions/flood-fill.0001.txt
-    function floodFill(x, y, targetColor, fillColor, ctx) {
-      const imageData = ctx.getImageData(0, 0, ctx.canvas.width, ctx.canvas.height);
-
-      const pixels = imageData.data;
-      const width = imageData.width;
-      const height = imageData.height;
-      const targetIndex = (y * width + x) * 4;
-
-      if (!targetColor) {
-        const targetIndex = (y * width + x) * 4;
-        targetColor = {
-          r: pixels[targetIndex],
-          g: pixels[targetIndex + 1],
-          b: pixels[targetIndex + 2],
-          a: pixels[targetIndex + 3]
-        };
-      }
-
-      const fillColorData = new Uint8ClampedArray([fillColor.r, fillColor.g, fillColor.b, fillColor.a]);
-      const queue = [targetIndex];
-      while (queue.length) {
-        const currentIndex = queue.pop();
-        if(
-          pixels[currentIndex] === targetColor.r &&
-          pixels[currentIndex + 1] === targetColor.g &&
-          pixels[currentIndex + 2] === targetColor.b &&
-          pixels[currentIndex + 3] === targetColor.a
-        ) {
-          pixels[currentIndex] = fillColorData[0];
-          pixels[currentIndex + 1] = fillColorData[1];
-          pixels[currentIndex + 2] = fillColorData[2];
-          pixels[currentIndex + 3] = fillColorData[3];
-    
-          const x = (currentIndex / 4) % width;
-          const y = Math.floor(currentIndex / 4 / width);
-    
-          if (x > 0) queue.push(currentIndex - 4);
-          if (x < width - 1) queue.push(currentIndex + 4);
-          if (y > 0) queue.push(currentIndex - width * 4);
-          if (y < height - 1) queue.push(currentIndex + width * 4);
-        }
-      }
-      ctx.putImageData(imageData, 0, 0);
-    }
-
     return {
         douglasPeucker : douglasPeucker,
-        floodFill : floodFill,
     }
 })();

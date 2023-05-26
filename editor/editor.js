@@ -5,11 +5,18 @@ var LevelEditor = (function () {
     const fill = getById("fill");
     const redoStack = [];
     const availableCols = [
-      {name:"Void", col: "rgb(0, 0, 0)"},
-      {name:"Water", col: "rgb(0, 119, 190)"},
-      {name:"Rock",  col: "rgb(136, 136, 136)"},
-      {name:"Dirt",  col: "rgb(74, 46, 0)"}
+      {name:"Void", col: "rgb(0,0,0)"},
+      {name:"Water", col: "rgb(0,119,190)"},
+      {name:"Rock",  col: "rgb(136,136,136)"},
+      {name:"Dirt",  col: "rgb(74,46,0)"}
     ];
+    const availableColsBytes = availableCols.map(col => {
+      const rgbValues = col.col.slice(4, -1).split(',');
+      const formattedRgbValues = rgbValues.map(value => Number(value.trim()));
+      formattedRgbValues.push(255);
+      return {name: col.name, col: formattedRgbValues};
+    });
+
     let currColor = availableCols[0].col;
     let currToolType = "select";
     let currLineWidth = 1;
@@ -106,15 +113,28 @@ var LevelEditor = (function () {
             break;
 
           case "text" :
+            shape.x = lastX;
+            shape.y = lastY;
+            /*
             ctx.font = shape.fontSize + "px " + shape.fontName;
             ctx.fillStyle = shape.color;
             ctx.textBaseline = shape.textBaseline;
             ctx.fillText(shape.string, lastX, lastY);
+            */
             break;
 
           case "bitmap" :
+/*
             // >>> Prompt: editor/instructions/shapes-bitmap.0001.txt
             GameUtils.renderBitmap(shape, ctx, lastX, lastY);
+*/
+            shape.x = lastX;
+            shape.y = lastY;
+            break;
+
+          case "fill" :
+            shape.x = startX;
+            shape.y = startY;
             break;
 
           case "select" :
@@ -228,6 +248,17 @@ var LevelEditor = (function () {
         case "select" :
           break;
 
+        case "fill" :
+          shape.x = startX;
+          shape.y = startY;
+          shape.targetColor = null;//[0,0,0,255];
+          shape.fillColor = availableColsBytes[2].col;
+
+          // console.log("starting fill");
+          // GameUtils.floodFill(shape.x, shape.y, shape.targetColor, shape.fillColor, ctx);
+          // console.log("fill done");
+          break;
+
         default :
           throw "Unknown tool: " + currToolType;
       }
@@ -286,6 +317,9 @@ var LevelEditor = (function () {
           maxX = shape.x + shape.width;
           maxY = shape.y + Math.ceil(shape.data.length * 8 / shape.width);
           break;
+
+        case 'fill' :
+          throw "TODO: cannot grab a filled area, I think?";
 
         default:
           throw `unknown shape type ${shape.type}`
@@ -628,6 +662,11 @@ var LevelEditor = (function () {
       getById("shape-bitmap").addEventListener("click", function() {
         deselectSelected();
         currToolType = "bitmap";
+      });
+
+      getById("shape-fill").addEventListener("click", function() {
+        deselectSelected();
+        currToolType = "fill";
       });
 
       getById("undo").addEventListener("click", function() {

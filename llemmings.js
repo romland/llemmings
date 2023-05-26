@@ -517,7 +517,7 @@ var Llemmings = (function () {
               context.stroke();
             }
             break;
-            
+
           case "line":
             context.moveTo(shape.x1, shape.y1);
             context.lineTo(shape.x2, shape.y2);
@@ -577,6 +577,11 @@ var Llemmings = (function () {
               break;
             }
             GameUtils.renderBitmap(shape, context, shape.x, shape.y);
+            break;
+          
+          case "fill":
+            console.log("Drawing fill", shape);
+            GameUtils.floodFill(shape.x, shape.y, shape.targetColor, shape.fillColor, context);
             break;
         }
       }
@@ -2292,7 +2297,6 @@ var Llemmings = (function () {
 
     function reset()
     {
-        console.log("Resetting");
         // Stop requestAnimationFrame
         cancelAnimationFrame(reqAnimFrameId);
         reqAnimFrameId = null;

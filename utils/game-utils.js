@@ -244,11 +244,96 @@ var GameUtils = (function () {
         return frameImages;
     }
 
+    // >>> Prompt: editor/instructions/flood-fill.0001.txt
+    function floodFill(x, y, targetColor, fillColor, ctx) {
+      const imageData = ctx.getImageData(0, 0, ctx.canvas.width, ctx.canvas.height);
+      const pixelStack = [(y * imageData.width + x) * 4];
+    
+      function matchesTargetColor(pixelIndex) {
+        return imageData.data[pixelIndex] === targetColor[0]
+          && imageData.data[pixelIndex + 1] === targetColor[1]
+          && imageData.data[pixelIndex + 2] === targetColor[2]
+          && imageData.data[pixelIndex + 3] === targetColor[3];
+      }
+    
+      function fillColorAtPixel(pixelIndex) {
+        imageData.data[pixelIndex + 0] = fillColor[0];
+        imageData.data[pixelIndex + 1] = fillColor[1];
+        imageData.data[pixelIndex + 2] = fillColor[2];
+        imageData.data[pixelIndex + 3] = fillColor[3];
+        pixelsFilled++;
+      }
+      
+      if(!targetColor) {
+        targetColor = [
+          imageData.data[pixelStack[0] + 0],
+          imageData.data[pixelStack[0] + 1],
+          imageData.data[pixelStack[0] + 2],
+          imageData.data[pixelStack[0] + 3]
+        ];
+      }
+
+      let pixelsFilled = 0;
+      console.log("x/y/target/fill/stack: ", x, y, targetColor, fillColor, pixelStack);
+
+      if (matchesTargetColor(pixelStack[0])) {
+        fillColorAtPixel(pixelStack[0]);
+      }
+    
+      while (pixelStack.length) {
+        let pixelIndex = pixelStack.pop();
+        let x = Math.floor(pixelIndex / 4) % imageData.width;
+        let y = Math.floor(Math.floor(pixelIndex / 4) / imageData.width);
+    
+        while (y-- >= 0 && matchesTargetColor(pixelIndex)) {
+          pixelIndex -= imageData.width * 4;
+        }
+        pixelIndex += imageData.width * 4;
+        ++y;
+    
+        let reachLeft = false;
+        let reachRight = false;
+    
+        while (y++ < imageData.height - 1 && matchesTargetColor(pixelIndex)) {
+          fillColorAtPixel(pixelIndex);
+    
+          if (x > 0) {
+            if (matchesTargetColor(pixelIndex - 4)) {
+              if (!reachLeft) {
+                pixelStack.push(pixelIndex - 4);
+                reachLeft = true;
+              }
+            } else if (reachLeft) {
+              reachLeft = false;
+            }
+          }
+    
+          if (x < imageData.width - 1) {
+            if (matchesTargetColor(pixelIndex + 4)) {
+              if (!reachRight) {
+                pixelStack.push(pixelIndex + 4);
+                reachRight = true;
+              }
+            } else if (reachRight) {
+              reachRight = false;
+            }
+          }
+    
+          pixelIndex += imageData.width * 4;
+        }
+      }
+    
+      ctx.putImageData(imageData, 0, 0);
+      console.log("Pixels filled:", pixelsFilled);
+    }
+    
+    
     return {
       ScoreKeeper : ScoreKeeper,
       matchesCondition : matchesCondition,
       renderBitmap : renderBitmap,
       drawSvgOnCanvas : drawSvgOnCanvas,
       generateAnimationFrames : generateAnimationFrames,
+      floodFill : floodFill,
     }
 })();
