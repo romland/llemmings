@@ -912,7 +912,15 @@ var Llemmings = (function () {
             // Not climbing, normal movement applies
             // HUMAN: added check for 'this.velY === 0' here so that we don't turn when we are falling
             // HUMAN: don't turn if digging
-            if (!digging && !building && this.velY === 0 && (hitWallOnLeft || hitWallOnRight || this.x <= this.width || this.x >= canvas.width - this.width)) {
+            if (!digging 
+                && !building
+                && this.velY === 0
+                && (hitWallOnLeft 
+                    || hitWallOnRight 
+                    || (this.velX < 0 && this.x <= this.width) 
+                    || (this.velX > 0 && this.x >= canvas.width - this.width)
+                  )
+                ) {
                 this.velX *= -1;
             }
   
@@ -939,9 +947,9 @@ var Llemmings = (function () {
                 this.velX = 0;
                 this.velY = this.maxVelX * DIGGER_SPEED_FACTOR;
             } else {
-                this.velX = (this.velX > 0 ? this.maxVelX : -this.maxVelX);
+                // this.velX = (this.velX > 0 ? this.maxVelX : -this.maxVelX);
             }
-  
+
             // Move the lemming
             if(this.action === "Blocker") {
               this.velX = 0;
@@ -952,16 +960,17 @@ var Llemmings = (function () {
               this.x += this.velX;
             }
   
-            this.x = Math.min(this.x, canvas.width - this.width - 2);
-            this.x = Math.max(this.x, 2);
+            this.x = Math.min(this.x, canvas.width - this.width);
+            this.x = Math.max(this.x, 0);
             this.y += this.velY;
         }
         this.age++;
 
         // HUMAN: Testing "beating level"
-        if(false && this.age === 1) {
-          this.x = 650;
-          this.y = 455;
+        if(true && this.age === 1) {
+          this.x = 40;
+          this.y = 165;
+          this.velX = -this.velX;
         }
 
       }
@@ -2573,13 +2582,14 @@ var Llemmings = (function () {
       // init(document.getElementById('canvas'), { seed : null, resources : { lemmings : 150, Bomber : 99 } }, true);
       // init(document.getElementById('canvas'), { seed : 1682936781219 }, true);
 
+      // Init for hardcoded level
+      init(document.getElementById('canvas'), LlemmingsLevels[1], true);
+
       // This is the init with level progression
       // init(document.getElementById('canvas'), LlemmingsLevels[persisted.currentLevel], true);
 
       // This is the real init for the intro
-      init(document.getElementById('canvas'), LlemmingsLevels[0], true);
-
-      // console.warn("DEBUG: Pausing intro by default!"); togglePause();
+      // init(document.getElementById('canvas'), LlemmingsLevels[0], true);
 
       // start();
       preStart();
