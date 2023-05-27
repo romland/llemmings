@@ -967,7 +967,7 @@ var Llemmings = (function () {
         this.age++;
 
         // HUMAN: Testing "beating level"
-        if(true && this.age === 1) {
+        if(false && this.age === 1) {
           this.x = 40;
           this.y = 165;
           this.velX = -this.velX;
