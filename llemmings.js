@@ -1114,6 +1114,7 @@ var Llemmings = (function () {
             console.log("basher done. not dug", lemming.framesNotDug);
             lemming.action = null;
             lemming.actionStarted = false;
+            lemming.velX = lemming.velX < 0 ? -lemming.maxVelX : lemming.maxVelX;
             return false;
         }
   
@@ -1161,7 +1162,7 @@ var Llemmings = (function () {
         if (lemming.actionStarted && lemming.framesNotDug > (2 / Math.abs(lemming.velX + lemming.velY))) {
             lemming.action = null;
             lemming.actionStarted = false;
-            lemming.velX = lemming.maxVelX;
+            lemming.velX = lemming.velX < 0 ? -lemming.maxVelX : lemming.maxVelX;
             return false;
         }
   
@@ -1183,7 +1184,7 @@ var Llemmings = (function () {
         }
 
         if(!lemming.bridgePixels) {
-          lemming.bridgePixels = getRectanglePoints(lemming, 25, 80, 2, terrainColorBytes);
+          lemming.bridgePixels = getRectanglePoints(lemming, 25, 80, 2, terrainColorBytes, -lemming.velX * 10);
           lemming.framesNotBuilt = 0;
         }
   
@@ -1222,6 +1223,7 @@ var Llemmings = (function () {
         if (lemming.bridgePixels.length === 0) {
             lemming.bridgePixels = null;
             lemming.standStillUntil = lemming.age + 60;
+            lemming.velX = lemming.velX < 0 ? -lemming.maxVelX : lemming.maxVelX;
             lemming.standStillDirection = lemming.velX;
             lemming.action = null;
             lemming.actionStarted = false;
@@ -2408,6 +2410,23 @@ var Llemmings = (function () {
         perfMonitor.init(__DEBUG__);
       }
 
+      if(__DEBUG__) {
+        console.warn("Overriding level to modify settings due to __DEBUG__");
+        givenLevel.autoPlay = true;
+        /*
+        givenLevel.start.x = 320;
+        givenLevel.start.y = 154;
+        givenLevel.solution[1] = [
+          {
+              x: 362, y: 230, r: 13,
+              action : "Builder"
+          }
+        ];
+        */
+
+        givenLevel.ui.showObjective = false;
+      }
+
       levelData = getDefaultLevelData(givenLevel);
 
       if(false) {
@@ -2584,13 +2603,13 @@ var Llemmings = (function () {
       // init(document.getElementById('canvas'), { seed : 1682936781219 }, true);
 
       // Init for hardcoded level
-      // init(document.getElementById('canvas'), LlemmingsLevels[2], true);
+      init(document.getElementById('canvas'), LlemmingsLevels[1], true);
 
       // This is the init with level progression
       // init(document.getElementById('canvas'), LlemmingsLevels[persisted.currentLevel], true);
 
       // This is the real init for the intro
-      init(document.getElementById('canvas'), LlemmingsLevels[0], true);
+      // init(document.getElementById('canvas'), LlemmingsLevels[0], true);
 
       // start();
       preStart();
