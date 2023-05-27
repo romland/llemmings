@@ -1161,6 +1161,7 @@ var Llemmings = (function () {
         if (lemming.actionStarted && lemming.framesNotDug > (2 / Math.abs(lemming.velX + lemming.velY))) {
             lemming.action = null;
             lemming.actionStarted = false;
+            lemming.velX = lemming.maxVelX;
             return false;
         }
   
@@ -2583,13 +2584,13 @@ var Llemmings = (function () {
       // init(document.getElementById('canvas'), { seed : 1682936781219 }, true);
 
       // Init for hardcoded level
-      init(document.getElementById('canvas'), LlemmingsLevels[1], true);
+      // init(document.getElementById('canvas'), LlemmingsLevels[2], true);
 
       // This is the init with level progression
       // init(document.getElementById('canvas'), LlemmingsLevels[persisted.currentLevel], true);
 
       // This is the real init for the intro
-      // init(document.getElementById('canvas'), LlemmingsLevels[0], true);
+      init(document.getElementById('canvas'), LlemmingsLevels[0], true);
 
       // start();
       preStart();
