@@ -136,7 +136,7 @@ var Llemmings = (function () {
           survivors : givenLevel.goal?.survivors || 5
         },
         objects : givenLevel.objects || [],
-        start : givenLevel.start || { x : null, y : -20, radius : 50, clear: false },
+        start : givenLevel.start || { x : 60, y : -20, radius : 50, clear: false },
         finish : givenLevel.finish || { x : RESOLUTION_X - 50, y : RESOLUTION_Y - WATER_HEIGHT - 50 - 10, radius : 50, clear: true },
       };      
     }
@@ -644,7 +644,9 @@ var Llemmings = (function () {
             lemmings.splice(index, 1);
             scoreKeeper.addSavedLemmings(1);
             scoreKeeper.addScore(100, "Saved lemming");
-            console.log(`Lemming ${lemming.id} reached the finish! Saved: ${scoreKeeper.getSavedLemmingsCount()} lemmings`);
+            console.log(
+              `Lemming ${lemming.id} reached the finish! Saved: ${scoreKeeper.getSavedLemmingsCount()} lemmings`
+            );
 
             // HUMAN TODO: Do some effect here (also sound?)
             Particles.createFirework(lemming.x, lemming.y);
@@ -671,7 +673,10 @@ var Llemmings = (function () {
       perfMonitor.end("effects-update");
 
       // Game over / success check
-      if(levelData.disableGame === false && playing && ((levelDataResources.time - elapsedLevelTime) <= 0 || getLemmingsRemaining() === 0)) {
+      if(levelData.disableGame === false 
+          && playing 
+          && ((levelDataResources.time - elapsedLevelTime) <= 0 || getLemmingsRemaining() === 0)
+      ) {
         playing = false;
         if(scoreKeeper.getSavedLemmingsCount() >= levelData.goal.survivors) {
           levelCompleted();
@@ -944,8 +949,6 @@ var Llemmings = (function () {
         preStart();
       }, 1000);
     }
-
-    
 
     /**
      * Statements below this are to be run when this file is included.
