@@ -286,7 +286,7 @@ var Llemming = (() => {
 
         let pixelsDug = 0;
 
-        for(let offsetY = 0; offsetY < 2; offsetY++) {
+        for(let offsetY = -2; offsetY < 2; offsetY++) {
           if(lemming.y <= 0 || lemming.y >= canvas.height) {
             break;
           }
