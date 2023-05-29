@@ -19,6 +19,7 @@ var Llemmings = (function () {
     let reqAnimFrameId = null;
     let canvasEventsListening = false;
     const gameIntervals = {};
+    const gameTimeouts = {};
 
     // World settings
     let lastLemmingId = 0;
@@ -300,7 +301,9 @@ var Llemmings = (function () {
         return;
       }
 
-      canvasFadeDirection = "out";
+      gameTimeouts["successFadeout"] = setTimeout(() => {
+        canvasFadeDirection = "out";
+      }, 5000);
 
       // Completion bonuses below.
 
@@ -487,6 +490,12 @@ var Llemmings = (function () {
         const intervals = Object.values(gameIntervals);
         for(let i = 0; i < intervals.length; i++) {
             clearInterval(intervals[i]);
+        }
+
+        // Clear all timeouts.
+        const timeouts = Object.values(gameTimeouts);
+        for(let i = 0; i < timeouts.length; i++) {
+            clearTimeout(timeouts[i]);
         }
 
         for(let i = 0; i < sprites.length; i++) {
