@@ -19,17 +19,33 @@ const World = (function () {
     const TUNNEL_MAX_LENGTH = 400;
 
     let ctx;
+    let levelData;
+    let background;
+    let gradientsData;      // contains a backup of the gradients for when we blow stuff up
+    let collisionLayer;     // check collisions against this (array of 4 bytes / pixel)
 
     function init(sharedVars)
     {
       ctx = sharedVars.ctx;
+      levelData = sharedVars.levelData;
+      background = sharedVars.background;
     }
     
     function cleanUp()
     {
       mapNoiseHash.length = 0;
+      collisionLayer = undefined;
     }
 
+    function setCollisionLayer(canvasImageData)
+    {
+      collisionLayer = canvasImageData;
+    }
+
+    function getCollisionLayer()
+    {
+      return collisionLayer;
+    }
 
     // >>> Prompt: instructions/map-generation.0003.txt (0001-0002 are now obsolete)
     function generateMapNoiseHash()
@@ -198,7 +214,7 @@ const World = (function () {
   
     // ======================== textures
   
-    function renderDirtTexture(collisionLayer)
+    function renderDirtTexture()
     {
       const dirtGrainSize = 10;
       // generate dirt texture
@@ -220,7 +236,7 @@ const World = (function () {
     }
 
     // >>> Prompt: instructions/water-texture.0001.txt
-    function renderWaterTexture(collisionLayer)
+    function renderWaterTexture()
     {
       for (let y = 0; y < canvas.height; y++) {
         for (let x = 0; x < canvas.width; x++) {
@@ -234,7 +250,7 @@ const World = (function () {
       }
     }
 
-    function renderRockTexture(collisionLayer) {
+    function renderRockTexture() {
       const rockGrainSize = 24;
       const cliffColorBytes = [
         [50, 60, 70], // dark rocks
@@ -401,6 +417,7 @@ const World = (function () {
       // destroy temporary canvas
       tmpCanvas.remove();
 
+      gradientsData = backup;
       return backup;
     }
 
@@ -457,7 +474,37 @@ const World = (function () {
   
       ctx.putImageData(imageData, 0, 0);
     }
-  
+ 
+    // HUMAN: this came from _one_ of the discarded Digger/Miner/Basher implementations.
+    // The LLM kept getting tiny parts of this wrong over and over, so I lifted this implementation
+    // to make it a bit easier to get something useful.
+    // >>> Prompt: digger-miner-basher.0001.txt
+    // >>> Prompt: instructions/optimization-putImageData-prune.0001.txt
+    function clearPixel(x, y, grayScale = 0) {
+      if (x >= canvas.width || y >= canvas.height || x < 0 || y < 0) {
+        return;
+      }
+
+      const pixelIndex = GameUtils.getPixelIndex(x, y, canvas.width);
+      let col;
+      if(gradientsData) {
+        col = `rgb(${gradientsData[pixelIndex]},${gradientsData[pixelIndex+1]},${gradientsData[pixelIndex+2]},${gradientsData[pixelIndex+3]})`;
+      } else {
+        col = "black";
+      }
+
+      background.fillStyle = grayScale ? `rgba(${[grayScale, grayScale, grayScale, 1].join(',')})` : col;
+      background.fillRect(x, y, 1, 1);
+
+      if(collisionLayer) {
+        collisionLayer.data[pixelIndex] = 0;
+        collisionLayer.data[pixelIndex + 1] = 0;
+        collisionLayer.data[pixelIndex + 2] = 0;
+        collisionLayer.data[pixelIndex + 3] = 255;
+      }
+    }
+
+    
   return {
     blackColorBytes : blackColorBytes,
     waterColorBytes : waterColorBytes,
@@ -478,5 +525,8 @@ const World = (function () {
     backupGradients : backupGradients,
     setGradients : setGradients,
     clearSmoothingOfTerrain : clearSmoothingOfTerrain,
+    clearPixel : clearPixel,
+    setCollisionLayer : setCollisionLayer,
+    getCollisionLayer : getCollisionLayer,
   };
 })();

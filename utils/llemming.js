@@ -15,11 +15,12 @@ var Llemming = (() => {
       __DEBUG__ = sharedVars.__DEBUG__;
       autoPlaying = sharedVars.autoPlaying;
       canvas = sharedVars.canvas;
-      collisionLayer = sharedVars.collisionLayer;
       levelData = sharedVars.levelData;
       lemmings = sharedVars.lemmings;
       ctx = sharedVars.ctx;
       background = sharedVars.background;
+
+      collisionLayer = World.getCollisionLayer();
     }
 
     // Returns an array containing all the color bytes for the terrain colors
@@ -251,7 +252,7 @@ var Llemming = (() => {
               // setPixel((lemming.x + offsetX), (lemming.y + offsetY), [255, 255, 255]);
               continue;
             }
-            Llemmings.clearPixel((lemming.x + offsetX), (lemming.y + offsetY));
+            World.clearPixel((lemming.x + offsetX), (lemming.y + offsetY));
             pixelsDug++;
             lemming.actionStarted = true;
           }
@@ -300,7 +301,7 @@ var Llemming = (() => {
             if(isPixelOneOf(collisionLayer, Math.round(lemming.x + offsetX), Math.round(lemming.y + lemming.height + offsetY), [World.rockColorBytes, World.blackColorBytes])) {
               continue;
             }
-            Llemmings.clearPixel(Math.round(lemming.x + offsetX), Math.round(lemming.y + lemming.height + offsetY));
+            World.clearPixel(Math.round(lemming.x + offsetX), Math.round(lemming.y + lemming.height + offsetY));
             pixelsDug++;
             lemming.actionStarted = true;
           }
@@ -401,7 +402,7 @@ var Llemming = (() => {
           var yCoord = y + yOffset
           
           if (xCoord >= 0 && xCoord < canvas.width && yCoord >= 0 && yCoord < canvas.height) {
-            Llemmings.clearPixel(xCoord, yCoord);
+            World.clearPixel(xCoord, yCoord);
           }
         }
       }
