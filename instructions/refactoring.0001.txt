@@ -1,0 +1,130 @@
+Given this extract of javascript functions, names, classes, how should I refactor this into 
+more managable files or modules or classes. RIght now they sit in one file:
+
+    class Lemming
+    function getDefaultLevelData(givenLevel = {})
+    function spawnLemming()
+    function playSoundEffect(name)
+    function createLemmings(amount)
+    function generateMapNoiseHash()
+    function generateMap(canvasWidth, canvasHeight)
+    function PerlinNoise2D(x, y) {
+    function fade(t) {
+    function lerp(t, a, b) {
+    function grad(hash, x, y) {
+    function renderDirtTexture()
+    function renderWaterTexture()
+    function renderRockTexture() {
+    function drawShapes(context, shapesArr)
+    function backupGradients(gradients) {
+    function setGradients(context, gradients)
+    function getHeightAdjustment(lem)
+    function getRectanglePoints(lemming, angle, length, height, collisionColors, offsetX = 0, offsetFromFeetY = 0, debugDraw = false) {
+    function startDigging(lemming)
+    function bash(lemming)
+    function dig(lemming)
+    function build(lemming)
+    function createHole(x, y) {
+    function doProgrammedActions(lemming)
+    function isPointWithinCircle(x,y,a,b,radius) {
+    function togglePause()
+    function toggleSetting(setting)
+    function Particle(x, y) {
+        Particle.prototype.update = function()
+        Particle.prototype.draw = function()
+    }
+    function spawnCombatText(text)
+    function applyAction(action)
+    function moveOverlappingLemmingsToRandomSideOfBlocker(blocker) {
+    function isColliding(obj1, obj2) {
+    function stopAction() {
+    function updateInfoDiv(lem)
+    function setPixel(x, y, colorBytes) {
+    function clearPixel(x, y, grayScale = 0) {
+    function getUniqueColors(canvas) {
+    function getPixelColor(imageData, x, y) {
+    function pixelIsColor(imageData, x, y, color, debug) {
+    function getPixelIndex(x, y, width) {
+    function isColorOneOf(needle, haystack) {
+    function getTerrainColors() {
+    function isPixelOneOf(imageData, x, y, haystack) {
+    function bound(value, min, max) {
+    function clearSmoothingOfTerrain(canvas, keepColors) {
+    function rgbToHex(r, g, b) {
+    function RNG(seed) {
+    function setBackgroundBuffer() {
+    function serialize(data) {
+    function deserialize(data) {
+    function saveToLocalStorage(key, data) {
+    function getFromLocalStorage(key) {
+    function fadeInCanvas() {
+    function fadeOutCanvas() {
+    function getOverallScore()
+    function levelCompleted()
+    function levelFailed()
+    function setupUI()
+    function getLemmingsRemaining()
+    function update() {
+    function startCanvasEventListeners()
+    function clearSquare(x, y, radius)
+    function checkLemmingFinish(lemming, finish) {
+    function setupStartFinish()
+    function renderDecorations()
+    function capitalize(str)
+    function adjustCanvasHeight()
+    function keyBindPressed(action)
+    function selectNextLemming() {
+    function selectPreviousLemming() {
+    function deselectLemmings() {
+    function restartLevel(canvasElt)
+    function exitGame()
+    function reset()
+    function initBackground()
+    function init(canvasElt, givenLevel = {}, debug = false)
+    function preStart()
+    function _start()
+    async function generateSprites()
+    async function _runOnce(resetLocalStorage = false)
+    function startGame()
+
+>>> ======================================================
+>>> Human: I will include what ChatGPT said in response...
+>>> ======================================================
+
+It seems like you have a lot of functions and classes in one file. It's recommended to break 
+them down into smaller, more manageable files or modules based on their purpose.
+
+Assuming that these functions and classes are part of a game engine or game development project,
+here is a possible way to organize them into different files or modules:
+
+lemming.js: contains the Lemming class and related functions (getDefaultLevelData, spawnLemming,
+            createLemmings, etc.)
+
+sound.js: contains the playSoundEffect function
+
+map.js: contains functions related to map generation (generateMapNoiseHash, generateMap, PerlinNoise2D,
+        fade, lerp, grad, etc.), as well as functions for rendering textures (renderDirtTexture, 
+        renderWaterTexture, renderRockTexture) and shapes (drawShapes, getRectanglePoints).
+
+actions.js: contains functions for lemming actions (startDigging, bash, dig, build, etc.), as well as 
+            helper functions (getRectanglePoints, getHeightAdjustment) and related classes (Particle).
+
+collision.js: contains functions for handling collisions (moveOverlappingLemmingsToRandomSideOfBlocker,
+              isColliding, etc.), as well as helper functions (isPointWithinCircle).
+
+util.js: contains general utility functions (togglePause, toggleSetting, spawnCombatText, applyAction,
+         stopAction, updateInfoDiv, setPixel, clearPixel, getUniqueColors, getPixelColor, pixelIsColor,
+         getPixelIndex, isColorOneOf, getTerrainColors, isPixelOneOf, bound, clearSmoothingOfTerrain,
+         rgbToHex, RNG, setBackgroundBuffer, serialize, deserialize, saveToLocalStorage, getFromLocalStorage,
+         fadeInCanvas, fadeOutCanvas, getOverallScore, levelCompleted, levelFailed, setupUI,
+         getLemmingsRemaining, update, startCanvasEventListeners, clearSquare, checkLemmingFinish,
+         setupStartFinish, renderDecorations, capitalize, adjustCanvasHeight, keyBindPressed,
+         selectNextLemming, selectPreviousLemming, deselectLemmings, restartLevel, exitGame, reset,
+         initBackground, preStart, _start, generateSprites, _runOnce, startGame).
+
+main.js: contains the main logic for the game, such as setting up the canvas, loading assets, initializing
+         the game state, and starting the game loop. By breaking down your code into smaller files or 
+         modules, you can make it easier to manage and maintain, as well as make it easier to update and
+         debug. You can also more easily reuse and share code between different projects. Remember to 
+         properly export and import your functions and classes based on your language and module system.
+

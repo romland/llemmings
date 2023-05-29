@@ -1,3 +1,4 @@
+"use strict";
 // >>> Prompt: instructions/art-animation.0003.txt
 var Easings = (function () {
 

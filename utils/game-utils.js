@@ -328,6 +328,135 @@ var GameUtils = (function () {
     }
     
     
+    // >>> Prompt: instructions/unique-colors.0001.txt
+    function getUniqueColors(canvas) {
+      const ctx = canvas.getContext("2d");
+      const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
+      
+      const uniqueColors = {};
+      
+      for (let i = 0; i < imageData.length; i += 4) {
+        const r = imageData[i];
+        const g = imageData[i + 1];
+        const b = imageData[i + 2];
+  
+        if(!r && !g && !b) continue;  // skip 'void' color.
+        
+        const colorKey = `${r},${g},${b}`;
+        
+        if (!uniqueColors[colorKey]) {
+          uniqueColors[colorKey] = [r, g, b];
+        }
+      }
+      
+      return Object.values(uniqueColors);
+    }
+  
+    function getPixelColor(imageData, x, y) {
+        x = Math.round(x);
+        y = Math.round(y);
+      const index = ((y * canvas.width) + x) * 4;
+      const r = imageData.data[index];
+      const g = imageData.data[index + 1];
+      const b = imageData.data[index + 2];
+      const a = imageData.data[index + 3];
+  
+      return [r, g, b, a];
+    }
+
+    function isColorOneOf(needle, haystack) {
+      if(!Array.isArray(haystack[0])) {       // HUMAN: Cheat. This if-block.
+        return (haystack[0] === needle[0] &&
+          haystack[1] === needle[1] &&
+          haystack[2] === needle[2]);
+      }
+  
+      for (let i = 0; i < haystack.length; i++) {
+        const color = haystack[i];
+        
+        if (color[0] === needle[0] &&
+            color[1] === needle[1] &&
+            color[2] === needle[2]) {
+          return true;
+        }
+      }
+      
+      return false;
+    }
+  
+    // >>> Prompt: instructions/get-pixel-index.0001.txt
+    function getPixelIndex(x, y, width) {
+      x = Math.round(x);
+      y = Math.round(y);
+  
+      return ((y * width) + x) * 4;
+    }
+    
+    // >>> Prompt: instructions/coordinates-div.0001.txt
+    function rgbToHex(r, g, b) {
+      if (r > 255 || g > 255 || b > 255)
+        throw "Invalid color component";
+      return ((r << 16) | (g << 8) | b).toString(16);
+    }
+  
+    // HUMAN: cheat, I needed a seedable RNG
+    function RNG(seed) {
+        var m = 2**35 - 31
+        var a = 185852
+        var s = seed % m
+        return function () {
+            return (s = s * a % m) / m
+        }
+    }
+  
+    // >>> Prompt: instructions/serialization-localstorage.0001.txt
+    function serialize(data) {
+      return JSON.stringify(data);
+    }
+    
+    // >>> Prompt: instructions/serialization-localstorage.0001.txt
+    function deserialize(data) {
+      return JSON.parse(data);
+    }
+    
+    // >>> Prompt: instructions/serialization-localstorage.0001.txt
+    function saveToLocalStorage(key, data) {
+      const serializedData = serialize(data);
+      localStorage.setItem(key, serializedData);
+    }
+    
+    // >>> Prompt: instructions/serialization-localstorage.0001.txt
+    function getFromLocalStorage(key) {
+      const data = localStorage.getItem(key);
+      return deserialize(data);
+    }
+
+    function capitalize(str)
+    {
+      return str.charAt(0).toUpperCase() + str.slice(1);
+    }
+
+    // Human: Adjust height depending on aspect ratio. There's still more to do here.
+    //        And frankly, I don't think this is best or even good practice today.
+    function adjustCanvasHeight()
+    {
+      const w = Math.max(document.documentElement.clientWidth, window.innerWidth || 0);
+      const h = Math.max(document.documentElement.clientHeight, window.innerHeight || 0);
+
+      const canvases = document.getElementsByTagName("CANVAS");
+      for(let c of canvases) {
+        if(w/c.width > h/c.height){
+          c.style.width = "calc("+c.width+" / "+c.height+" * 100vh)";
+          c.style.height = "calc(100vh)";
+        } else {
+          c.style.width = "calc(100vw)";
+          c.style.height = "calc("+c.height+" / "+c.width+" * 100vw)";
+        }
+      }
+    }
+
+
+
     return {
       ScoreKeeper : ScoreKeeper,
       matchesCondition : matchesCondition,
@@ -335,5 +464,16 @@ var GameUtils = (function () {
       drawSvgOnCanvas : drawSvgOnCanvas,
       generateAnimationFrames : generateAnimationFrames,
       floodFill : floodFill,
+      getUniqueColors : getUniqueColors,
+      getPixelColor : getPixelColor,
+      isColorOneOf : isColorOneOf,
+      getPixelIndex : getPixelIndex,
+
+      rgbToHex : rgbToHex,
+      RNG : RNG,
+      saveToLocalStorage : saveToLocalStorage,
+      getFromLocalStorage : getFromLocalStorage,
+      capitalize : capitalize,
+      adjustCanvasHeight : adjustCanvasHeight,
     }
 })();

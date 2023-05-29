@@ -2,34 +2,6 @@
 var LlemmingsArt = (function ()
 {
     /**
-     * >>> Prompt: instructions/art-house.0001.txt
-     * I... sadly do not use this house. I stole a house. See below.
-     */
-    function getChatGPTHouse()
-    {
-        return `<svg width="100" height="100" viewBox="0 0 100 100">
-        <!-- House body -->
-        <rect x="10" y="30" width="80" height="50" fill="#FFB6C1" />
-      
-        <!-- House roof -->
-        <polygon points="10,30 50,10 90,30" fill="#FFDAB9" />
-      
-        <!-- Door -->
-        <rect x="40" y="60" width="20" height="20" fill="#00FFFF" />
-      
-        <!-- Door handle -->
-        <circle cx="58" cy="70" r="2" fill="#000" />
-      
-        <!-- Window 1 -->
-        <rect x="18" y="38" width="15" height="15" fill="#ADD8E6" />
-      
-        <!-- Window 2 -->
-        <rect x="67" y="38" width="15" height="15" fill="#ADD8E6" />
-      </svg>
-      `
-    }
-
-    /**
      * Prompt? See getChatGPTHouse() :/
      * @returns svg
      */
@@ -194,9 +166,26 @@ var LlemmingsArt = (function ()
       }
     }
 
+    function renderDecorations(ctx, levelData)
+    {
+      for(let i = 0; i < levelData.decorations.length; i++) {
+        for(let j = 0; j < levelData.decorations[i].location.length; j++) {
+          switch(levelData.decorations[i].type) {
+            case "organics" :
+              drawEdgeVegetation(ctx, levelData.decorations[i].location[j]);
+              break;
+            default :
+              throw "unknown decoration " + levelData.decorations[i].type;
+          }
+        }
+      }
+    }
+
+
+
     return {
       getHouse : getHouse,
       drawHatch : drawHatch,
-      drawEdgeVegetation : drawEdgeVegetation,
+      renderDecorations : renderDecorations,
     }
 })();
