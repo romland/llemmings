@@ -761,9 +761,9 @@ var Llemming = (() => {
 
         // HUMAN: Testing "beating level"
         if(false && this.age === 1) {
-          this.x = 40;
-          this.y = 165;
-          this.velX = -this.velX;
+          this.x = 672;
+          this.y = 281;
+          // this.velX = -this.velX;
         }
 
       }

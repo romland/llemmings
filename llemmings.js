@@ -388,160 +388,6 @@ var Llemmings = (function () {
       return remaining;
     }
 
-    // >>> Prompt: instructions/main-loop.0001.txt
-    // >>> Prompt: instructions/main-loop.0002.txt
-    // >>> Prompt: instructions/main-loop.0003.txt (throttling)
-    // >>> Prompt: instructions/optimization-putImageData-prune.0001.txt
-    function update() {
-      if(!background) {
-        return;
-      }
-      
-      if (isPaused) {
-        reqAnimFrameId = requestAnimationFrame(update);
-        return;
-      }
-
-      let currentTime = performance.now();
-
-      if (currentTime - lastFrameUpdate < frameInterval) {
-        reqAnimFrameId = requestAnimationFrame(update);
-        return;
-      }
-
-      perfMonitor.setLabel("FPS", 1000/(currentTime - lastFrameUpdateReal), 30);
-      perfMonitor.start("all-of-update");
-
-      lastFrameUpdate = currentTime - (currentTime % frameInterval);
-      lastFrameUpdateReal = currentTime;
-      elapsedLevelTime += frameInterval;
-
-      // Restore the background
-      ctx.drawImage(offScreenCanvas, 0, 0);
-
-      // Handle fading
-      if (canvasFadeDirection === "in") {
-        fadeInCanvas();
-      } else if (canvasFadeDirection === "out") {
-        fadeOutCanvas();
-      }
-
-      if(playing) {
-        // Update and draw each lemming
-        perfMonitor.start("lemmings-update");
-        lemmings.forEach((lemming) => {
-          lemming.update();
-          lemming.draw();
-          
-          // HUMAN: There can be multiple lemmings selected, only the last one will be visible to us
-          if (__DEBUG__) {
-            if(lemming.isSelected) {
-              LlemmingsDebug.updateInfoDiv(lemming);
-            }
-          }
-    
-          if (lemming.isDead) {
-            // Remove dead lemmings from the array as optimization
-            const index = lemmings.indexOf(lemming);
-            lemmings.splice(index, 1);
-            Particles.createExplosion(lemming.x, lemming.y)
-          }
-
-          // >>> Prompt: instructions/score.0001.txt
-          if (lemming.rescued) {
-            const index = lemmings.indexOf(lemming);
-            lemmings.splice(index, 1);
-            scoreKeeper.addSavedLemmings(1);
-            scoreKeeper.addScore(100, "Saved lemming");
-            console.log(`Lemming ${lemming.id} reached the finish! Saved: ${scoreKeeper.getSavedLemmingsCount()} lemmings`);
-            // HUMAN TODO: Do some effect here (also sound?)
-          }
-        });
-        perfMonitor.end("lemmings-update");
-      }
-
-      perfMonitor.start("sprites-update");
-      for(let i = 0; i < sprites.length; i++) {
-        sprites[i].update();
-      }
-      perfMonitor.end("sprites-update");
-
-      perfMonitor.start("particles-update");
-      Particles.update();
-      perfMonitor.end("particles-update");
-
-      perfMonitor.start("effects-update");
-      for(let fx of effectsToUpdate) {
-        // HUMAN TODO: implement time-delta all over the place
-        fx[1].update(1000/60);
-      }
-      perfMonitor.end("effects-update");
-
-      // Game over / success check
-      if(levelData.disableGame === false && playing && ((levelDataResources.time - elapsedLevelTime) <= 0 || getLemmingsRemaining() === 0)) {
-        playing = false;
-        if(scoreKeeper.getSavedLemmingsCount() >= levelData.goal.survivors) {
-          levelCompleted();
-        } else {
-          levelFailed();
-        }
-      }
-
-      // Schedule the next frame
-      reqAnimFrameId = requestAnimationFrame(update);
-
-      perfMonitor.end("all-of-update");
-    }
-
-    function startCanvasEventListeners()
-    {
-      // >>> Prompt: instructions/selectable.0001.txt
-      // add this after declaring canvas and ctx
-      canvas.addEventListener('click', (event) => {
-        if(levelData.disableGame) {
-          return;
-        }
-
-        const rect = canvas.getBoundingClientRect();
-
-        // >>> Prompt: instructions/screen-coord-to-canvas.0001.txt
-        const scaleX = canvas.width / rect.width;
-        const scaleY = canvas.height / rect.height;
-      
-        const mouseX = (event.clientX - rect.left) * scaleX;
-        const mouseY = (event.clientY - rect.top) * scaleY;
-  
-        let gotOne = false;
-        lemmings.forEach((lemming) => {
-          if(!gotOne 
-              && mouseX >= lemming.x 
-              && mouseX <= lemming.x + lemming.width 
-              && mouseY >= lemming.y 
-              && mouseY <= lemming.y + lemming.height)
-          {
-            lemming.isSelected = true;
-            gotOne = true;
-          } else {
-            lemming.isSelected = false;
-          }
-        });
-      });
-
-      addEventListener("resize", (event) => {
-        if(EDITOR_MODE) {
-          return;
-        }
-        GameUtils.adjustCanvasHeight();
-        UI.positionElements(levelData, levelDataResources);
-      });
- 
-      if (__DEBUG__) {
-        LlemmingsDebug.addEventListeners(canvas);
-      }
-
-      canvasEventsListening = true;
-    }
-
     // Human: This is very inefficient, but it is used rarely and only in init().
     function clearSquare(x, y, radius)
     {
@@ -702,6 +548,165 @@ var Llemmings = (function () {
       // set the buffer with a background color
       background.fillStyle = 'black';
       background.fillRect(0, 0, offScreenCanvas.width, offScreenCanvas.height);      
+    }
+
+
+    function startCanvasEventListeners()
+    {
+      // >>> Prompt: instructions/selectable.0001.txt
+      // add this after declaring canvas and ctx
+      canvas.addEventListener('click', (event) => {
+        if(levelData.disableGame) {
+          return;
+        }
+
+        const rect = canvas.getBoundingClientRect();
+
+        // >>> Prompt: instructions/screen-coord-to-canvas.0001.txt
+        const scaleX = canvas.width / rect.width;
+        const scaleY = canvas.height / rect.height;
+      
+        const mouseX = (event.clientX - rect.left) * scaleX;
+        const mouseY = (event.clientY - rect.top) * scaleY;
+  
+        let gotOne = false;
+        lemmings.forEach((lemming) => {
+          if(!gotOne 
+              && mouseX >= lemming.x 
+              && mouseX <= lemming.x + lemming.width 
+              && mouseY >= lemming.y 
+              && mouseY <= lemming.y + lemming.height)
+          {
+            lemming.isSelected = true;
+            gotOne = true;
+          } else {
+            lemming.isSelected = false;
+          }
+        });
+      });
+
+      addEventListener("resize", (event) => {
+        if(EDITOR_MODE) {
+          return;
+        }
+        GameUtils.adjustCanvasHeight();
+        UI.positionElements(levelData, levelDataResources);
+      });
+ 
+      if (__DEBUG__) {
+        LlemmingsDebug.addEventListeners(canvas);
+      }
+
+      canvasEventsListening = true;
+    }
+
+    
+    // >>> Prompt: instructions/main-loop.0001.txt
+    // >>> Prompt: instructions/main-loop.0002.txt
+    // >>> Prompt: instructions/main-loop.0003.txt (throttling)
+    // >>> Prompt: instructions/optimization-putImageData-prune.0001.txt
+    function update() {
+      if(!background) {
+        return;
+      }
+      
+      if (isPaused) {
+        reqAnimFrameId = requestAnimationFrame(update);
+        return;
+      }
+
+      let currentTime = performance.now();
+
+      if (currentTime - lastFrameUpdate < frameInterval) {
+        reqAnimFrameId = requestAnimationFrame(update);
+        return;
+      }
+
+      perfMonitor.setLabel("FPS", 1000/(currentTime - lastFrameUpdateReal), 30);
+      perfMonitor.start("all-of-update");
+
+      lastFrameUpdate = currentTime - (currentTime % frameInterval);
+      lastFrameUpdateReal = currentTime;
+      elapsedLevelTime += frameInterval;
+
+      // Restore the background
+      ctx.drawImage(offScreenCanvas, 0, 0);
+
+      // Handle fading
+      if (canvasFadeDirection === "in") {
+        fadeInCanvas();
+      } else if (canvasFadeDirection === "out") {
+        fadeOutCanvas();
+      }
+
+      if(playing) {
+        // Update and draw each lemming
+        perfMonitor.start("lemmings-update");
+        for(let i = 0; i < lemmings.length; i++) {
+          const lemming = lemmings[i];
+          lemming.update();
+          lemming.draw();
+          
+          // HUMAN: There can be multiple lemmings selected, only the last one will be visible to us
+          if (__DEBUG__) {
+            if(lemming.isSelected) {
+              LlemmingsDebug.updateInfoDiv(lemming);
+            }
+          }
+    
+          if (lemming.isDead) {
+            // Remove dead lemmings from the array as optimization
+            const index = lemmings.indexOf(lemming);
+            lemmings.splice(index, 1);
+            Particles.createExplosion(lemming.x, lemming.y)
+          }
+
+          // >>> Prompt: instructions/score.0001.txt
+          if (lemming.rescued) {
+            const index = lemmings.indexOf(lemming);
+            lemmings.splice(index, 1);
+            scoreKeeper.addSavedLemmings(1);
+            scoreKeeper.addScore(100, "Saved lemming");
+            console.log(`Lemming ${lemming.id} reached the finish! Saved: ${scoreKeeper.getSavedLemmingsCount()} lemmings`);
+
+            // HUMAN TODO: Do some effect here (also sound?)
+            Particles.createFirework(lemming.x, lemming.y);
+          }
+        }
+        perfMonitor.end("lemmings-update");
+      }
+
+      perfMonitor.start("sprites-update");
+      for(let i = 0; i < sprites.length; i++) {
+        sprites[i].update();
+      }
+      perfMonitor.end("sprites-update");
+
+      perfMonitor.start("particles-update");
+      Particles.update();
+      perfMonitor.end("particles-update");
+
+      perfMonitor.start("effects-update");
+      for(let fx of effectsToUpdate) {
+        // HUMAN TODO: implement time-delta all over the place
+        fx[1].update(1000/60);
+      }
+      perfMonitor.end("effects-update");
+
+      // Game over / success check
+      if(levelData.disableGame === false && playing && ((levelDataResources.time - elapsedLevelTime) <= 0 || getLemmingsRemaining() === 0)) {
+        playing = false;
+        if(scoreKeeper.getSavedLemmingsCount() >= levelData.goal.survivors) {
+          levelCompleted();
+        } else {
+          levelFailed();
+        }
+      }
+
+      // Schedule the next frame
+      reqAnimFrameId = requestAnimationFrame(update);
+
+      perfMonitor.end("all-of-update");
     }
 
     function init(canvasElt, givenLevel = {}, debug = false)
@@ -961,6 +966,7 @@ var Llemmings = (function () {
       }, 1000);
     }
 
+    
 
     /**
      * Statements below this are to be run when this file is included.

@@ -78,5 +78,5 @@ var Easings = (function () {
     easeInOutBack : easeInOutBack,
     easeInElastic : easeInElastic,
     easeOutElastic : easeOutElastic,
-}
+  };
 })();
