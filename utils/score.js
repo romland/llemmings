@@ -104,13 +104,15 @@ var LlemmingsScore = (function () {
     class Screen
     {
         scoreKeeper = null;
+        levelData = null;
         container = null;
         age = 0;
         elts = [];
 
-        constructor(scoreKeeper)
+        constructor(scoreKeeper, levelData)
         {
             this.scoreKeeper = scoreKeeper;
+            this.levelData = levelData;
         }
 
         // >>> Prompt: instructions/format-score.0001.txt
@@ -143,11 +145,9 @@ var LlemmingsScore = (function () {
             console.log("Show scoreScreen");
 
             let html = `
-                <h1>Well done!</h1>
-                <div id="score-details">
+                <div class="score-detail" style="text-align: left;">
+                    <h1>Well done, human!</h1>
                 </div>
-                <button class="game-button">Replay level</button>
-                <button class="game-button">Continue</button>
             `;
 
             const scores = this.scoreKeeper.getScoreInfo();
@@ -162,9 +162,7 @@ var LlemmingsScore = (function () {
                 const elt = document.createElement("div");
                 elt.setAttribute("class", "score-detail");
                 elt.innerHTML = `
-                    <div class="score-detail">
-                        <label>${lbl}</label> <span>${this.formatScore(scores[lbl])}</span>
-                    </div>
+                    <label>${lbl}</label> <span>${this.formatScore(scores[lbl])}</span>
                 `;
                 this.elts.push(elt);
             }
@@ -172,10 +170,24 @@ var LlemmingsScore = (function () {
             const elt = document.createElement("div");
             elt.setAttribute("class", "score-detail score-total");
             elt.innerHTML = `
-                <div class="score-detail">
-                    <label>TOTAL</label> <span>${this.formatScore(this.scoreKeeper.getScore())}</span>
-                </div>
+                <label>YOUR SCORE</label> <span>${this.formatScore(this.scoreKeeper.getScore())}</span>
             `;
+
+            if(LlemmingsLevels.length < this.levelData.level) {
+                elt.innerHTML += `
+                    <div style="text-align: center; margin-top: 3rem;">
+                        <button class="game-button" onclick="">Continue to level ${this.levelData.level + 1}</button>
+                    </div>
+                `;
+            } else {
+                elt.innerHTML += `
+                    <div style="text-align: center; margin-top: 3rem;">
+                        Alas!<br/>
+                        You also completed all levels!
+                    </div>
+                `;
+            }
+
             this.elts.push(elt);
 
             this.container = document.createElement("DIV");

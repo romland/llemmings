@@ -232,7 +232,6 @@ var Llemmings = (function () {
       background.drawImage(canvas, 0, 0);
     }
 
-
     function fadeInCanvas()
     {
       if(canvasOpacity >= 1) {
@@ -270,12 +269,6 @@ var Llemmings = (function () {
       if(EDITOR_MODE) {
         return;
       }
-
-      gameTimeouts["successFadeout"] = setTimeout(() => {
-        canvasFadeDirection = "out";
-        openScreens.set("scoreScreen", new LlemmingsScore.Screen(scoreKeeper));
-        openScreens.get("scoreScreen").show();
-      }, 5000);
 
       // Completion bonuses below.
 
@@ -333,6 +326,12 @@ var Llemmings = (function () {
         onAnimationDone: () => effectsToUpdate.delete("TextEffectMorph")
       });
       effectsToUpdate.set("TextEffectMorph", TextEffectMorph);
+
+      openScreens.set("scoreScreen", new LlemmingsScore.Screen(scoreKeeper, levelData));
+      gameTimeouts["successFadeout"] = setTimeout(() => {
+        canvasFadeDirection = "out";
+        openScreens.get("scoreScreen").show();
+      }, 5000);
     }
 
     function levelFailed()
@@ -447,6 +446,87 @@ var Llemmings = (function () {
       preStart();
     }
 
+    async function generateSprites()
+    {
+      // Create sprites (for now just one!)
+      if(!animationFrames["hatch"]) {
+        animationFrames["hatch"] = await GameUtils.generateAnimationFrames(96, 32, 90, LlemmingsArt.drawHatch);
+        console.log("Created animation for hatch");
+      }
+    }
+
+    function forceDebugIfSet()
+    {
+      if(document.location.search.includes("?DEBUG")) {
+        console.warn("Forcing debug due to location")
+        __DEBUG__ = true;
+      }
+    }
+
+    // >>> Prompt: instructions/optimization-putImageData-prune.0001.txt
+    function initBackground()
+    {
+      // create an offscreen canvas as the buffer for the background
+      offScreenCanvas.width = canvas.width;
+      offScreenCanvas.height = canvas.height;
+      background = offScreenCanvas.getContext('2d');
+
+      // set the buffer with a background color
+      background.fillStyle = 'black';
+      background.fillRect(0, 0, offScreenCanvas.width, offScreenCanvas.height);      
+    }
+
+
+    function startCanvasEventListeners()
+    {
+      // >>> Prompt: instructions/selectable.0001.txt
+      // add this after declaring canvas and ctx
+      canvas.addEventListener('click', (event) => {
+        if(levelData.disableGame) {
+          return;
+        }
+
+        const rect = canvas.getBoundingClientRect();
+
+        // >>> Prompt: instructions/screen-coord-to-canvas.0001.txt
+        const scaleX = canvas.width / rect.width;
+        const scaleY = canvas.height / rect.height;
+      
+        const mouseX = (event.clientX - rect.left) * scaleX;
+        const mouseY = (event.clientY - rect.top) * scaleY;
+  
+        let gotOne = false;
+        lemmings.forEach((lemming) => {
+          if(!gotOne 
+              && mouseX >= lemming.x 
+              && mouseX <= lemming.x + lemming.width 
+              && mouseY >= lemming.y 
+              && mouseY <= lemming.y + lemming.height)
+          {
+            lemming.isSelected = true;
+            gotOne = true;
+          } else {
+            lemming.isSelected = false;
+          }
+        });
+      });
+
+      addEventListener("resize", (event) => {
+        if(EDITOR_MODE) {
+          return;
+        }
+        GameUtils.adjustCanvasHeight();
+        UI.positionElements(levelData, levelDataResources);
+      });
+ 
+      if (__DEBUG__) {
+        LlemmingsDebug.addEventListeners(canvas);
+      }
+
+      canvasEventsListening = true;
+    }
+
+    
     function reset()
     {
         // Stop requestAnimationFrame
@@ -529,70 +609,7 @@ var Llemmings = (function () {
         console.log("Reset done.");
     }
     
-    // >>> Prompt: instructions/optimization-putImageData-prune.0001.txt
-    function initBackground()
-    {
-      // create an offscreen canvas as the buffer for the background
-      offScreenCanvas.width = canvas.width;
-      offScreenCanvas.height = canvas.height;
-      background = offScreenCanvas.getContext('2d');
 
-      // set the buffer with a background color
-      background.fillStyle = 'black';
-      background.fillRect(0, 0, offScreenCanvas.width, offScreenCanvas.height);      
-    }
-
-
-    function startCanvasEventListeners()
-    {
-      // >>> Prompt: instructions/selectable.0001.txt
-      // add this after declaring canvas and ctx
-      canvas.addEventListener('click', (event) => {
-        if(levelData.disableGame) {
-          return;
-        }
-
-        const rect = canvas.getBoundingClientRect();
-
-        // >>> Prompt: instructions/screen-coord-to-canvas.0001.txt
-        const scaleX = canvas.width / rect.width;
-        const scaleY = canvas.height / rect.height;
-      
-        const mouseX = (event.clientX - rect.left) * scaleX;
-        const mouseY = (event.clientY - rect.top) * scaleY;
-  
-        let gotOne = false;
-        lemmings.forEach((lemming) => {
-          if(!gotOne 
-              && mouseX >= lemming.x 
-              && mouseX <= lemming.x + lemming.width 
-              && mouseY >= lemming.y 
-              && mouseY <= lemming.y + lemming.height)
-          {
-            lemming.isSelected = true;
-            gotOne = true;
-          } else {
-            lemming.isSelected = false;
-          }
-        });
-      });
-
-      addEventListener("resize", (event) => {
-        if(EDITOR_MODE) {
-          return;
-        }
-        GameUtils.adjustCanvasHeight();
-        UI.positionElements(levelData, levelDataResources);
-      });
- 
-      if (__DEBUG__) {
-        LlemmingsDebug.addEventListeners(canvas);
-      }
-
-      canvasEventsListening = true;
-    }
-
-    
     // >>> Prompt: instructions/main-loop.0001.txt
     // >>> Prompt: instructions/main-loop.0002.txt
     // >>> Prompt: instructions/main-loop.0003.txt (throttling)
@@ -700,15 +717,18 @@ var Llemmings = (function () {
         }
       }
 
+      perfMonitor.start("screens-update");
       for(const screen of openScreens) {
         screen[1].update();
       }
+      perfMonitor.end("screens-update");
 
       // Schedule the next frame
       reqAnimFrameId = requestAnimationFrame(update);
 
       perfMonitor.end("all-of-update");
     }
+
 
     function init(canvasElt, givenLevel = {}, debug = false)
     {
@@ -719,41 +739,13 @@ var Llemmings = (function () {
         __DEBUG__ = givenLevel.__DEBUG__;
       }
 
-      // Override always.
-      if(document.location.search.includes("?DEBUG")) {
-        console.warn("Forcing debug due to location")
-        __DEBUG__ = true;
-      }
+      forceDebugIfSet();
 
       if(!EDITOR_MODE) {
         perfMonitor.init(__DEBUG__);
       }
 
       levelData = getDefaultLevelData(givenLevel);
-
-      if(__DEBUG__) {
-        console.warn("Overriding level to modify settings due to __DEBUG__");
-        levelData.autoPlay = true;
-
-        levelData.spawnInterval = 17;
-        levelData.start.x = 760;
-        levelData.start.y = 466;
-        levelData.solution[1] = [
-          {
-              x: 362, y: 230, r: 13,
-              action : "Builder"
-          }
-        ];
-
-        if(false) {
-          // lots of lemmings test (lemmings-update is at around 11-13ms at peak; 9-10ms without draw (!?))
-          levelData.spawnInterval = 17;
-          levelData.resources.lemmings = 6000;
-        }
-  
-        levelData.ui.showObjective = false;
-      }
-
       levelDataResources = { ...levelData.resources };
 
       autoPlaying = levelData.autoPlay;
@@ -824,15 +816,10 @@ var Llemmings = (function () {
 
       // Create an instance of the ScoreKeeper class
       scoreKeeper = new LlemmingsScore.ScoreKeeper(canvas, levelData.goal.survivors, 0, !levelData.ui.showScore || EDITOR_MODE);
-      Llemming.init({
-        __DEBUG__, autoPlaying, canvas, levelData, lemmings, ctx, background
-      });
-      Actions.init({
-        lemmings, levelData, levelDataResources,
-      });
-      Particles.init({
-        ctx
-      })
+
+      Llemming.init({ __DEBUG__, autoPlaying, canvas, levelData, lemmings, ctx, background });
+      Actions.init({ lemmings, levelData, levelDataResources });
+      Particles.init({ ctx });
 
       // HUMAN: Pre-create lemmings -- we need this early to determine level failure/success
       createLemmings(levelDataResources.lemmings);
@@ -872,7 +859,11 @@ var Llemmings = (function () {
       }
     }
 
-    
+    /**
+     * Actually starts the current loaded level without any 
+     * frills. You'd normally not use this one as you want
+     * to show objectives and fade in: preStart() does this.
+     */
     function _start()
     {
       if(!EDITOR_MODE) {
@@ -889,14 +880,36 @@ var Llemmings = (function () {
       console.log("Starting level", levelData.level);
     }
 
-    async function generateSprites()
+    /**
+     * From intro screen, this starts level progression
+     */
+    function startGame()
     {
-      // Create sprites (for now just one!)
-      if(!animationFrames["hatch"]) {
-        animationFrames["hatch"] = await GameUtils.generateAnimationFrames(96, 32, 90, LlemmingsArt.drawHatch);
-        console.log("Created animation for hatch");
+      if(isPaused) {
+        togglePause();
       }
+
+      // "Start game" button on intro screen
+      let btn = document.getElementById("start-game");
+      if(btn) {
+        btn.style.display = "none";
+      }
+
+      let settings = document.getElementById("settings");
+      if(settings) {
+        settings.style.display = "none";
+      }
+
+      canvasFadeDirection = "out";
+
+      // Wait a little to fade out the intro screen
+      setTimeout(() => {
+        reset();
+        init(document.getElementById('canvas'), LlemmingsLevels[persisted.currentLevel], false);
+        preStart();
+      }, 1000);
     }
+
 
     /**
      * Human: This is the entry point when page is loaded/refreshed.
@@ -926,48 +939,49 @@ var Llemmings = (function () {
 
       LlemmingsKeyBindings.startKeyBinds(Actions.keyBindPressed);
 
-      // Test inits
-      // init(document.getElementById('canvas'), { seed : null, resources : { lemmings : 150, Bomber : 99 } }, true);
-      // init(document.getElementById('canvas'), { seed : 1682936781219 }, true);
+      if(__DEBUG__) {
+        let ld = null;
 
-      // Init for hardcoded level
-      init(document.getElementById('canvas'), LlemmingsLevels[1], true);
+        if(true) {
+          console.warn("Overriding level to modify settings due to __DEBUG__");
+          ld = LlemmingsLevels[1];
+          ld.autoPlay = true;
+  
+          ld.spawnInterval = 17;
+          ld.start.x = 760;
+          ld.start.y = 466;
+          ld.solution[1] = [
+            {
+                x: 362, y: 230, r: 13,
+                action : "Builder"
+            }
+          ];
+  
+          if(false) {
+            // lots of lemmings test (lemmings-update is at around 11-13ms at peak; 9-10ms without draw (!?))
+            ld.spawnInterval = 17;
+            ld.resources.lemmings = 6000;
+          }
+    
+          ld.ui.showObjective = false;
+        } else {
+          /*
+           * 0 = intro
+           * num = any level
+           * persisted.currentLevel = level progression
+           */
+          // ld = LlemmingsLevels[persisted.currentLevel];
+          ld = LlemmingsLevels[0];
+        }
 
-      // This is the init with level progression
-      // init(document.getElementById('canvas'), LlemmingsLevels[persisted.currentLevel], true);
+        // Init for hardcoded level (above)
+        init(document.getElementById('canvas'), ld, true);
+      } else {
+        // This is the real init for the intro
+        init(document.getElementById('canvas'), LlemmingsLevels[0], false);
+      }
 
-      // This is the real init for the intro
-      // init(document.getElementById('canvas'), LlemmingsLevels[0], true);
-
-      // start();
       preStart();
-    }
-
-    function startGame()
-    {
-      // "Start game" button on intro screen
-      if(isPaused) {
-        togglePause();
-      }
-
-      let btn = document.getElementById("start-game");
-      if(btn) {
-        btn.style.display = "none";
-      }
-
-      let settings = document.getElementById("settings");
-      if(settings) {
-        settings.style.display = "none";
-      }
-
-      canvasFadeDirection = "out";
-
-      // Wait a little to fade out the intro screen
-      setTimeout(() => {
-        reset();
-        init(document.getElementById('canvas'), LlemmingsLevels[persisted.currentLevel], false);
-        preStart();
-      }, 1000);
     }
 
     /**
@@ -975,11 +989,15 @@ var Llemmings = (function () {
      * Keep at a minimum.
      */
 
+    // Override always (we do it here as well as in init so that we know about it in _runOnce()).
+    forceDebugIfSet();
+
     // Don't run when in level editor
     if(document.location.href.includes("/editor/")) {
       EDITOR_MODE = true;
     }
 
+    // Start once we've loaded the font we depend on
     if(!EDITOR_MODE) {
       document.fonts.ready.then(function () {
         _runOnce(false);
@@ -989,7 +1007,7 @@ var Llemmings = (function () {
     return {
       getSeed : () => { return levelData.seed; },
       init : init,
-      start : _start,
+      start : _start,                     // used by level editor's preview
       startGame : startGame,              // call when "Start game" is clicked on intro screen
       toggleSetting : toggleSetting,
       togglePause : togglePause,

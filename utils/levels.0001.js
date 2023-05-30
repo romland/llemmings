@@ -3,7 +3,6 @@ var LlemmingsLevels = [
         "level" : 0,
         "name" : "Intro",
         "seed" : 49188,        // empty
-        "__DEBUG__" : false,
         "disableGame" : true,
         "unlimitedResources" : true,
         "autoPlay" : true,
