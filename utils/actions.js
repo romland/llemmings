@@ -194,6 +194,8 @@ var Actions = (function ()
           let actName = GameUtils.capitalize(action.split("-")[1]);
           Actions.applyAction(actName);
         }
+      } else {
+        console.warn("In-game keybinds momentarily disabled");
       }
     }
 
@@ -245,5 +247,6 @@ var Actions = (function ()
         init : init,
         applyAction : applyAction,
         keyBindPressed : keyBindPressed,
+        deselectLemmings : deselectLemmings,
     }
 })();

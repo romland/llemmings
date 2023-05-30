@@ -911,13 +911,13 @@ var Llemmings = (function () {
       // init(document.getElementById('canvas'), { seed : 1682936781219 }, true);
 
       // Init for hardcoded level
-      // init(document.getElementById('canvas'), LlemmingsLevels[1], true);
+      init(document.getElementById('canvas'), LlemmingsLevels[1], true);
 
       // This is the init with level progression
       // init(document.getElementById('canvas'), LlemmingsLevels[persisted.currentLevel], true);
 
       // This is the real init for the intro
-      init(document.getElementById('canvas'), LlemmingsLevels[0], true);
+      // init(document.getElementById('canvas'), LlemmingsLevels[0], true);
 
       // start();
       preStart();

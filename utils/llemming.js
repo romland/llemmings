@@ -439,6 +439,7 @@ var Llemming = (() => {
         }
   
         if(isPointWithinCircle(lx, ly, act.x, act.y, act.r) && GameUtils.matchesCondition(act.conditions, lemming)) {
+          Actions.deselectLemmings();
           lemming.isSelected = true;
           Actions.applyAction(act.action)
           lemming.isSelected = false;
@@ -559,7 +560,7 @@ var Llemming = (() => {
   
         // is selected
         if (this.isSelected) {
-          ctx.strokeStyle = "red";
+          ctx.strokeStyle = "white";
           ctx.strokeRect(this.x, this.y, this.width, this.height);
         }
   
