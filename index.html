@@ -59,8 +59,6 @@
       animation: fadeIn 2s;
     }
 
-    @keyframes fadeIn {   0% { opacity: 0; }   100% { opacity: 1; } } 
-
     #lemming-actions button {
       position: relative;
     }
@@ -84,6 +82,13 @@
       top: 50%;
       left: 50%;
       transform: translate(-50%, -50%);
+    }
+    
+    .game-button:hover {
+      background: linear-gradient(to bottom, #7a4f24, #af7a37);
+    }
+
+    .game-button {
       background: linear-gradient(to bottom, #8b5a2b, #c68642);
       border-radius: 10px;
       box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.3);
@@ -94,10 +99,6 @@
       font-weight: bold;
       text-align: center;
       cursor: pointer;
-    }
-    
-    #start-game:hover {
-      background: linear-gradient(to bottom, #7a4f24, #af7a37);
     }
     
     #settings {
@@ -164,6 +165,46 @@
       cursor: pointer;
     }
     
+    #scoreScreen {
+      position: absolute;
+      top: 0;
+      left: 0;
+      display: block;
+      height: calc(100vh - 90px);
+      max-height: calc(100vh - 90px);
+      width: auto;
+      max-width: 100vw;
+      margin: 0 auto;
+      animation: fadeIn 2s;
+      font-family: "Henny Penny";
+      font-size: 1.5rem;
+    }
+
+    #scoreScreen h1 {
+      font-family: "Henny Penny";
+      font-size: 2rem;
+    }
+
+    .score-detail {
+      display: block;
+      width: 30rem;
+      margin: 0 auto;
+      animation: fadeIn 2s, pop 1.5s;
+    }
+
+    .score-detail label {
+      width: 66%;
+      display: inline-block;
+    }
+
+    @keyframes pop {
+      50%  { transform: scale(1.1); }
+    }
+
+    @keyframes fadeIn {
+      0% { opacity: 0; }
+      100% { opacity: 1; }
+    }
   </style>
 </head>
 <body>
@@ -189,7 +230,7 @@
     <a href="https://github.com/romland/llemmings/" target="_blank"><img style="width: 30px;" src="github/github.svg"/></a>
   </div>
   
-  <div id="start-game" onclick="Llemmings.startGame()">Let's play!</div>
+  <div id="start-game" class="game-button" onclick="Llemmings.startGame()">Let's play!</div>
   
   <div id="settings">
     <span class="settingsbtn" onclick="Llemmings.toggleSetting('soundEffects')">🔈</span>

@@ -66,7 +66,7 @@ var LlemmingsScore = (function () {
             this.score += amount;
         }
 
-        getLabelledScore()
+        getScoreInfo()
         {
             return this.scoreInfo;
         }
@@ -100,8 +100,96 @@ var LlemmingsScore = (function () {
             }
         }
     }
+
+    class Screen
+    {
+        scoreKeeper = null;
+        container = null;
+        age = 0;
+        elts = [];
+
+        constructor(scoreKeeper)
+        {
+            this.scoreKeeper = scoreKeeper;
+        }
+
+        formatScore(val)
+        {
+            return val;
+        }
+
+        show()
+        {
+            console.log("Show scoreScreen");
+
+            let html = `
+                <h1>Well done!</h1>
+                <div id="score-details">
+                </div>
+                <button class="game-button">Replay level</button>
+                <button class="game-button">Continue</button>
+            `;
+
+            const scores = this.scoreKeeper.getScoreInfo();
+            const labels = Object.keys(scores);
+            for(let i = 0; i < labels.length; i++) {
+                const lbl = labels[i];
+
+                if(scores[lbl] === 0) {
+                    continue;
+                }
+
+                const elt = document.createElement("div");
+                elt.setAttribute("class", "score-detail");
+                elt.innerHTML = `
+                    <div class="score-detail">
+                        <label>${lbl}</label> <span>${this.formatScore(scores[lbl])}</span>
+                    </div>
+                `;
+                this.elts.push(elt);
+            }
+
+            const elt = document.createElement("div");
+            elt.setAttribute("class", "score-detail score-total");
+            elt.innerHTML = `
+                <div class="score-detail">
+                    <label>TOTAL</label> <span>${this.formatScore(this.scoreKeeper.getScore())}</span>
+                </div>
+            `;
+            this.elts.push(elt);
+
+            this.container = document.createElement("DIV");
+            this.container.setAttribute("id", "scoreScreen");
+            document.body.appendChild(this.container);
+            this.container.innerHTML = html;
+
+            this.scoreKeeper.cleanUp();
+        }
+
+        update()
+        {
+            this.age++;
+            if(this.age % 40 === 0 && this.elts.length > 0) {
+                this.container.appendChild(this.elts[0]);
+                this.elts.splice(0, 1);
+            }
+        }
+
+        cleanUp()
+        {
+            console.log("Cleaning up scoreScreen");
+            if(this.container) {
+                document.body.removeChild(this.container);
+                this.container = null;
+            }
+            this.age = 0;
+            this.scoreKeeper = null;
+            this.elts = [];
+        }
+    }
     
     return {
         ScoreKeeper : ScoreKeeper,
+        Screen : Screen,
     };
 })();

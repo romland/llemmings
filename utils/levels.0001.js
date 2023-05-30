@@ -417,12 +417,12 @@ var LlemmingsLevels = [
             "time": 120 * 1000,
             "Climber": 0,
             "Floater": 0,
-            "Bomber": 1,
-            "Blocker": 1,
-            "Builder": 1,
-            "Basher": 2,
+            "Bomber": 2,
+            "Blocker": 2,
+            "Builder": 2,
+            "Basher": 3,
             "Miner": 0,
-            "Digger": 1
+            "Digger": 2
         },
         "spawnInterval": 1000,
         "goal": {

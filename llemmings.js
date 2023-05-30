@@ -18,6 +18,7 @@ var Llemmings = (function () {
     let canvasEventsListening = false;
     const gameIntervals = {};
     const gameTimeouts = {};
+    const openScreens = new Map();
 
     // World settings
     let lastLemmingId = 0;
@@ -272,6 +273,8 @@ var Llemmings = (function () {
 
       gameTimeouts["successFadeout"] = setTimeout(() => {
         canvasFadeDirection = "out";
+        openScreens.set("scoreScreen", new LlemmingsScore.Screen(scoreKeeper));
+        openScreens.get("scoreScreen").show();
       }, 5000);
 
       // Completion bonuses below.
@@ -283,28 +286,29 @@ var Llemmings = (function () {
       }
 
       // ...extra resources
-      scoreKeeper.addScore(levelDataResources["Climber"] * 50, "Climbing");
-      scoreKeeper.addScore(levelDataResources["Floater"] * 50, "Floating");
-      scoreKeeper.addScore(levelDataResources["Bomber"] * 50, "Bombing");
-      scoreKeeper.addScore(levelDataResources["Blocker"] * 50, "Blocking");
-      scoreKeeper.addScore(levelDataResources["Builder"] * 50, "Building");
-      scoreKeeper.addScore(levelDataResources["Basher"] * 50, "Bashing");
-      scoreKeeper.addScore(levelDataResources["Miner"] * 50, "Mining");
-      scoreKeeper.addScore(levelDataResources["Digger"] * 50, "Digging");
+      scoreKeeper.addScore(levelDataResources["Climber"] * 50, "Climbing bonus");
+      scoreKeeper.addScore(levelDataResources["Floater"] * 50, "Floating bonus");
+      scoreKeeper.addScore(levelDataResources["Bomber"] * 50, "Bombing bonus");
+      scoreKeeper.addScore(levelDataResources["Blocker"] * 50, "Blocking bonus");
+      scoreKeeper.addScore(levelDataResources["Builder"] * 50, "Building bonus");
+      scoreKeeper.addScore(levelDataResources["Basher"] * 50, "Bashing bonus");
+      scoreKeeper.addScore(levelDataResources["Miner"] * 50, "Mining bonus");
+      scoreKeeper.addScore(levelDataResources["Digger"] * 50, "Digging bonus");
 
       // ...number of attempts needed
       switch(persisted.currentLevelAttempts) {
-        case 3 : scoreKeeper.addScore(125, "Attempts 1"); break;
-        case 2 : scoreKeeper.addScore(250, "Attempts 2"); break;
-        case 1 : scoreKeeper.addScore(500, "Attempts 3"); break;
+        case 3 : scoreKeeper.addScore(125, "Attempts 1 bonus"); break;
+        case 2 : scoreKeeper.addScore(250, "Attempts 2 bonus"); break;
+        case 1 : scoreKeeper.addScore(500, "Attempts 3 bonus"); break;
       }
 
       // ...time bonus (seconds remaining * 10)
-      scoreKeeper.addScore((levelData.resources.time - elapsedLevelTime) / 100, "Time");
+      scoreKeeper.addScore((levelData.resources.time - elapsedLevelTime) / 100, "Time bonus");
 
       // Store the score for the level (so that it can be improved at a later date)
       persisted.levelScores[levelData.level] = scoreKeeper.getScore();
 
+      console.log("Score details:", scoreKeeper.getScoreInfo());
       console.log("Level score:", scoreKeeper.getScore());
       console.log("Overall score:", getOverallScore());
 
@@ -465,6 +469,17 @@ var Llemmings = (function () {
         const timeouts = Object.values(gameTimeouts);
         for(let i = 0; i < timeouts.length; i++) {
             clearTimeout(timeouts[i]);
+        }
+
+        // clean up/remove all open screens
+        // const screens = Object.keys(openScreens);
+        // for(let i = 0; i < screens.length; i++) {
+        for(const screen of openScreens) {
+            if(!screen[1]) {
+              continue;
+            }
+            screen[1].cleanUp();
+            screen[1] = null;
         }
 
         for(let i = 0; i < sprites.length; i++) {
@@ -685,6 +700,10 @@ var Llemmings = (function () {
         }
       }
 
+      for(const screen of openScreens) {
+        screen[1].update();
+      }
+
       // Schedule the next frame
       reqAnimFrameId = requestAnimationFrame(update);
 
@@ -715,16 +734,17 @@ var Llemmings = (function () {
       if(__DEBUG__) {
         console.warn("Overriding level to modify settings due to __DEBUG__");
         levelData.autoPlay = true;
-        /*
-        levelData.start.x = 320;
-        levelData.start.y = 154;
+
+        levelData.spawnInterval = 17;
+        levelData.start.x = 760;
+        levelData.start.y = 466;
         levelData.solution[1] = [
           {
               x: 362, y: 230, r: 13,
               action : "Builder"
           }
         ];
-        */
+
         if(false) {
           // lots of lemmings test (lemmings-update is at around 11-13ms at peak; 9-10ms without draw (!?))
           levelData.spawnInterval = 17;
@@ -911,13 +931,13 @@ var Llemmings = (function () {
       // init(document.getElementById('canvas'), { seed : 1682936781219 }, true);
 
       // Init for hardcoded level
-      // init(document.getElementById('canvas'), LlemmingsLevels[1], true);
+      init(document.getElementById('canvas'), LlemmingsLevels[1], true);
 
       // This is the init with level progression
       // init(document.getElementById('canvas'), LlemmingsLevels[persisted.currentLevel], true);
 
       // This is the real init for the intro
-      init(document.getElementById('canvas'), LlemmingsLevels[0], true);
+      // init(document.getElementById('canvas'), LlemmingsLevels[0], true);
 
       // start();
       preStart();
@@ -982,5 +1002,6 @@ var Llemmings = (function () {
       isPlaying : isPlaying,
       isAutoPlaying : isAutoPlaying,
       exitGame : exitGame,
+      restartLevel : restartLevel,
     }
   })();
