@@ -167,7 +167,7 @@ var Particles = (function ()
             if(systems[i].done()) {
                 systems[i].cleanUp();
                 systems.splice(i, 1);
-                console.log("Removed particle system. Now,", systems.length, "remaining");
+                // console.log("Removed particle system. Now,", systems.length, "remaining");
             }
         }
     }

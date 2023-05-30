@@ -384,7 +384,6 @@ const World = (function () {
             break;
           
           case "fill":
-            console.log("Drawing fill", shape);
             GameUtils.floodFill(shape.x, shape.y, shape.targetColor, shape.fillColor, context);
             break;
         }

@@ -803,7 +803,7 @@ var Llemmings = (function () {
       AudioSamples.createSamples(["BD-0.25"]);
 
       // Create an instance of the ScoreKeeper class
-      scoreKeeper = new GameUtils.ScoreKeeper(canvas, levelData.goal.survivors, 0, !levelData.ui.showScore || EDITOR_MODE);
+      scoreKeeper = new LlemmingsScore.ScoreKeeper(canvas, levelData.goal.survivors, 0, !levelData.ui.showScore || EDITOR_MODE);
       Llemming.init({
         __DEBUG__, autoPlaying, canvas, levelData, lemmings, ctx, background
       });

@@ -75,7 +75,6 @@ var TextEffectMorph = (function () {
     // Human: Added when glueing things together.
     function cleanUp()
     {
-        console.log("Cleaning up morph");
         waitFrames = 0;
         scenesDone = 0;
         initialized = false;
@@ -189,7 +188,6 @@ var TextEffectMorph = (function () {
         }
 
         if(scenesDone >= maxScenes) {
-            console.log("Stopping animation")
             if(settings.onAnimationDone) {
                 settings.onAnimationDone();
             }
@@ -225,7 +223,6 @@ var TextEffectMorph = (function () {
 
         if(activeParticles === 0) {
             scenesDone++;
-            console.log("Done morphing")
 
             if(settings.onAnimationSceneChange) {
                 settings.onAnimationSceneChange();
@@ -242,8 +239,6 @@ var TextEffectMorph = (function () {
                 particle.vy = particle.speed * 0.6 * Math.sin(particle.angle);
             });
         }
-
-        // requestAnimationFrame(update);
     }
 
     return {
