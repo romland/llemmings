@@ -560,8 +560,21 @@ var Llemming = (() => {
   
         // is selected
         if (this.isSelected) {
-          ctx.strokeStyle = "white";
-          ctx.strokeRect(this.x, this.y, this.width, this.height);
+          // >>> Prompt: instructions/lemming-selected.0001.txt
+          const maxRadius = 20;
+          const minRadius = 10;
+          const deltaRadius = maxRadius - minRadius;
+          const pulseSpeed = 0.05;
+          const ageMod = this.age % (deltaRadius / pulseSpeed) + 1;
+          const currentRadius = minRadius + deltaRadius / 2 + deltaRadius / 2 * Math.sin(pulseSpeed * ageMod);
+
+          ctx.save();
+          ctx.lineWidth = 4;
+          ctx.strokeStyle = `rgba(255, 255, 255, ${1 / (currentRadius/8)})`;
+          ctx.beginPath();
+          ctx.arc(this.x + this.width / 2, this.y + this.height / 2, currentRadius, 0, 2 * Math.PI);
+          ctx.stroke();
+          ctx.restore();
         }
   
         // debug

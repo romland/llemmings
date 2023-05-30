@@ -1,0 +1,18 @@
+Given a game in javascript, the following give visual feedback on a selected object:
+This is done every frame.
+
+  if (this.isSelected) {
+    ctx.strokeStyle = "white";
+    ctx.strokeRect(this.x, this.y, this.width, this.height);
+  }
+
+in the object there is the attribute 'this.age' that increases by one every frame.
+
+Now, instead of a boring box drawn around the selected object I want a slowly pulsing 
+thick circle, use age for determining size over time.
+
+It should pulse slowly and it should animate in _and_ out (so a simple modulo on age
+will not work, you need a bit more)
+
+Give me only the snippet to draw this circle, no other code. And I don't need an
+explanation this time.
