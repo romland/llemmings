@@ -1,0 +1,3 @@
+In javascript, give me the contents of this method that makes it more 
+readable for longer numbers (i.e.: if 4567, make it 4 567): 
+formatScore(number) { ... }

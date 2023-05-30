@@ -113,9 +113,29 @@ var LlemmingsScore = (function () {
             this.scoreKeeper = scoreKeeper;
         }
 
-        formatScore(val)
+        // >>> Prompt: instructions/format-score.0001.txt
+        formatScore(number)
         {
-            return val;
+            // Convert number to string
+            const numberString = number.toString();
+
+            // If number has 3 or fewer digits, return it as is
+            if (numberString.length <= 3) {
+                return numberString;
+            }
+
+            // Otherwise, add spaces every three digits, starting from the end of the string
+            let result = "";
+            let count = 0;
+            for (let i = numberString.length - 1; i >= 0; i--) {
+                result = numberString.charAt(i) + result;
+                count++;
+                if (count === 3 && i !== 0) {
+                result = " " + result;
+                count = 0;
+                }
+            }
+            return result;
         }
 
         show()
