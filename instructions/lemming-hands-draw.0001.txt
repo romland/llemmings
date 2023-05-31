@@ -1,0 +1,20 @@
+This is a circle that represents a hand, right now it is static.
+
+It should move in a curve back and forth as the object walks.
+To determine animation state, you have this.age to use.
+
+Note that:
+- it should move smoothly back and forth so just using mod age
+  is not enough as it needs to move back too
+
+        ctx.fillStyle = "white";
+        ctx.beginPath();
+        ctx.arc(
+          this.x + this.width / 2,
+          this.y + this.height / 2,
+          2, // hand-size
+          0, 2 * Math.PI
+        );
+        ctx.fill();
+
+This time, just give me the code, no need for explanation.

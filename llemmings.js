@@ -944,7 +944,10 @@ var Llemmings = (function () {
 
         if(true) {
           console.warn("Overriding level to modify settings due to __DEBUG__");
+
+          // THIS IS WHERE YOU SET HARDCODED LEVEL TO TEST!
           ld = LlemmingsLevels[1];
+          /*
           ld.autoPlay = true;
   
           ld.spawnInterval = 17;
@@ -956,6 +959,7 @@ var Llemmings = (function () {
                 action : "Builder"
             }
           ];
+          */
   
           if(false) {
             // lots of lemmings test (lemmings-update is at around 11-13ms at peak; 9-10ms without draw (!?))

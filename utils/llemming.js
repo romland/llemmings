@@ -500,6 +500,20 @@ var Llemming = (() => {
           return;
         }
 
+        const handAngle = (Math.PI/4) * Math.sin(this.age/10); // adjust the divisor to change speed
+
+        // back hand
+        ctx.fillStyle = "#d0d0d0";
+        ctx.beginPath();
+        ctx.arc(
+          this.x + this.width / 2 + 10 * Math.cos(-handAngle + 1.3),
+          this.y + this.height / 2 + 5 * Math.sin(-handAngle + 1.3),
+          2,
+          0,
+          2 * Math.PI
+        );
+        ctx.fill();
+
         // draw body
         ctx.fillStyle = "rgb(" + lemmingBodyColor.join(",") + ")";
         ctx.fillRect (this.x, this.y, this.width, this.height * 0.75);
@@ -558,6 +572,18 @@ var Llemming = (() => {
         ctx.fillStyle = "rgb(" + lemmingHairColor.join(",") + ")";
         ctx.fillRect(this.x, this.y, this.width, this.height / 4);
   
+        // front hand (back hand is behind lemming)
+        ctx.fillStyle = "#d0d0d0";
+        ctx.beginPath();
+        ctx.arc(
+          this.x + this.width / 2 + 10 * Math.cos(handAngle + 1.3),
+          this.y + this.height / 2 + 5 * Math.sin(handAngle + 1.3),
+          2,
+          0,
+          2 * Math.PI
+        );
+        ctx.fill();
+
         // is selected
         if (this.isSelected) {
           // >>> Prompt: instructions/lemming-selected.0001.txt
@@ -578,7 +604,7 @@ var Llemming = (() => {
         }
   
         // debug
-        if (__DEBUG__) {
+        if (false && __DEBUG__) {
             ctx.strokeStyle = "white";
             ctx.strokeText(this.id, this.x + 1, this.y + 13);
             if (this.action) {
