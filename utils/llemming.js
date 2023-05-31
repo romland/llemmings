@@ -500,7 +500,7 @@ var Llemming = (() => {
           return;
         }
 
-        const handAngle = (Math.PI/4) * Math.sin(this.age/10); // adjust the divisor to change speed
+        const handAngle = (Math.PI/4) * Math.sin(this.age * this.velX/4); // adjust the divisor to change speed
 
         // back hand
         ctx.fillStyle = "#d0d0d0";
