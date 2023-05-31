@@ -499,8 +499,9 @@ var Llemming = (() => {
         if(!this.isSpawned) {
           return;
         }
+        const animStage = this.age + (this.id * 10);
 
-        const handAngle = (Math.PI/4) * Math.sin(this.age * this.velX/4); // adjust the divisor to change speed
+        const handAngle = (Math.PI/4) * Math.sin(animStage * this.velX/4); // adjust the divisor to change speed
 
         // back hand
         ctx.fillStyle = "#d0d0d0";
@@ -518,7 +519,7 @@ var Llemming = (() => {
         ctx.fillStyle = "rgb(" + lemmingBodyColor.join(",") + ")";
         ctx.fillRect (this.x, this.y, this.width, this.height * 0.75);
   
-        let legMoveSpeed = this.age * (this.velX/3.0);
+        let legMoveSpeed = animStage * (this.velX/3.0);
   
         // calculate leg positions based on velocity and direction
         let leftLegX, leftFootX, rightLegX, rightFootX;
@@ -591,7 +592,7 @@ var Llemming = (() => {
           const minRadius = 10;
           const deltaRadius = maxRadius - minRadius;
           const pulseSpeed = 0.05;
-          const ageMod = this.age % (deltaRadius / pulseSpeed) + 1;
+          const ageMod = animStage % (deltaRadius / pulseSpeed) + 1;
           const currentRadius = minRadius + deltaRadius / 2 + deltaRadius / 2 * Math.sin(pulseSpeed * ageMod);
 
           ctx.save();
