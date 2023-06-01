@@ -117,8 +117,8 @@ var LlemmingsScore = (function () {
                 result = numberString.charAt(i) + result;
                 count++;
                 if (count === 3 && i !== 0) {
-                result = " " + result;
-                count = 0;
+                    result = " " + result;
+                    count = 0;
                 }
             }
             return result;
@@ -126,8 +126,6 @@ var LlemmingsScore = (function () {
 
         show()
         {
-            console.log("Show scoreScreen");
-
             let html = `
                 <div class="score-detail" style="text-align: left;">
                     <h1>Well done, human!</h1>
@@ -193,7 +191,6 @@ var LlemmingsScore = (function () {
 
         cleanUp()
         {
-            console.log("Cleaning up scoreScreen");
             if(this.container) {
                 document.body.removeChild(this.container);
                 this.container = null;
