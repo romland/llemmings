@@ -19,22 +19,6 @@ var LlemmingsScore = (function () {
                 // Create the UI element to display the score
                 this.scoreElement = document.createElement('div');
                 this.scoreElement.id = "goalTrackerDiv";
-                this.scoreElement.style.position = 'absolute';
-                this.scoreElement.style.top = '10px';
-                this.scoreElement.style.left = '20px';
-                this.scoreElement.style.backgroundColor = 'rgba(0, 0, 0, 0.5)';
-                this.scoreElement.style.borderRadius = '50%';
-                this.scoreElement.style.width = '75px';
-                this.scoreElement.style.height = '50px';
-                this.scoreElement.style.display = 'flex';
-                this.scoreElement.style.alignItems = 'center';
-                this.scoreElement.style.justifyContent = 'center';
-                this.scoreElement.style.textShadow = "#FC0 10px 0 10px";
-                this.scoreElement.style.color = 'white';
-                this.scoreElement.style.fontFamily = 'Comic Sans MS';
-                this.scoreElement.style.fontSize = '15px';
-                this.scoreElement.style.textTransform = 'uppercase'; 
-                this.scoreElement.style.letterSpacing = '0.1em';
                 
                 if(!this.hidden) {
                     canvas.parentNode.appendChild(this.scoreElement);
