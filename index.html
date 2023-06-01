@@ -234,14 +234,14 @@
   <div id="infoDiv"></div>
   
   <div id="lemming-actions">
-    <button class="actbtn" onclick="Llemmings.applyAction('Climber')" data-resource="Climber">🧗<span class="count"></span></button>
-    <button class="actbtn" onclick="Llemmings.applyAction('Floater')" data-resource="Floater">🪂<span class="count"></span></button>
-    <button class="actbtn" onclick="Llemmings.applyAction('Bomber')" data-resource="Bomber">💣<span class="count"></span></button>
-    <button class="actbtn" onclick="Llemmings.applyAction('Blocker')" data-resource="Blocker">🚫<span class="count"></span></button>
-    <button class="actbtn" onclick="Llemmings.applyAction('Builder')" data-resource="Builder">🏗️<span class="count"></span></button>
-    <button class="actbtn" onclick="Llemmings.applyAction('Basher')" data-resource="Basher">🤜<span class="count"></span></button>
-    <button class="actbtn" onclick="Llemmings.applyAction('Miner')" data-resource="Miner">⛏️<span class="count"></span></button>
-    <button class="actbtn" onclick="Llemmings.applyAction('Digger')" data-resource="Digger">🕳️<span class="count"></span></button>
+    <button class="actbtn" onclick="Actions.applyAction('Climber')" data-resource="Climber">🧗<span class="count"></span></button>
+    <button class="actbtn" onclick="Actions.applyAction('Floater')" data-resource="Floater">🪂<span class="count"></span></button>
+    <button class="actbtn" onclick="Actions.applyAction('Bomber')" data-resource="Bomber">💣<span class="count"></span></button>
+    <button class="actbtn" onclick="Actions.applyAction('Blocker')" data-resource="Blocker">🚫<span class="count"></span></button>
+    <button class="actbtn" onclick="Actions.applyAction('Builder')" data-resource="Builder">🏗️<span class="count"></span></button>
+    <button class="actbtn" onclick="Actions.applyAction('Basher')" data-resource="Basher">🤜<span class="count"></span></button>
+    <button class="actbtn" onclick="Actions.applyAction('Miner')" data-resource="Miner">⛏️<span class="count"></span></button>
+    <button class="actbtn" onclick="Actions.applyAction('Digger')" data-resource="Digger">🕳️<span class="count"></span></button>
     <button class="actbtn" onclick="Llemmings.togglePause()">⏸️</button>
     <button class="actbtn" onclick="Llemmings.restart(document.getElementById('canvas'))">🔄</button>
     <a href="https://github.com/romland/llemmings/" target="_blank"><img style="width: 30px;" src="github/github.svg"/></a>
@@ -280,6 +280,7 @@
   <script type="text/javascript" src="utils/score.js"></script>
   <script type="text/javascript" src="utils/particles.js"></script>
   <script type="text/javascript" src="utils/actions.js"></script>
+  <script type="text/javascript" src="utils/entity-component-system.js"></script>
   <script type="text/javascript" src="utils/llemming.js"></script>
   <script type="text/javascript" src="llemmings.js"></script>
 </body>
