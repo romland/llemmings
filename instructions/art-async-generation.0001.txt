@@ -1,0 +1,7 @@
+In javascript, given an object:
+bitmaps = { "foo": [ bitmapdata1a, bitmapdata1b, ...], "bar": bitmapdata2 }. 
+
+I want to await on all bitmap data and make sure the bitmaps array contain the resolved data.
+It's important that we wait for all promises in parallel and not serially.
+
+I don't need an explanation this time, just give me the code.

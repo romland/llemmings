@@ -453,31 +453,58 @@ var Llemmings = (function () {
       preStart();
     }
 
+    /**
+     * Entries in 'bitmaps' can either be a single bitmap or an array (for animations),
+     * all generators are async; hence the blob of code to wait for all generators
+     * simultaneously.
+     */
     async function generateBitmaps()
     {
       // Create bitmap sprites (for now just one!)
       if(!getBitmap("hatch")) {
-        bitmaps["hatch"] = await GameUtils.generateAnimationFrames(96, 32, 90, LlemmingsArt.drawHatch);
-        console.log("Created animation for hatch");
+        console.log("Creating animation for hatch");
+        bitmaps["hatch"] = GameUtils.generateAnimationFrames(96, 32, 90, LlemmingsArt.drawHatch);
       }
 
-      if(!getBitmap("6-spiked-star")) {
+      if(!getBitmap("16-spiked-star")) {
+        console.log("Creating 16-spiked-star");
         const width = 100;
         const height = 100;
-        const hw = width / 2;
-        const hh = height / 2;
-        ctx.filter = "blur(2px)";
-        // ctx.filter = "contrast(1.4) sepia(1) drop-shadow(-2px 2px 3px #e81)";    
-        // ctx.globalCompositeOperation = "lighten";
-        // ctx.shadowBlur = 15;
-        // ctx.shadowColor = "white";
 
         const tempContext = document.createElement('canvas').getContext('2d');
-
-        drawSpikes(tempContext, hw, hh, 22, 60, 6, `rgba(255, 255,255, 1)`, true, false);
-        bitmaps["6-spiked-star"] = await extractBitmapFromContext(tempContext, 0, 0, width, height);
-        console.log("Created 6-spiked-star");
+        tempContext.filter = "blur(2px)";
+        LlemmingsArt.drawSpikes(tempContext, width / 2, height / 2, 16, 60, 6, `rgba(255, 255,255, 0.9)`, false, false);
+        bitmaps["16-spiked-star"] =  LlemmingsArt.extractBitmapFromContext(tempContext, 0, 0, width, height);
       }
+
+      // Wait for generators to do their thang.
+      // >>> Prompt: instructions/art-async-generation.0001.txt
+      
+      // map over each array and create a Promise for each bitmap
+      const promises = Object.values(bitmaps).flatMap(bitmap => {
+        if (Array.isArray(bitmap)) {
+          return bitmap.map(bmp => Promise.resolve(bmp));
+        }
+        return [Promise.resolve(bitmap)];
+      });
+      
+      // await all bitmap promises in parallel
+      await Promise.all(promises)
+        .then(resolvedBitmaps => {
+          // update bitmaps object with resolved data
+          const keys = Object.keys(bitmaps);
+          keys.forEach((key, i) => {
+            if (Array.isArray(bitmaps[key])) {
+              bitmaps[key] = resolvedBitmaps.slice(i, i + bitmaps[key].length);
+            } else {
+              bitmaps[key] = resolvedBitmaps[i];
+            }
+          });
+          // console.log(bitmaps); // bitmaps object with resolved data
+        })
+        .catch(error => {
+          console.error(error); // handle error
+        });
     }
 
     function forceDebugIfSet()
@@ -853,8 +880,7 @@ var Llemmings = (function () {
       // HUMAN: Pre-create lemmings -- we need this early to determine level failure/success
       createLemmings(levelDataResources.lemmings);
 
-      ecs = ECS.setup(levelData, ctx);
-
+      ecs = ECS.init(levelData, ctx);
 
       // Human HACK: Wait a little for any images to be drawn before we set background buffer.
       //             The _proper_ way to do this is set something up that actually waits
