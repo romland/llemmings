@@ -1,0 +1,5 @@
+Given a HTML5 canvas, and a drawn shape on it. 
+
+I want a function that takes a canvas context, x, y, width, height... cuts that
+out, puts it in a variable called sprite and returns it. Use async/await, createImageBitmap()
+and decode().

@@ -1,0 +1,5 @@
+Change this function so that the further out from the center a spike reaches, the more 
+transparent it is. Consider the approach to do it post-creation of the spikes by overlaying 
+a radial gradient. There might be better solutions, though.
+
+< drawSpikes function as it was >

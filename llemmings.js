@@ -39,7 +39,7 @@ var Llemmings = (function () {
     let levelDataResources = null;
 
     // Sprites
-    const animationFrames = {};   // kept intact between levels so we don't have to re-generate all the time
+    const bitmaps = {};   // kept intact between levels so we don't have to re-generate all the time
     const sprites = [];           // cleared between levels
 
     // Game settings
@@ -69,6 +69,9 @@ var Llemmings = (function () {
     // Fade
     let canvasOpacity = 0;  // Initialize the opacity to 0
     let canvasFadeDirection = null;
+
+    // ECS (for enemies + other objects)
+    let ecs;
 
     function getDefaultLevelData(givenLevel = {})
     {
@@ -190,6 +193,10 @@ var Llemmings = (function () {
       AudioSamples.playSample(name);
     }
 
+    function getBitmap(name)
+    {
+      return bitmaps[name];
+    }
 
     function createLemmings(amount)
     {
@@ -395,7 +402,7 @@ var Llemmings = (function () {
         clearSquare(levelData.start.x, levelData.start.y, levelData.start.radius);
 
         sprites.push(
-          new AnimatedSprite(ctx, levelData.start.x - 30, Math.max(0, levelData.start.y), animationFrames["hatch"], { speed : 1, /* default settings */ })
+          new AnimatedSprite(ctx, levelData.start.x - 30, Math.max(0, levelData.start.y), getBitmap("hatch"), { speed : 1, /* default settings */ })
         );
       }
 
@@ -446,12 +453,30 @@ var Llemmings = (function () {
       preStart();
     }
 
-    async function generateSprites()
+    async function generateBitmaps()
     {
-      // Create sprites (for now just one!)
-      if(!animationFrames["hatch"]) {
-        animationFrames["hatch"] = await GameUtils.generateAnimationFrames(96, 32, 90, LlemmingsArt.drawHatch);
+      // Create bitmap sprites (for now just one!)
+      if(!getBitmap("hatch")) {
+        bitmaps["hatch"] = await GameUtils.generateAnimationFrames(96, 32, 90, LlemmingsArt.drawHatch);
         console.log("Created animation for hatch");
+      }
+
+      if(!getBitmap("6-spiked-star")) {
+        const width = 100;
+        const height = 100;
+        const hw = width / 2;
+        const hh = height / 2;
+        ctx.filter = "blur(2px)";
+        // ctx.filter = "contrast(1.4) sepia(1) drop-shadow(-2px 2px 3px #e81)";    
+        // ctx.globalCompositeOperation = "lighten";
+        // ctx.shadowBlur = 15;
+        // ctx.shadowColor = "white";
+
+        const tempContext = document.createElement('canvas').getContext('2d');
+
+        drawSpikes(tempContext, hw, hh, 22, 60, 6, `rgba(255, 255,255, 1)`, true, false);
+        bitmaps["6-spiked-star"] = await extractBitmapFromContext(tempContext, 0, 0, width, height);
+        console.log("Created 6-spiked-star");
       }
     }
 
@@ -649,6 +674,10 @@ var Llemmings = (function () {
       }
 
       if(playing) {
+        perfMonitor.start("ecs-update");
+        ecs.update(ecs.components);
+        perfMonitor.end("ecs-update");
+
         // Update and draw each lemming
         perfMonitor.start("lemmings-update");
         for(let i = 0; i < lemmings.length; i++) {
@@ -824,6 +853,9 @@ var Llemmings = (function () {
       // HUMAN: Pre-create lemmings -- we need this early to determine level failure/success
       createLemmings(levelDataResources.lemmings);
 
+      ecs = ECS.setup(levelData, ctx);
+
+
       // Human HACK: Wait a little for any images to be drawn before we set background buffer.
       //             The _proper_ way to do this is set something up that actually waits
       //             for all possible images to be drawn before setting the background and
@@ -935,7 +967,7 @@ var Llemmings = (function () {
       console.log("Loaded persisted data...", persisted);
 
       // NOTE: This line needs to be run by editor too, make sure it calls it somehow.
-      await generateSprites();
+      await generateBitmaps();
 
       LlemmingsKeyBindings.startKeyBinds(Actions.keyBindPressed);
 
@@ -1019,11 +1051,12 @@ var Llemmings = (function () {
       restart : restartLevel,
       getDefaultLevelData : getDefaultLevelData,
       drawShapes : World.drawShapes,      // TODO: Remove this and make caller (Editor) use World directly
-      generateSprites : generateSprites,
-      applyAction : Actions.applyAction,  // TODO: Make callers (index.html) use Actions directly
       isPlaying : isPlaying,
       isAutoPlaying : isAutoPlaying,
       exitGame : exitGame,
       restartLevel : restartLevel,
+
+      generateSprites : generateBitmaps,  // TODO: Rename to bitmaps for external references (Editor)
+      getBitmap : getBitmap,
     }
-  })();
+})();

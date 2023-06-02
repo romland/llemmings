@@ -1,0 +1,13 @@
+Using HTML canvas (I don't need the HTML, it already exists. Canvas ID is canvas).
+
+Draw a sparkle on a canvas with configurable size, the spikes of the sparkle
+should come out from the center, at random angle and random length.
+
+To generate a spike, you first have to decide how thick the base will be, 
+then place that base in the center of the sparkle. Then decide which angle
+it should come out of the center from. The other end of the spike should obviously
+be thinner than the base (1 pixel?). Do this for all sides of the sparkle.
+I should be able to specify approximate length (but it they are somewhat random),
+and size of the core and all over size of the sparkle.
+
+This time I don't need an explanation, just give me the code. Be concise.

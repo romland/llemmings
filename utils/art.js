@@ -181,11 +181,62 @@ var LlemmingsArt = (function ()
       }
     }
 
+    // >>> Prompt: instructions/art-star.0001.txt
+    // >>> Prompt: instructions/art-star.0002.txt
+    function drawSpikes(tempCtx, cx, cy, numSpikes, outerRad, innerRad, color = "white", randomness = false, alphaRing = false)
+    {
+        let rot = Math.PI / 2 * 3;
+        let x = cx;
+        let y = cy;
+        let circleStep = Math.PI / numSpikes;
 
+        tempCtx.beginPath();
+        tempCtx.moveTo(cx, cy - outerRad)
+        for(i = 0; i < numSpikes; i++) {
+            let rand = (randomness ? -(outerRad/4) + Math.random() * (outerRad/2) : 0);
+            x = cx + Math.cos(rot) * (outerRad + rand);
+            y = cy + Math.sin(rot) * (outerRad + rand);
+            tempCtx.lineTo(x, y)
+            rot += circleStep
+
+            x = cx + Math.cos(rot) * innerRad;
+            y = cy + Math.sin(rot) * innerRad;
+            tempCtx.lineTo(x, y)
+            rot += circleStep
+        }
+        tempCtx.lineTo(cx, cy - outerRad)
+        tempCtx.closePath();
+        tempCtx.fillStyle = color;
+        tempCtx.fill();
+
+        if(alphaRing) {
+            // Create a radial gradient that starts from the center and ends at the outer radius
+            const gradient = tempCtx.createRadialGradient(cx, cy, 0, cx, cy, outerRad*1.5);
+            // Add color stops that start from white and end at transparent
+            for (let i = 0; i <= 10; i++) {
+                gradient.addColorStop(i / 10, `rgba(255, 255, 255, ${(10 - i) / 10})`);
+            }
+            // Set the fill style to the gradient
+            tempCtx.fillStyle = gradient;
+            tempCtx.fill();
+        }
+    }
+
+    // >>> Prompt: instructions/art-star.0003.txt
+    async function extractBitmapFromContext(ctx, x, y, width, height)
+    {
+      const offscreenCanvas = document.createElement('canvas');
+      offscreenCanvas.width = width;
+      offscreenCanvas.height = height;
+
+      return await createImageBitmap(await ctx.getImageData(x, y, width, height));
+    }
 
     return {
       getHouse : getHouse,
       drawHatch : drawHatch,
       renderDecorations : renderDecorations,
+      drawSpikes : drawSpikes,
+      extractBitmapFromContext : extractBitmapFromContext,    /* WARNING: Async! */
     }
 })();
