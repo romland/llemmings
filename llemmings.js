@@ -702,7 +702,9 @@ var Llemmings = (function () {
 
       if(playing) {
         perfMonitor.start("ecs-update");
-        ecs.update(ecs.components);
+        ecs.update(1000/60);
+        // ecs.entities[2].components.Transform.rotation += 0.003;
+        // ecs.entities[ecs.search("PathFollowing Star")].components.Transform.rotation += 0.003;
         perfMonitor.end("ecs-update");
 
         // Update and draw each lemming

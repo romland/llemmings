@@ -1,0 +1,8 @@
+>>> Prompt:
+Given an ECS in Javascript where following components are already available:
+- Velocity
+- Position
+- Sprite
+
+Give me the component for something that is rendered on a canvas (Renderable).
+

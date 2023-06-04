@@ -1,0 +1,5 @@
+>>> Prompt:
+Give me a simple entity-component-system in javascript.
+It should also include:
+- serialization and deserialization to/from json
+- include example components for position, velocity and path following

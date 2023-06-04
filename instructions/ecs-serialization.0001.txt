@@ -1,0 +1,10 @@
+>>> Prompt 1:
+In Javascript, give me generic serialize/deserialize methods in a class that also 
+serializes everything in the entire class hierarchy.
+
+>>> Prompt 2; same context window
+Make the deserialize acccept and object instead of json
+
+>>> Prompt 3; same context window
+Make serialize just return an object instead of json -- it should omit all variable
+names that start with underscore

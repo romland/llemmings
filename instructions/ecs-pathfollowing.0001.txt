@@ -1,0 +1,25 @@
+Given an ECS in JS. I want the System for this PathFollowing component:
+
+class PathFollowing extends Component {
+  constructor(path, speed = 1) {
+      super();
+      this.path = path; // [ { x: 1, y:1, }, ... ]
+      this.speed = speed;
+      this.currentPoint = 0;
+  }
+}
+
+Get components like this:
+for (const [id, pathFollowing] of Object.entries(components.PathFollowing)) { ... }
+
+Get related components like this:
+const position = components.Position[id];
+
+Throw errors when applicable:
+- PathFollowing requires Position component
+- PathFollowing may not have Velocity component
+
+When reaching the end of the path, it should go to starting point and repeat.
+Regardless of distance between points, it should always move at configured speed.
+
+Just give me the update method.

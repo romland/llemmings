@@ -68,6 +68,22 @@ var Easings = (function () {
       : Math.pow(2, -10 * t) * Math.sin((t * 10 - 0.75) * c4) + 1;
   }
 
+  function linear(t)
+  {
+    return t;
+  }
+
+  // Function to linearly interpolate between two values
+  function lerp(a, b, t) {
+    return a * (1 - t) + b * t;
+  }
+  
+  // Function to interpolate between two angles taking into account the shortest path
+  function lerpAngle(a, b, t) {
+    const delta = (((b - a) % (2 * Math.PI)) + 3 * Math.PI) % (2 * Math.PI) - Math.PI;
+    return a + delta * t;
+  }
+
   return {
     easeInOutSine : easeInOutSine,
     easeInOutCubic : easeInOutCubic,
@@ -78,5 +94,8 @@ var Easings = (function () {
     easeInOutBack : easeInOutBack,
     easeInElastic : easeInElastic,
     easeOutElastic : easeOutElastic,
+    linear : linear,
+    lerp : lerp,
+    lerpAngle : lerpAngle,
   };
 })();

@@ -1,0 +1,73 @@
+Note: GPT-4
+Human: This took a long time to explain correctly to the LLM. I could have done it
+       in a fraction of the time by hand. I suppose it was a bit too abstract or 
+       generic or so. ChatGPT kept getting tiny details wrong around repeating
+       constantly. GPT-4 did mildly better and on third attempt (minor tweaks 
+       inbetween), it kind of nailed it.
+
+>>> Prompt:
+Given an ECS in Javascript.
+
+I want a component and accompanying system that animates any numeric attributes in 
+any other named component. It should accept multiple attributes.
+
+An animation should have the following attributes:
+- target value for attribute
+- repeat - a positive number for how many times animation should repeat between original and target value. If it is -1, it should do it until manually stopped. This must also consider reverseOnRepeat (value to target and to value again).
+- direction
+- reverseOnRepeat (when reaching target, it should go backwards to original value)
+- easing (this should be a string)
+- speed (the higher speed, the faster)
+
+You use _elapsedTime on Animation component to keep track of state. The _ prefix just means it should not be serialized, don't name anything with the _ prefix.
+
+You use easings like this, they are already defined:
+Easings["easeInOutCubic"](t)
+
+The following components are alrady available:
+Velocity, Position, Sprite, PathFollower, Rotate, Scale
+
+and following Systems are already available:
+MovementSystem, RenderingSystem
+
+In systems, you get components like this:
+for (const [id, pathFollowing] of Object.entries(components.PathFollowing)) { ... }
+
+In systems, you get related components like this:
+const position = components.Position[id];
+
+The system's (AnimationSystem) update should look like this: update(deltaTime, components)
+
+The component should be declared like this: 
+class Animation extends Component { constructor() { super(); this._elapsedTime = 0; this.attributes = {}; } }
+
+An example usage would be:
+E.g. I want a sprite to forever animate the rotation and scale using some easing.
+
+An example structure would be:
+"Animation": {
+    "attributes" : {
+        "Rotate": {
+            "radians": {
+                "target": Math.PI * 2,
+                "repeat": -1,
+                "direction": 1,
+                "reverseOnRepeat": false,
+                "easing": "linear",
+                "speed": 0.001,
+            },
+        },
+        "Scale": {
+            "x": {
+                "target": 2,
+                "repeat": 2,
+                "direction": 1,
+                "reverseOnRepeat": true,
+                "easing": "easeInOutCubic",
+                "speed": 1,
+            },
+        },
+    }
+},
+
+This time, I don't need an explanation, just give me the code.

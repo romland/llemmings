@@ -1,0 +1,16 @@
+HUMAN NOTE: I think the result from this prompt was completely ditched and replaced with "Animation"
+
+>>> Prompt:
+Given an ECS in Javascript where following components are already available:
+Velocity, Position, Sprite, PathFollower
+
+and following Systems are already available:
+MovementSystem, RenderingSystem
+
+Get components like this:
+for (const [id, pathFollowing] of Object.entries(components.PathFollowing)) { ... }
+
+Get related components like this:
+const position = components.Position[id];
+
+Give me the component and System for transforming sprites (bitmaps) on a canvas.

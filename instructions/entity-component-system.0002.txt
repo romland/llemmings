@@ -1,0 +1,6 @@
+>>> Prompt:
+Given an ECS in Javascript where following components are already available:
+- Velocity
+- Position
+
+Give me the component for 2D Sprite.

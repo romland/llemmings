@@ -1,0 +1,2 @@
+>>> Prompt:
+In an ECS system, which component should display a visible component on the canvas?

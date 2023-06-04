@@ -192,7 +192,7 @@ var LlemmingsArt = (function ()
 
         tempCtx.beginPath();
         tempCtx.moveTo(cx, cy - outerRad)
-        for(i = 0; i < numSpikes; i++) {
+        for(let i = 0; i < numSpikes; i++) {
             let rand = (randomness ? -(outerRad/4) + Math.random() * (outerRad/2) : 0);
             x = cx + Math.cos(rot) * (outerRad + rand);
             y = cy + Math.sin(rot) * (outerRad + rand);
