@@ -252,12 +252,13 @@ var ECS = (function () {
     
     class Sprite extends Renderable
     {
-        constructor(bitmapName, bitmapIndex)
+        constructor(bitmapName, bitmapIndex, alpha = 1)
         {
             super();
             
             this.bitmapName = bitmapName;
             this.bitmapIndex = bitmapIndex;
+            this.alpha = alpha;
             
             // Human: We might be instantiated through deserialization, 
             //        no vars are passed in then.
@@ -276,13 +277,44 @@ var ECS = (function () {
         get width()    { return this._bitmap.width; }
         get height()   { return this._bitmap.height; }
     }
-    
+
+
+    /**
+     * Animation Example:
+     *    "attributes" : {
+     *        // This will animate the 'radians' attribute on the 'Rotate' component in this entity
+     *        "Rotate": {
+     *            "radians": {
+     *                "target": Math.PI * 2,      // Full circle
+     *                "repeat": -1,               // Repeat forever
+     *                "direction": 1,             // Forward (-1 backward)
+     *                "reverseOnRepeat": false,   // No reverse on repeat
+     *                "easing": "linear",
+     *                "speed": 0.001,
+     *            },
+     *        },
+     *        // Will animate the 'x' attribute on 'Scale' component in this entity
+     *        "Scale": {
+     *            "x": {
+     *                "target": 0.1,               // 10% size
+     *                "repeat": -1,
+     *                "direction": 1,
+     *                "reverseOnRepeat": true,
+     *                "easing": "easeInOutCubic",  // Specific easing
+     *                "speed": 0.00005,
+     *            },
+     *        }
+     *    }  
+     * 
+     */
     // >>> Prompt: instructions/ecs-animation.0001.txt
     class Animation extends Component {
-        constructor() {
+        constructor(attributes)
+        {
             super();
             this._elapsedTime = 0;
-            this.attributes = {};
+            this._initialVals = {};
+            this.attributes = attributes;
         }
     }
 
@@ -297,9 +329,6 @@ var ECS = (function () {
                 for (const [componentName, attributes] of Object.entries(animation.attributes)) {
                     const component = components[componentName][id];
     
-                    if(!animation._initialVals) {
-                        animation._initialVals = {};
-                    }
                     if(!animation._initialVals[componentName]) {
                         // Store the initial values of each attribute for this component
                         animation._initialVals[componentName] = Object.assign({}, component);
@@ -420,24 +449,27 @@ var ECS = (function () {
                     throw "Sprite requires Position component";
                 }
                 
+                this.context.save();
+                this.context.globalAlpha = sprite.alpha;
+                
                 if(rotate || scale) {
-                    this.context.save();
                     this.context.translate(position.x + sprite.width/2, position.y + sprite.height/2);
                     if(rotate) {
                         this.context.rotate(rotate.radians);
                     }
+
                     if(scale) {
                         this.context.scale(scale.x, scale.y);
                     }
+
                     this.context.drawImage(sprite.bitmap, -sprite.width / 2, -sprite.height / 2, sprite.width, sprite.height);
-                    this.context.restore();
                 } else {
                     this.context.drawImage(sprite.bitmap, position.x, position.y);
                 }
+                this.context.restore();
             }
         }
     }
-    
     
     
     /**
@@ -518,12 +550,12 @@ var ECS = (function () {
                                             "direction": 1,
                                             "reverseOnRepeat": false,
                                             "easing": "linear",
-                                            "speed": 0.001,
+                                            "speed": 0.0003,
                                         },
                                     },
                                     "Scale": {
                                         "x": {
-                                            "target": 0.1,
+                                            "target": 0.9,
                                             "repeat": -1,
                                             "direction": 1,
                                             "reverseOnRepeat": true,
@@ -531,7 +563,7 @@ var ECS = (function () {
                                             "speed": 0.00005,
                                         },
                                         "y": {
-                                            "target": 0.1,
+                                            "target": 0.9,
                                             "repeat": -1,
                                             "direction": 1,
                                             "reverseOnRepeat": true,
@@ -560,7 +592,8 @@ var ECS = (function () {
                                 "currentPoint": 0
                             },
                             "Sprite": {
-                                "bitmapName": "16-spiked-star"
+                                "bitmapName": "16-spiked-star",
+                                "alpha": 1.0,
                             }
                         }
                     }
