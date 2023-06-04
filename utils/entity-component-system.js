@@ -293,29 +293,42 @@ var ECS = (function () {
         update(deltaTime, components) {
             for (const [id, animation] of Object.entries(components.Animation)) {
                 animation._elapsedTime += deltaTime;
-                
+    
                 for (const [componentName, attributes] of Object.entries(animation.attributes)) {
                     const component = components[componentName][id];
-                    
+    
+                    if(!animation._initialVals) {
+                        animation._initialVals = {};
+                    }
+                    if(!animation._initialVals[componentName]) {
+                        // Store the initial values of each attribute for this component
+                        animation._initialVals[componentName] = Object.assign({}, component);
+                    }
+    
                     for (const [attributeName, animationData] of Object.entries(attributes)) {
+                        const initialValue = animation._initialVals[componentName][attributeName];
+                        const targetValue = animationData.target;
+    
                         let progress = animation._elapsedTime * animationData.speed;
-                        const completedRepeats = Math.floor(progress / (animationData.direction * animationData.target));
+                        const completedRepeats = Math.floor(progress / (animationData.direction * targetValue));
                         const inReverse = animationData.reverseOnRepeat && completedRepeats % 2 !== 0;
-                        
+    
                         if (animationData.repeat !== -1 && completedRepeats >= animationData.repeat) {
-                            progress = animationData.direction * animationData.target * animationData.repeat;
+                            progress = animationData.direction * targetValue * animationData.repeat;
                         } else {
-                            progress = progress % (animationData.direction * animationData.target);
+                            progress = progress % (animationData.direction * targetValue);
                             if (inReverse) {
-                                progress = animationData.direction * animationData.target - progress;
+                                progress = animationData.direction * targetValue - progress;
                             }
                         }
-                        
+    
                         const easing = Easings[animationData.easing];
-                        const t = progress / (animationData.direction * animationData.target);
+                        const t = progress / (animationData.direction * targetValue);
                         const easedProgress = easing(t);
-                        
-                        component[attributeName] = easedProgress * (animationData.direction * animationData.target);
+    
+                        // Calculate the animated value as a weighted sum of the initial and target values
+                        const animatedValue = (1 - easedProgress) * initialValue + easedProgress * targetValue;
+                        component[attributeName] = animatedValue;
                     }
                 }
             }
@@ -510,20 +523,20 @@ var ECS = (function () {
                                     },
                                     "Scale": {
                                         "x": {
-                                            "target": 1.2,
+                                            "target": 0.1,
                                             "repeat": -1,
                                             "direction": 1,
                                             "reverseOnRepeat": true,
                                             "easing": "easeInOutCubic",
-                                            "speed": 0.0005,
+                                            "speed": 0.00005,
                                         },
                                         "y": {
-                                            "target": 1.2,
+                                            "target": 0.1,
                                             "repeat": -1,
                                             "direction": 1,
                                             "reverseOnRepeat": true,
                                             "easing": "easeInOutCubic",
-                                            "speed": 0.0005,
+                                            "speed": 0.00005,
                                         },
                                     },
                                 }

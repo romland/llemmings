@@ -1,0 +1,55 @@
+This class is part of ECS. It has a problem in that it always animates 
+to/from 0. Whilst it should take the initial value of the component's 
+attribute into consideration. So, e.g. it will animate from initial 
+value to target value. The initial value is currently stored in 
+_initialVals ...
+
+The target value can be either greater or smaller than the initial 
+value (e.g. 0.5 half size, 2.0 double size).
+
+Make sure it works for both cases. Also note that direction has nothing
+to do with that, that is only used to reverse t.
+
+class AnimationSystem {
+    update(deltaTime, components) {
+        for (const [id, animation] of Object.entries(components.Animation)) {
+            animation._elapsedTime += deltaTime;
+            
+            for (const [componentName, attributes] of Object.entries(animation.attributes)) {
+                const component = components[componentName][id];
+
+                if(!animation._initialVals) {
+                    animation._initialVals = {};
+                }
+                if(!animation._initialVals[componentName]) {
+                    animation._initialVals[componentName] = {};
+                }
+                
+                for (const [attributeName, animationData] of Object.entries(attributes)) {
+                    if(!animation._initialVals[componentName][attributeName]) {
+                        animation._initialVals[componentName][attributeName] = component[attributeName];
+                    }
+
+                    let progress = animation._elapsedTime * animationData.speed;
+                    const completedRepeats = Math.floor(progress / (animationData.direction * animationData.target));
+                    const inReverse = animationData.reverseOnRepeat && completedRepeats % 2 !== 0;
+                    
+                    if (animationData.repeat !== -1 && completedRepeats >= animationData.repeat) {
+                        progress = animationData.direction * animationData.target * animationData.repeat;
+                    } else {
+                        progress = progress % (animationData.direction * animationData.target);
+                        if (inReverse) {
+                            progress = animationData.direction * animationData.target - progress;
+                        }
+                    }
+                    
+                    const easing = Easings[animationData.easing];
+                    const t = progress / (animationData.direction * animationData.target);
+                    const easedProgress = easing(t);
+                    
+                    component[attributeName] = (easedProgress * (animationData.direction * animationData.target));
+                }
+            }
+        }
+    }
+}
