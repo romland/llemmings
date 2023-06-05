@@ -346,18 +346,29 @@ var ECS = (function () {
      * 
      * TLDR: This follows attributes in another Entity and applies it to 
      *       components of this Entity.
+     * 
+     * Attributes should look like this (to follow both position and scale of entity 2):
+     *   "attributes": {
+     *       "Position": {
+     *           "entityId": 2,
+     *           "attributes": ["x", "y"],
+     *       },
+     *       "Scale": {
+     *           "entityId": 2,
+     *           "attributes": ["x", "y"],
+     *       },
+     *   }
+     * 
      */
     // >>> Prompt: instructions/ecs-follow.0001.txt
-    class Follow extends Component
-    {
-        constructor(entityId, componentName, attributes) {
+    // >>> Prompt: instructions/ecs-follow.0002.txt
+    class Follow extends Component {
+        constructor(attributes) {
             super();
-            this.entityId = entityId;
-            this.componentName = componentName;
             this.attributes = attributes;
         }
     }
-    
+
     // Systems
     
     // >>> Prompt: instructions/ecs-animation.0001.txt
@@ -480,27 +491,30 @@ var ECS = (function () {
 
     
     // >>> Prompt: instructions/ecs-follow.0001.txt
-    class FollowSystem extends System
-    {
-        constructor(ecs)
-        {
-            super();
-            ecs.registerComponentType("Follow");
+    // >>> Prompt: instructions/ecs-follow.0002.txt
+    class FollowSystem extends System {
+        constructor(ecs) {
+          super();
+          ecs.registerComponentType("Follow");
         }
-
-        update(deltaTime, components)
-        {
-            // For each entity with a Follow component
-            for (const [id, follow] of Object.entries(components.Follow)) {
-                // Get the followed entity's components
-                const followedComponents = components[follow.componentName][follow.entityId];
-                // Copy the specified attributes from the followed entity to the entity with the Follow component
-                for (const attribute of follow.attributes) {
-                    components[followedComponents.constructor.name][id][attribute] = followedComponents[attribute];
-                }
+      
+        update(deltaTime, components) {
+          for (const [id, follow] of Object.entries(components.Follow)) {
+            for (const [componentName, componentData] of Object.entries(
+              follow.attributes
+            )) {
+              const followedComponents = components[componentName][
+                componentData.entityId
+              ];
+              for (const attribute of componentData.attributes) {
+                components[followedComponents.constructor.name][id][
+                  attribute
+                ] = followedComponents[attribute];
+              }
             }
+          }
         }
-    }
+      }
     
     
     class RenderSystem extends System
@@ -556,7 +570,7 @@ var ECS = (function () {
     {
         let ecs = new Main();
         
-        if(true) {
+        if(false) {
             let entity1 = ecs.createEntity("Test 1");
             ecs.addComponent(entity1, new Position(0, 0));
             ecs.addComponent(entity1, new Velocity(1, 1));
@@ -569,40 +583,12 @@ var ECS = (function () {
             let entity3 = ecs.createEntity("PathFollowing Star");
             ecs.addComponent(entity3, new Position(5, 5));
             ecs.addComponent(entity3, new PathFollowing(path, 0.25));
-            ecs.addComponent(entity3, new Sprite("16-spiked-star"));
+            ecs.addComponent(entity3, new Sprite("8-spiked-star"));
             ecs.addComponent(entity3, new Scale(1, 1));
-            ecs.addComponent(entity3, new Rotate(1));
+            ecs.addComponent(entity3, new Rotate(0));
         } else {
             const data = {
                 "entities": [
-                    {
-                        "id": 0,
-                        "label": "Test 1",
-                        "components": {
-                            "Position": {
-                                "x": 0,
-                                "y": 0
-                            },
-                            "Velocity": {
-                                "dx": 1,
-                                "dy": 1
-                            }
-                        }
-                    },
-                    {
-                        "id": 1,
-                        "label": "Test 2",
-                        "components": {
-                            "Position": {
-                                "x": 10,
-                                "y": 10
-                            },
-                            "Velocity": {
-                                "dx": -1,
-                                "dy": -1
-                            }
-                        }
-                    },
                     {
                         "id": 2,
                         "label": "PathFollowing Star",
@@ -626,6 +612,24 @@ var ECS = (function () {
                                             "repeat": -1,
                                             "direction": 1,
                                             "reverseOnRepeat": false,
+                                            "easing": "linear",
+                                            "speed": 0.00010,
+                                        },
+                                    },
+                                    "Scale": {
+                                        "x": {
+                                            "target": 0.7,
+                                            "repeat": -1,
+                                            "direction": 1,
+                                            "reverseOnRepeat": true,
+                                            "easing": "linear",
+                                            "speed": 0.00010,
+                                        },
+                                        "y": {
+                                            "target": 0.7,
+                                            "repeat": -1,
+                                            "direction": 1,
+                                            "reverseOnRepeat": true,
                                             "easing": "linear",
                                             "speed": 0.00010,
                                         },
@@ -661,9 +665,16 @@ var ECS = (function () {
                         "label": "Follow Star",
                         "components": {
                             "Follow": {
-                                "entityId": 2,
-                                "componentName": "Position",
-                                "attributes": ["x", "y"],
+                                "attributes": {
+                                    "Position": {
+                                        "entityId": 2,
+                                        "attributes": ["x", "y"],
+                                    },
+                                    "Scale": {
+                                        "entityId": 2,
+                                        "attributes": ["x", "y"],
+                                    },
+                                }
                             },
                             "Position": {
                                 "x": 0, // followed

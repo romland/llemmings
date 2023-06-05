@@ -1,0 +1,55 @@
+Given these classes:
+
+class Follow extends Component
+{
+    constructor(entityId, componentName, attributes) {
+        super();
+        this.entityId = entityId;
+        this.componentName = componentName;
+        this.attributes = attributes;
+    }
+}
+
+class FollowSystem extends System
+{
+    constructor(ecs)
+    {
+        super();
+        ecs.registerComponentType("Follow");
+    }
+
+    update(deltaTime, components)
+    {
+        for (const [id, follow] of Object.entries(components.Follow)) {
+            const followedComponents = components[follow.componentName][follow.entityId];
+            for (const attribute of follow.attributes) {
+                components[followedComponents.constructor.name][id][attribute] = followedComponents[attribute];
+            }
+        }
+    }
+}
+
+The above support only one Component. It's deserialized like this:
+
+"components": {
+    "Follow": {
+        "entityId": 2,
+        "componentName": "Position",
+        "attributes": ["x", "y"],
+    },
+}
+
+To facilitate several components and several attributes, I want it to be:
+
+"components": {
+    "Follow": {
+        "Position": {
+            "entityId": 2,
+            "attributes": ["x", "y"],
+        },
+        "Scale": {
+            "entityId": 1,
+            "attributes": ["x", "y"],
+        },
+    },
+}
