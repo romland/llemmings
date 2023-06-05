@@ -454,13 +454,16 @@ var Llemmings = (function () {
     }
 
     /**
+     * Create bitmap sprites
+     * 
      * Entries in 'bitmaps' can either be a single bitmap or an array (for animations),
      * all generators are async; hence the blob of code to wait for all generators
      * simultaneously.
      */
     async function generateBitmaps()
     {
-      // Create bitmap sprites (for now just one!)
+      // NOTE: no await for generators!
+      
       if(!getBitmap("hatch")) {
         console.log("Creating animation for hatch");
         bitmaps["hatch"] = GameUtils.generateAnimationFrames(96, 32, 90, LlemmingsArt.drawHatch);
@@ -477,6 +480,19 @@ var Llemmings = (function () {
         bitmaps["16-spiked-star"] =  LlemmingsArt.extractBitmapFromContext(tempContext, 0, 0, width, height);
       }
 
+      if(!getBitmap("8-spiked-star")) {
+        console.log("Creating 8-spiked-star");
+        const width = 100;
+        const height = 100;
+
+        const tempContext = document.createElement('canvas').getContext('2d');
+        tempContext.filter = "blur(2px)";
+        LlemmingsArt.drawSpikes(tempContext, width / 2, height / 2, 8, 45, 8, `rgba(255, 255, 0, 1)`, true, true);
+        bitmaps["8-spiked-star"] = LlemmingsArt.extractBitmapFromContext(tempContext, 0, 0, width, height);
+      }
+
+
+      // ------
       // Wait for generators to do their thang.
       // >>> Prompt: instructions/art-async-generation.0001.txt
       
@@ -500,7 +516,6 @@ var Llemmings = (function () {
               bitmaps[key] = resolvedBitmaps[i];
             }
           });
-          // console.log(bitmaps); // bitmaps object with resolved data
         })
         .catch(error => {
           console.error(error); // handle error
