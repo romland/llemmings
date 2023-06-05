@@ -629,6 +629,10 @@ var Llemmings = (function () {
             screen[1] = null;
         }
 
+        if(ecs) {
+          ecs.cleanUp();
+        }
+
         for(let i = 0; i < sprites.length; i++) {
           sprites[i].cleanUp();
         }
@@ -897,7 +901,7 @@ var Llemmings = (function () {
       // HUMAN: Pre-create lemmings -- we need this early to determine level failure/success
       createLemmings(levelDataResources.lemmings);
 
-      ecs = ECS.init(levelData, ctx);
+      initECS(levelData, ctx);
 
       // Human HACK: Wait a little for any images to be drawn before we set background buffer.
       //             The _proper_ way to do this is set something up that actually waits
@@ -910,6 +914,44 @@ var Llemmings = (function () {
         reqAnimFrameId = update();
       }, 60);
     }
+
+
+    function initECS(levelData, context)
+    {
+      ecs = new ECS.Main();
+
+      ecs.addSystem(new ECSystems.MovementSystem(ecs));
+      ecs.addSystem(new ECSystems.AnimationSystem(ecs));
+      
+      ecs.addSystem(new ECSystems.FollowSystem(ecs));  // Note: Make sure this is the last System before rendering
+      ecs.addSystem(new ECSystems.RenderSystem(ecs, context));
+      
+      if(false) {
+        // How to use ECS without JSON
+        let entity1 = ecs.createEntity("Test 1");
+        ecs.addComponent(entity1, new Position(0, 0));
+        ecs.addComponent(entity1, new Velocity(1, 1));
+        
+        let entity2 = ecs.createEntity("Test 2");
+        ecs.addComponent(entity2, new Position(10, 10));
+        ecs.addComponent(entity2, new Velocity(-1, -1));
+        
+        let path = [{"x": 5,"y": 5},{"x": 65,"y": 65},{"x": 130,"y": 45}];
+        let entity3 = ecs.createEntity("PathFollowing Star");
+        ecs.addComponent(entity3, new Position(5, 5));
+        ecs.addComponent(entity3, new PathFollowing(path, 0.25));
+        ecs.addComponent(entity3, new Sprite("8-spiked-star"));
+        ecs.addComponent(entity3, new Scale(1, 1));
+        ecs.addComponent(entity3, new Rotate(0));
+
+        // console.log(ecs.serialize());
+      } else {
+        ecs.deserialize(levelData.entities);
+      }
+      
+      return ecs;
+    }
+
  
     function preStart()
     {

@@ -23,8 +23,6 @@
 */
 var ECS = (function () {
     
-    // ECS
-    
     class Main {
         constructor() {
             this.entities = {};
@@ -41,7 +39,7 @@ var ECS = (function () {
         
         removeEntity(entity) {
             for (let componentType in entity.components) {
-                let component = entity.components[componentType];
+                // let component = entity.components[componentType];
                 delete this.components[componentType][entity.id];
             }
             delete this.entities[entity.id];
@@ -143,6 +141,12 @@ var ECS = (function () {
             
             this.entities = Object.fromEntries(entitiesMap.entries());
         }
+
+        cleanUp()
+        {
+            // TODO?
+            console.log("Cleaning up ECS: TODO?");
+        }
     }
     
     class Entity {
@@ -162,7 +166,9 @@ var ECS = (function () {
         update() {}
     }
     
+    // 
     // Components
+    // 
     
     class Position extends Component {
         constructor(x, y) {
@@ -226,7 +232,8 @@ var ECS = (function () {
             this.alpha = alpha;
             
             // Human: We might be instantiated through deserialization, 
-            //        no vars are passed in then.
+            //        no vars are passed in then. But, init() will be
+            //        called by deserializer after all attributes are set.
             if(this.bitmapName) {
                 this.init();
             }
@@ -242,7 +249,6 @@ var ECS = (function () {
         get width()    { return this._bitmap.width; }
         get height()   { return this._bitmap.height; }
     }
-    
     
 
     // >>> Prompt: instructions/ecs-animation.0001.txt
@@ -267,49 +273,7 @@ var ECS = (function () {
     }
 
     
-    /**
-    * This is simply for testing.
-    * It should be elsewhere and should grab it from levelData
-    */
-    function init(levelData, context)
-    {
-        let ecs = new Main();
-        
-        if(false) {
-            let entity1 = ecs.createEntity("Test 1");
-            ecs.addComponent(entity1, new Position(0, 0));
-            ecs.addComponent(entity1, new Velocity(1, 1));
-            
-            let entity2 = ecs.createEntity("Test 2");
-            ecs.addComponent(entity2, new Position(10, 10));
-            ecs.addComponent(entity2, new Velocity(-1, -1));
-            
-            let path = [{"x": 5,"y": 5},{"x": 65,"y": 65},{"x": 130,"y": 45}];
-            let entity3 = ecs.createEntity("PathFollowing Star");
-            ecs.addComponent(entity3, new Position(5, 5));
-            ecs.addComponent(entity3, new PathFollowing(path, 0.25));
-            ecs.addComponent(entity3, new Sprite("8-spiked-star"));
-            ecs.addComponent(entity3, new Scale(1, 1));
-            ecs.addComponent(entity3, new Rotate(0));
-        } else {
-            ecs.deserialize(levelData.entities);
-        }
-        
-        ecs.addSystem(new ECSystems.MovementSystem(ecs));
-        ecs.addSystem(new ECSystems.AnimationSystem(ecs));
-        
-        ecs.addSystem(new ECSystems.FollowSystem(ecs));  // Note: Make sure this is the last System before rendering
-        ecs.addSystem(new ECSystems.RenderSystem(ecs, context));
-        
-        // console.log(ecs.serialize());
-        
-        return ecs;
-    }
-    
     return {
-        // Testing
-        init : init,
-        
         // ECS
         Main : Main,
         System : System,
