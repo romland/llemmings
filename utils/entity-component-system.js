@@ -87,12 +87,12 @@ var ECS = (function () {
             }
             delete this.entities[entity.id];
         }
-        
+
         addComponent(entity, component) {
             let componentType = component.constructor.name;
-            if (!this.components[componentType]) {
-                this.components[componentType] = {};
-            }
+
+            this.registerComponentType(componentType);
+
             this.components[componentType][entity.id] = component;
             entity.components[componentType] = component;
         }
@@ -100,6 +100,13 @@ var ECS = (function () {
         removeComponent(entity, componentType) {
             delete this.components[componentType][entity.id];
             delete entity.components[componentType];
+        }
+        
+        registerComponentType(componentType)
+        {
+            if (!this.components[componentType]) {
+                this.components[componentType] = {};
+            }
         }
         
         /**
@@ -356,6 +363,12 @@ var ECS = (function () {
     // >>> Prompt: instructions/ecs-animation.0001.txt
     class AnimationSystem extends System
     {
+        constructor(ecs)
+        {
+            super();
+            ecs.registerComponentType("Animation");
+        }
+
         update(deltaTime, components) {
             for (const [id, animation] of Object.entries(components.Animation)) {
                 animation._elapsedTime += deltaTime;
@@ -401,9 +414,12 @@ var ECS = (function () {
     
     class MovementSystem extends System
     {
-        constructor()
+        constructor(ecs)
         {
             super();
+            ecs.registerComponentType("Position");
+            ecs.registerComponentType("Velocity");
+            ecs.registerComponentType("PathFollowing");
         }
         
         update(dt, components) {
@@ -466,6 +482,12 @@ var ECS = (function () {
     // >>> Prompt: instructions/ecs-follow.0001.txt
     class FollowSystem extends System
     {
+        constructor(ecs)
+        {
+            super();
+            ecs.registerComponentType("Follow");
+        }
+
         update(deltaTime, components)
         {
             // For each entity with a Follow component
@@ -483,10 +505,11 @@ var ECS = (function () {
     
     class RenderSystem extends System
     {
-        constructor(context)
+        constructor(ecs, context)
         {
             super();
             this.context = context;
+            ecs.registerComponentType("Sprite");
         }
         
         update(dt, components)
@@ -533,7 +556,7 @@ var ECS = (function () {
     {
         let ecs = new Main();
         
-        if(false) {
+        if(true) {
             let entity1 = ecs.createEntity("Test 1");
             ecs.addComponent(entity1, new Position(0, 0));
             ecs.addComponent(entity1, new Velocity(1, 1));
@@ -547,7 +570,8 @@ var ECS = (function () {
             ecs.addComponent(entity3, new Position(5, 5));
             ecs.addComponent(entity3, new PathFollowing(path, 0.25));
             ecs.addComponent(entity3, new Sprite("16-spiked-star"));
-            ecs.addComponent(entity3, new Transform(3, 3, 0));
+            ecs.addComponent(entity3, new Scale(1, 1));
+            ecs.addComponent(entity3, new Rotate(1));
         } else {
             const data = {
                 "entities": [
@@ -695,11 +719,11 @@ var ECS = (function () {
             ecs.deserialize(JSON.stringify(data));
         }
         
-        ecs.addSystem(new MovementSystem());
-        ecs.addSystem(new AnimationSystem());
+        ecs.addSystem(new MovementSystem(ecs));
+        ecs.addSystem(new AnimationSystem(ecs));
         
-        ecs.addSystem(new FollowSystem());  // Note: Make sure this is the last System before rendering
-        ecs.addSystem(new RenderSystem(context));
+        ecs.addSystem(new FollowSystem(ecs));  // Note: Make sure this is the last System before rendering
+        ecs.addSystem(new RenderSystem(ecs, context));
         
         // console.log(ecs.serialize());
         

@@ -139,7 +139,7 @@ var Llemmings = (function () {
         goal : {
           survivors : givenLevel.goal?.survivors || 5
         },
-        objects : givenLevel.objects || [],
+        entities : givenLevel.entities || [],
         start : givenLevel.start || { x : 60, y : -20, radius : 50, clear: false },
         finish : givenLevel.finish || { x : RESOLUTION_X - 50, y : RESOLUTION_Y - WATER_HEIGHT - 50 - 10, radius : 50, clear: true },
       };      
@@ -978,7 +978,7 @@ var Llemmings = (function () {
       canvasFadeDirection = "out";
 
       // Wait a little to fade out the intro screen
-      setTimeout(() => {
+      gameTimeouts["introGameStart"] = setTimeout(() => {
         reset();
         init(document.getElementById('canvas'), LlemmingsLevels[persisted.currentLevel], false);
         preStart();

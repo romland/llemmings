@@ -71,6 +71,7 @@ var LlemmingsLevels = [
             showSettings : true,
             showFCT : false,
         },
+        "entities": [],
         "start": {
             "x": 50,
             "y": -20,
@@ -410,7 +411,7 @@ var LlemmingsLevels = [
                 },
             ],
         },
-        "objects": [],
+        "entities": [],
         "resources": {
             "lemmings": 15,
             "time": 240 * 1000,
