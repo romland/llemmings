@@ -463,7 +463,7 @@ var Llemmings = (function () {
     async function generateBitmaps()
     {
       // NOTE: no await for generators!
-      
+
       if(!getBitmap("hatch")) {
         console.log("Creating animation for hatch");
         bitmaps["hatch"] = GameUtils.generateAnimationFrames(96, 32, 90, LlemmingsArt.drawHatch);
@@ -476,7 +476,7 @@ var Llemmings = (function () {
 
         const tempContext = document.createElement('canvas').getContext('2d');
         tempContext.filter = "blur(2px)";
-        LlemmingsArt.drawSpikes(tempContext, width / 2, height / 2, 16, 60, 6, `rgba(255, 255,255, 0.9)`, false, false);
+        LlemmingsArt.drawSpikes(tempContext, width / 2, height / 2, 16, 60, 6, `rgba(255, 255,255, 0.9)`, true, false);
         bitmaps["16-spiked-star"] =  LlemmingsArt.extractBitmapFromContext(tempContext, 0, 0, width, height);
       }
 

@@ -581,25 +581,7 @@ var ECS = (function () {
                                             "direction": 1,
                                             "reverseOnRepeat": false,
                                             "easing": "linear",
-                                            "speed": 0.0003,
-                                        },
-                                    },
-                                    "Scale": {
-                                        "x": {
-                                            "target": 0.7,
-                                            "repeat": -1,
-                                            "direction": 1,
-                                            "reverseOnRepeat": true,
-                                            "easing": "easeInOutCubic",
-                                            "speed": 0.0005,
-                                        },
-                                        "y": {
-                                            "target": 0.7,
-                                            "repeat": -1,
-                                            "direction": 1,
-                                            "reverseOnRepeat": true,
-                                            "easing": "easeInOutCubic",
-                                            "speed": 0.0005,
+                                            "speed": 0.00010,
                                         },
                                     },
                                 }
@@ -619,7 +601,7 @@ var ECS = (function () {
                                         "y": 45
                                     }
                                 ],
-                                "speed": 0.25,
+                                "speed": 0.05,
                                 "currentPoint": 0
                             },
                             "Sprite": {
@@ -657,14 +639,32 @@ var ECS = (function () {
                                             "direction": -1,
                                             "reverseOnRepeat": false,
                                             "easing": "linear",
-                                            "speed": 0.0003,
+                                            "speed": 0.00010,
                                         },
-                                    }
+                                    },
+                                    "Scale": {
+                                        "x": {
+                                            "target": 0.7,
+                                            "repeat": -1,
+                                            "direction": 1,
+                                            "reverseOnRepeat": true,
+                                            "easing": "easeInOutCubic",
+                                            "speed": 0.0001,
+                                        },
+                                        "y": {
+                                            "target": 0.7,
+                                            "repeat": -1,
+                                            "direction": 1,
+                                            "reverseOnRepeat": true,
+                                            "easing": "easeInOutCubic",
+                                            "speed": 0.0001,
+                                        },
+                                    },
                                 }
                             },
                             "Sprite": {
                                 "bitmapName": "8-spiked-star",
-                                "alpha": 0.9,
+                                "alpha": 0.7,
                             }
                         }
                     }
