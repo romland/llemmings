@@ -126,11 +126,10 @@ var ECS = (function () {
             return JSON.stringify(data, null, 2);
         }
         
-        deserialize(json) {
-            let data = JSON.parse(json);
+        deserialize(data) {
             let entitiesMap = new Map();
             
-            for (let entityData of data.entities) {
+            for (let entityData of data) {
                 let entity = new Entity(entityData.id, entityData.label);
                 entitiesMap.set(entity.id, entity);
                 for (let componentType in entityData.components) {
@@ -293,147 +292,8 @@ var ECS = (function () {
             ecs.addComponent(entity3, new Scale(1, 1));
             ecs.addComponent(entity3, new Rotate(0));
         } else {
-            const data = {
-                "entities": [
-                    {
-                        "id": 2,
-                        "label": "PathFollowing Star",
-                        "components": {
-                            "Position": {
-                                "x": 5,
-                                "y": 5
-                            },
-                            "Rotate": {
-                                "radians": 0,
-                            },
-                            "Scale": {
-                                "x": 1,
-                                "y": 1,
-                            },
-                            "Animation": {
-                                "attributes" : {
-                                    "Rotate": {
-                                        "radians": {
-                                            "target": Math.PI * 2,
-                                            "repeat": -1,
-                                            "direction": 1,
-                                            "reverseOnRepeat": false,
-                                            "easing": "linear",
-                                            "speed": 0.00010,
-                                        },
-                                    },
-                                    "Scale": {
-                                        "x": {
-                                            "target": 0.7,
-                                            "repeat": -1,
-                                            "direction": 1,
-                                            "reverseOnRepeat": true,
-                                            "easing": "linear",
-                                            "speed": 0.00010,
-                                        },
-                                        "y": {
-                                            "target": 0.7,
-                                            "repeat": -1,
-                                            "direction": 1,
-                                            "reverseOnRepeat": true,
-                                            "easing": "linear",
-                                            "speed": 0.00010,
-                                        },
-                                    },
-                                }
-                            },
-                            "PathFollowing": {
-                                "path": [
-                                    {
-                                        "x": 5,
-                                        "y": 5
-                                    },
-                                    {
-                                        "x": 65,
-                                        "y": 65
-                                    },
-                                    {
-                                        "x": 130,
-                                        "y": 45
-                                    }
-                                ],
-                                "speed": 0.05,
-                                "currentPoint": 0
-                            },
-                            "Sprite": {
-                                "bitmapName": "16-spiked-star",
-                                "alpha": 1.0,
-                            }
-                        }
-                    },
-                    {
-                        "id": 3,
-                        "label": "Follow Star",
-                        "components": {
-                            "Follow": {
-                                "attributes": {
-                                    "Position": {
-                                        "entityId": 2,
-                                        "attributes": ["x", "y"],
-                                    },
-                                    "Scale": {
-                                        "entityId": 2,
-                                        "attributes": ["x", "y"],
-                                    },
-                                }
-                            },
-                            "Position": {
-                                "x": 0, // followed
-                                "y": 0  // followed
-                            },
-                            "Rotate": {
-                                "radians": 0,
-                            },
-                            "Scale": {
-                                "x": 1,
-                                "y": 1,
-                            },
-                            "Animation": {
-                                "attributes" : {
-                                    "Rotate": {
-                                        "radians": {
-                                            "target": Math.PI * 2,
-                                            "repeat": -1,
-                                            "direction": -1,
-                                            "reverseOnRepeat": false,
-                                            "easing": "linear",
-                                            "speed": 0.00010,
-                                        },
-                                    },
-                                    "Scale": {
-                                        "x": {
-                                            "target": 0.7,
-                                            "repeat": -1,
-                                            "direction": 1,
-                                            "reverseOnRepeat": true,
-                                            "easing": "easeInOutCubic",
-                                            "speed": 0.0001,
-                                        },
-                                        "y": {
-                                            "target": 0.7,
-                                            "repeat": -1,
-                                            "direction": 1,
-                                            "reverseOnRepeat": true,
-                                            "easing": "easeInOutCubic",
-                                            "speed": 0.0001,
-                                        },
-                                    },
-                                }
-                            },
-                            "Sprite": {
-                                "bitmapName": "8-spiked-star",
-                                "alpha": 0.7,
-                            }
-                        }
-                    }
-                ]
-            };
-            ecs.deserialize(JSON.stringify(data));
+            console.log(levelData.entities);
+            ecs.deserialize(levelData.entities);
         }
         
         ecs.addSystem(new ECSystems.MovementSystem(ecs));

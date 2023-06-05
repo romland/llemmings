@@ -71,7 +71,144 @@ var LlemmingsLevels = [
             showSettings : true,
             showFCT : false,
         },
-        "entities": [],
+        "entities": [
+            {
+                "id": 2,
+                "label": "PathFollowing Star",
+                "components": {
+                    "Position": {
+                        "x": 5,
+                        "y": 5
+                    },
+                    "Rotate": {
+                        "radians": 0,
+                    },
+                    "Scale": {
+                        "x": 1,
+                        "y": 1,
+                    },
+                    "Animation": {
+                        "attributes" : {
+                            "Rotate": {
+                                "radians": {
+                                    "target": Math.PI * 2,
+                                    "repeat": -1,
+                                    "direction": 1,
+                                    "reverseOnRepeat": false,
+                                    "easing": "linear",
+                                    "speed": 0.00010,
+                                },
+                            },
+                            "Scale": {
+                                "x": {
+                                    "target": 0.7,
+                                    "repeat": -1,
+                                    "direction": 1,
+                                    "reverseOnRepeat": true,
+                                    "easing": "linear",
+                                    "speed": 0.00010,
+                                },
+                                "y": {
+                                    "target": 0.7,
+                                    "repeat": -1,
+                                    "direction": 1,
+                                    "reverseOnRepeat": true,
+                                    "easing": "linear",
+                                    "speed": 0.00010,
+                                },
+                            },
+                        }
+                    },
+                    "PathFollowing": {
+                        "path": [
+                            {
+                                "x": 5,
+                                "y": 5
+                            },
+                            {
+                                "x": 65,
+                                "y": 65
+                            },
+                            {
+                                "x": 130,
+                                "y": 45
+                            }
+                        ],
+                        "speed": 0.05,
+                        "currentPoint": 0
+                    },
+                    "Sprite": {
+                        "bitmapName": "16-spiked-star",
+                        "alpha": 1.0,
+                    }
+                }
+            },
+            {
+                "id": 3,
+                "label": "Follow Star",
+                "components": {
+                    "Follow": {
+                        "attributes": {
+                            "Position": {
+                                "entityId": 2,
+                                "attributes": ["x", "y"],
+                            },
+                            "Scale": {
+                                "entityId": 2,
+                                "attributes": ["x", "y"],
+                            },
+                        }
+                    },
+                    "Position": {
+                        "x": 0, // followed
+                        "y": 0  // followed
+                    },
+                    "Rotate": {
+                        "radians": 0,
+                    },
+                    "Scale": {
+                        "x": 1,
+                        "y": 1,
+                    },
+                    "Animation": {
+                        "attributes" : {
+                            "Rotate": {
+                                "radians": {
+                                    "target": Math.PI * 2,
+                                    "repeat": -1,
+                                    "direction": -1,
+                                    "reverseOnRepeat": false,
+                                    "easing": "linear",
+                                    "speed": 0.00010,
+                                },
+                            },
+                            "Scale": {
+                                "x": {
+                                    "target": 0.7,
+                                    "repeat": -1,
+                                    "direction": 1,
+                                    "reverseOnRepeat": true,
+                                    "easing": "easeInOutCubic",
+                                    "speed": 0.0001,
+                                },
+                                "y": {
+                                    "target": 0.7,
+                                    "repeat": -1,
+                                    "direction": 1,
+                                    "reverseOnRepeat": true,
+                                    "easing": "easeInOutCubic",
+                                    "speed": 0.0001,
+                                },
+                            },
+                        }
+                    },
+                    "Sprite": {
+                        "bitmapName": "8-spiked-star",
+                        "alpha": 0.7,
+                    }
+                }
+            }
+        ],
         "start": {
             "x": 50,
             "y": -20,
