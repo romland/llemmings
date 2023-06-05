@@ -503,6 +503,24 @@ const World = (function () {
       }
     }
 
+    // Human: This is very inefficient, but it is used rarely and only in init().
+    function clearSquare(x, y, radius)
+    {
+      const clrHalfRad = radius / 2;
+
+      let mix = Math.max(0, x - clrHalfRad);
+      let max = Math.min(canvas.width, x + clrHalfRad);
+      let miy = Math.max(0, y - clrHalfRad);
+      let may = Math.min(canvas.height, y + clrHalfRad);
+
+      for(let x = mix; x < max; x++) {
+        for(let y = miy; y < may; y++) {
+          World.clearPixel(x, y);
+        }
+      }
+    }
+
+
     
   return {
     blackColorBytes : blackColorBytes,
@@ -527,5 +545,6 @@ const World = (function () {
     clearPixel : clearPixel,
     setCollisionLayer : setCollisionLayer,
     getCollisionLayer : getCollisionLayer,
+    clearSquare : clearSquare,
   };
 })();

@@ -382,23 +382,6 @@ var Llemmings = (function () {
       return remaining;
     }
 
-    // Human: This is very inefficient, but it is used rarely and only in init().
-    function clearSquare(x, y, radius)
-    {
-      const clrHalfRad = radius / 2;
-
-      let mix = Math.max(0, x - clrHalfRad);
-      let max = Math.min(canvas.width, x + clrHalfRad);
-      let miy = Math.max(0, y - clrHalfRad);
-      let may = Math.min(canvas.height, y + clrHalfRad);
-
-      for(let x = mix; x < max; x++) {
-        for(let y = miy; y < may; y++) {
-          World.clearPixel(x, y);
-        }
-      }
-    }
-
     function setupStartFinish()
     {
       if(levelData.start.x === null || !levelData.start.clear) {
@@ -411,7 +394,7 @@ var Llemmings = (function () {
   
       } else if(levelData.start.clear) {
         // clear start zone
-        clearSquare(levelData.start.x, levelData.start.y, levelData.start.radius);
+        World.clearSquare(levelData.start.x, levelData.start.y, levelData.start.radius);
 
         sprites.push(
           new AnimatedSprite(ctx, levelData.start.x - 30, Math.max(0, levelData.start.y), LlemmingsArt.getBitmap("hatch"), { speed : 1, /* default settings */ })
@@ -419,7 +402,7 @@ var Llemmings = (function () {
       }
 
       if(levelData.finish.clear) {
-        clearSquare(levelData.finish.x, levelData.finish.y, levelData.finish.radius);
+        World.clearSquare(levelData.finish.x, levelData.finish.y, levelData.finish.radius);
       }
 
       // Draw platform underneath finish area
