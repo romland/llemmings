@@ -318,6 +318,28 @@ var ECS = (function () {
         }
     }
     
+    /**
+     * I deliberated how to go about having child or sibling entities. I would
+     * want e.g. two sprites that had two different rotations on the same Entity
+     * but should share position.
+     * I do not want a lot of boilerplate outside of the ECS for this since it
+     * would mean I could not easily describe it in JSON (levels).
+     * 
+     * I tried finding patterns for child/sibling entities but none of them 
+     * appealed to me as it would mean boilerplate in Entities and Systems.
+     * 
+     * Also:
+     * In order to not make the "sibling" Entities leak into every single 
+     * System I might ask the LLM to make, I went with a "Follow" component 
+     * instead: it can follow any attributes of another entity. The name might
+     * not be optimal as it implies Position, but it's not limited to that;
+     * perhaps a better component name would be "Copy".
+     * 
+     * I'm happy with the idea and functionality ... for now.
+     * 
+     * TLDR: This follows attributes in another Entity and applies it to 
+     *       components of this Entity.
+     */
     // >>> Prompt: instructions/ecs-follow.0001.txt
     class Follow extends Component
     {
