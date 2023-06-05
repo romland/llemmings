@@ -1,8 +1,13 @@
 "use strict";
 var LlemmingsArt = (function ()
 {
+    const bitmaps = {};   // kept intact between levels so we don't have to re-generate all the time
+
     /**
      * Prompt? See getChatGPTHouse() :/
+     * Oh. Which I apparently removed. Well, it was a shit house. It's comforting to know
+     * that even I can draw better than an LLM. That said, this is actually stolen from
+     * https://brandeps.com/icon/H/House-01 :(
      * @returns svg
      */
     function getHouse(width = 75, height = 75)
@@ -244,7 +249,81 @@ var LlemmingsArt = (function ()
         };
     }
 
+    /**
+     * Create bitmap sprites
+     * 
+     * Entries in 'bitmaps' can either be a single bitmap or an array (for animations),
+     * all generators are async; hence the blob of code to wait for all generators
+     * simultaneously.
+     */
+    async function generateBitmaps()
+    {
+      // NOTE: no await for generators!
 
+      if(!getBitmap("hatch")) {
+        console.log("Creating animation for hatch");
+        bitmaps["hatch"] = GameUtils.generateAnimationFrames(96, 32, 90, drawHatch);
+      }
+
+      if(!getBitmap("16-spiked-star")) {
+        console.log("Creating 16-spiked-star");
+        const width = 100;
+        const height = 100;
+
+        const tempContext = document.createElement('canvas').getContext('2d');
+        tempContext.filter = "blur(2px)";
+        drawSpikes(tempContext, width / 2, height / 2, 16, 60, 6, `rgba(255, 255,255, 0.9)`, true, false);
+        bitmaps["16-spiked-star"] =  extractBitmapFromContext(tempContext, 0, 0, width, height);
+      }
+
+      if(!getBitmap("8-spiked-star")) {
+        console.log("Creating 8-spiked-star");
+        const width = 100;
+        const height = 100;
+
+        const tempContext = document.createElement('canvas').getContext('2d');
+        tempContext.filter = "blur(2px)";
+        drawSpikes(tempContext, width / 2, height / 2, 8, 45, 8, `rgba(255, 255, 0, 1)`, true, true);
+        bitmaps["8-spiked-star"] = extractBitmapFromContext(tempContext, 0, 0, width, height);
+      }
+
+
+      // ------
+      // Wait for generators to do their thang.
+      // >>> Prompt: instructions/art-async-generation.0001.txt
+      
+      // map over each array and create a Promise for each bitmap
+      const promises = Object.values(bitmaps).flatMap(bitmap => {
+        if (Array.isArray(bitmap)) {
+          return bitmap.map(bmp => Promise.resolve(bmp));
+        }
+        return [Promise.resolve(bitmap)];
+      });
+      
+      // await all bitmap promises in parallel
+      await Promise.all(promises)
+        .then(resolvedBitmaps => {
+          // update bitmaps object with resolved data
+          const keys = Object.keys(bitmaps);
+          keys.forEach((key, i) => {
+            if (Array.isArray(bitmaps[key])) {
+              bitmaps[key] = resolvedBitmaps.slice(i, i + bitmaps[key].length);
+            } else {
+              bitmaps[key] = resolvedBitmaps[i];
+            }
+          });
+        })
+        .catch(error => {
+          console.error(error); // handle error
+        });
+    }
+
+    function getBitmap(name)
+    {
+      return bitmaps[name];
+    }
+
+    
     return {
       getHouse : getHouse,
       drawHatch : drawHatch,
@@ -252,5 +331,7 @@ var LlemmingsArt = (function ()
       drawSpikes : drawSpikes,
       drawSvgOnCanvas : drawSvgOnCanvas,
       extractBitmapFromContext : extractBitmapFromContext,    /* WARNING: Async! */
+      generateBitmaps : generateBitmaps, /* WARNING: Async! */
+      getBitmap : getBitmap,
     }
 })();

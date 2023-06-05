@@ -241,7 +241,7 @@ var ECS = (function () {
         
         init()
         {
-            this._bitmap = Llemmings.getBitmap(this.bitmapName);
+            this._bitmap = LlemmingsArt.getBitmap(this.bitmapName);
         }
         
         get bitmap()   { return this._bitmap; }

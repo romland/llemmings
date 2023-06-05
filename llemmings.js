@@ -39,7 +39,6 @@ var Llemmings = (function () {
     let levelDataResources = null;
 
     // Sprites
-    const bitmaps = {};   // kept intact between levels so we don't have to re-generate all the time
     const sprites = [];           // cleared between levels
 
     // Game settings
@@ -191,11 +190,6 @@ var Llemmings = (function () {
       }
 
       AudioSamples.playSample(name);
-    }
-
-    function getBitmap(name)
-    {
-      return bitmaps[name];
     }
 
     function createLemmings(amount)
@@ -402,7 +396,7 @@ var Llemmings = (function () {
         clearSquare(levelData.start.x, levelData.start.y, levelData.start.radius);
 
         sprites.push(
-          new AnimatedSprite(ctx, levelData.start.x - 30, Math.max(0, levelData.start.y), getBitmap("hatch"), { speed : 1, /* default settings */ })
+          new AnimatedSprite(ctx, levelData.start.x - 30, Math.max(0, levelData.start.y), LlemmingsArt.getBitmap("hatch"), { speed : 1, /* default settings */ })
         );
       }
 
@@ -453,74 +447,7 @@ var Llemmings = (function () {
       preStart();
     }
 
-    /**
-     * Create bitmap sprites
-     * 
-     * Entries in 'bitmaps' can either be a single bitmap or an array (for animations),
-     * all generators are async; hence the blob of code to wait for all generators
-     * simultaneously.
-     */
-    async function generateBitmaps()
-    {
-      // NOTE: no await for generators!
 
-      if(!getBitmap("hatch")) {
-        console.log("Creating animation for hatch");
-        bitmaps["hatch"] = GameUtils.generateAnimationFrames(96, 32, 90, LlemmingsArt.drawHatch);
-      }
-
-      if(!getBitmap("16-spiked-star")) {
-        console.log("Creating 16-spiked-star");
-        const width = 100;
-        const height = 100;
-
-        const tempContext = document.createElement('canvas').getContext('2d');
-        tempContext.filter = "blur(2px)";
-        LlemmingsArt.drawSpikes(tempContext, width / 2, height / 2, 16, 60, 6, `rgba(255, 255,255, 0.9)`, true, false);
-        bitmaps["16-spiked-star"] =  LlemmingsArt.extractBitmapFromContext(tempContext, 0, 0, width, height);
-      }
-
-      if(!getBitmap("8-spiked-star")) {
-        console.log("Creating 8-spiked-star");
-        const width = 100;
-        const height = 100;
-
-        const tempContext = document.createElement('canvas').getContext('2d');
-        tempContext.filter = "blur(2px)";
-        LlemmingsArt.drawSpikes(tempContext, width / 2, height / 2, 8, 45, 8, `rgba(255, 255, 0, 1)`, true, true);
-        bitmaps["8-spiked-star"] = LlemmingsArt.extractBitmapFromContext(tempContext, 0, 0, width, height);
-      }
-
-
-      // ------
-      // Wait for generators to do their thang.
-      // >>> Prompt: instructions/art-async-generation.0001.txt
-      
-      // map over each array and create a Promise for each bitmap
-      const promises = Object.values(bitmaps).flatMap(bitmap => {
-        if (Array.isArray(bitmap)) {
-          return bitmap.map(bmp => Promise.resolve(bmp));
-        }
-        return [Promise.resolve(bitmap)];
-      });
-      
-      // await all bitmap promises in parallel
-      await Promise.all(promises)
-        .then(resolvedBitmaps => {
-          // update bitmaps object with resolved data
-          const keys = Object.keys(bitmaps);
-          keys.forEach((key, i) => {
-            if (Array.isArray(bitmaps[key])) {
-              bitmaps[key] = resolvedBitmaps.slice(i, i + bitmaps[key].length);
-            } else {
-              bitmaps[key] = resolvedBitmaps[i];
-            }
-          });
-        })
-        .catch(error => {
-          console.error(error); // handle error
-        });
-    }
 
     function forceDebugIfSet()
     {
@@ -1052,7 +979,7 @@ var Llemmings = (function () {
       console.log("Loaded persisted data...", persisted);
 
       // NOTE: This line needs to be run by editor too, make sure it calls it somehow.
-      await generateBitmaps();
+      await LlemmingsArt.generateBitmaps();
 
       LlemmingsKeyBindings.startKeyBinds(Actions.keyBindPressed);
 
@@ -1140,8 +1067,5 @@ var Llemmings = (function () {
       isAutoPlaying : isAutoPlaying,
       exitGame : exitGame,
       restartLevel : restartLevel,
-
-      generateSprites : generateBitmaps,  // TODO: Rename to bitmaps for external references (Editor)
-      getBitmap : getBitmap,
     }
 })();
