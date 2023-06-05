@@ -352,6 +352,48 @@ var GameUtils = (function () {
       }
     }
 
+    // >>> Prompts: instructions/ecs-serialization.0001.txt
+    class Serializable
+    {
+        serialize() {
+            const obj = {};
+            
+            for (let key in this) {
+                if (!key.startsWith('_')) {
+                    const value = this[key];
+                    
+                    if (value instanceof Serializable) {
+                        obj[key] = value.serialize();
+                    } else {
+                        obj[key] = value;
+                    }
+                }
+            }
+            
+            return obj;
+        }
+        
+        static deserialize(data, clazz) {
+            const instance = new clazz();
+            Object.assign(instance, data);
+            
+            // recursively deserialize child Serializable objects
+            Object.values(instance)
+            .filter(value => value instanceof Serializable)
+            .forEach(value => {
+                const child = Serializable.deserialize(value, clazz);
+                instance[value.constructor.name.toLowerCase()] = child;
+            });
+            
+            if(instance.init) {
+                instance.init();
+            }
+            
+            return instance;
+        }
+    }
+
+
     return {
       matchesCondition : matchesCondition,
       renderBitmap : renderBitmap,
@@ -368,5 +410,7 @@ var GameUtils = (function () {
       getFromLocalStorage : getFromLocalStorage,
       capitalize : capitalize,
       adjustCanvasHeight : adjustCanvasHeight,
+
+      Serializable : Serializable,
     }
 })();
