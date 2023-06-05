@@ -232,11 +232,25 @@ var LlemmingsArt = (function ()
       return await createImageBitmap(await ctx.getImageData(x, y, width, height));
     }
 
+    
+    // >>> Prompt: instructions/svg-to-canvas.0001.txt
+    function drawSvgOnCanvas(svgString, x, y, width, height, context)
+    {
+        const dataUrl = 'data:image/svg+xml;base64,' + btoa(svgString);
+        const img = new Image();
+        img.src = dataUrl;
+        img.onload = () => {
+          context.drawImage(img, x, y, width, height);
+        };
+    }
+
+
     return {
       getHouse : getHouse,
       drawHatch : drawHatch,
       renderDecorations : renderDecorations,
       drawSpikes : drawSpikes,
+      drawSvgOnCanvas : drawSvgOnCanvas,
       extractBitmapFromContext : extractBitmapFromContext,    /* WARNING: Async! */
     }
 })();

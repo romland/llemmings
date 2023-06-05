@@ -109,18 +109,6 @@ var GameUtils = (function () {
       context.putImageData(imageData, x, y);
     }
 
-    // >>> Prompt: instructions/svg-to-canvas.0001.txt
-    function drawSvgOnCanvas(svgString, x, y, width, height, context)
-    {
-        const dataUrl = 'data:image/svg+xml;base64,' + btoa(svgString);
-        const img = new Image();
-        img.src = dataUrl;
-        img.onload = () => {
-          context.drawImage(img, x, y, width, height);
-        };
-    }
-
-
     // >>> Prompt: instructions/art-animation.0001.txt
     // >>> Prompt: instructions/art-animation.0002.txt
     // >>> Prompt: instructions/art-animation.0003.txt
@@ -367,7 +355,6 @@ var GameUtils = (function () {
     return {
       matchesCondition : matchesCondition,
       renderBitmap : renderBitmap,
-      drawSvgOnCanvas : drawSvgOnCanvas,
       generateAnimationFrames : generateAnimationFrames,
       floodFill : floodFill,
       getUniqueColors : getUniqueColors,

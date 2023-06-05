@@ -425,7 +425,7 @@ var Llemmings = (function () {
       const houseWidth = levelData.finish.radius;
       const houseHeight = levelData.finish.radius;
       // Human: Bug. Why is it drawn slightly above the platform? (added + 3)
-      GameUtils.drawSvgOnCanvas(
+      LlemmingsArt.drawSvgOnCanvas(
         LlemmingsArt.getHouse(houseWidth, houseHeight),
         levelData.finish.x + levelData.finish.radius - houseWidth,
         levelData.finish.y + levelData.finish.radius - houseHeight + 3,
