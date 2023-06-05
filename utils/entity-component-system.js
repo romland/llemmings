@@ -292,7 +292,6 @@ var ECS = (function () {
             ecs.addComponent(entity3, new Scale(1, 1));
             ecs.addComponent(entity3, new Rotate(0));
         } else {
-            console.log(levelData.entities);
             ecs.deserialize(levelData.entities);
         }
         
