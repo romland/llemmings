@@ -1,0 +1,28 @@
+Given an ECS in JS.
+I need "Follow" component and accompanying System. It would take another entity's 
+id, component name and one or more attribute names. E.g. x and y of of e.g. a 
+Position component.
+
+The idea is that the attributes in the Follow component would take attributes from
+the Followed Entity and apply it to its own components.
+
+The Follow component should be declared this way:
+    class Follow extends Component
+    {
+        constructor(entityId, componentName, attributes)
+        {
+            super();
+            this.entityId = ...;
+            ...
+        }
+    }
+
+In systems, you get components like this:
+for (const [id, pathFollowing] of Object.entries(components.Rotate)) { ... }
+
+In systems, you get related components like this:
+const position = components.Position[id];
+
+The system's (FollowSystem) update should look like this: update(deltaTime, components)
+
+This time, I don't need an explanation, just give me the code.

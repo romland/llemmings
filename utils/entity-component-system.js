@@ -277,36 +277,36 @@ var ECS = (function () {
         get width()    { return this._bitmap.width; }
         get height()   { return this._bitmap.height; }
     }
-
-
+    
+    
     /**
-     * Animation Example:
-     *    "attributes" : {
-     *        // This will animate the 'radians' attribute on the 'Rotate' component in this entity
-     *        "Rotate": {
-     *            "radians": {
-     *                "target": Math.PI * 2,      // Full circle
-     *                "repeat": -1,               // Repeat forever
-     *                "direction": 1,             // Forward (-1 backward)
-     *                "reverseOnRepeat": false,   // No reverse on repeat
-     *                "easing": "linear",
-     *                "speed": 0.001,
-     *            },
-     *        },
-     *        // Will animate the 'x' attribute on 'Scale' component in this entity
-     *        "Scale": {
-     *            "x": {
-     *                "target": 0.1,               // 10% size
-     *                "repeat": -1,
-     *                "direction": 1,
-     *                "reverseOnRepeat": true,
-     *                "easing": "easeInOutCubic",  // Specific easing
-     *                "speed": 0.00005,
-     *            },
-     *        }
-     *    }  
-     * 
-     */
+    * Animation Example:
+    *    "attributes" : {
+    *        // This will animate the 'radians' attribute on the 'Rotate' component in this entity
+    *        "Rotate": {
+    *            "radians": {
+    *                "target": Math.PI * 2,      // Full circle
+    *                "repeat": -1,               // Repeat forever
+    *                "direction": 1,             // Forward (-1 backward)
+    *                "reverseOnRepeat": false,   // No reverse on repeat
+    *                "easing": "linear",
+    *                "speed": 0.001,
+    *            },
+    *        },
+    *        // Will animate the 'x' attribute on 'Scale' component in this entity
+    *        "Scale": {
+    *            "x": {
+    *                "target": 0.1,               // 10% size
+    *                "repeat": -1,
+    *                "direction": 1,
+    *                "reverseOnRepeat": true,
+    *                "easing": "easeInOutCubic",  // Specific easing
+    *                "speed": 0.00005,
+    *            },
+    *        }
+    *    }  
+    * 
+    */
     // >>> Prompt: instructions/ecs-animation.0001.txt
     class Animation extends Component {
         constructor(attributes)
@@ -317,31 +317,43 @@ var ECS = (function () {
             this.attributes = attributes;
         }
     }
-
+    
+    // >>> Prompt: instructions/ecs-follow.0001.txt
+    class Follow extends Component
+    {
+        constructor(entityId, componentName, attributes) {
+            super();
+            this.entityId = entityId;
+            this.componentName = componentName;
+            this.attributes = attributes;
+        }
+    }
+    
     // Systems
     
     // >>> Prompt: instructions/ecs-animation.0001.txt
-    class AnimationSystem {
+    class AnimationSystem extends System
+    {
         update(deltaTime, components) {
             for (const [id, animation] of Object.entries(components.Animation)) {
                 animation._elapsedTime += deltaTime;
-    
+                
                 for (const [componentName, attributes] of Object.entries(animation.attributes)) {
                     const component = components[componentName][id];
-    
+                    
                     if(!animation._initialVals[componentName]) {
                         // Store the initial values of each attribute for this component
                         animation._initialVals[componentName] = Object.assign({}, component);
                     }
-    
+                    
                     for (const [attributeName, animationData] of Object.entries(attributes)) {
                         const initialValue = animation._initialVals[componentName][attributeName];
                         const targetValue = animationData.target;
-    
+                        
                         let progress = animation._elapsedTime * animationData.speed;
                         const completedRepeats = Math.floor(progress / (animationData.direction * targetValue));
                         const inReverse = animationData.reverseOnRepeat && completedRepeats % 2 !== 0;
-    
+                        
                         if (animationData.repeat !== -1 && completedRepeats >= animationData.repeat) {
                             progress = animationData.direction * targetValue * animationData.repeat;
                         } else {
@@ -350,11 +362,11 @@ var ECS = (function () {
                                 progress = animationData.direction * targetValue - progress;
                             }
                         }
-    
+                        
                         const easing = Easings[animationData.easing];
                         const t = progress / (animationData.direction * targetValue);
                         const easedProgress = easing(t);
-    
+                        
                         // Calculate the animated value as a weighted sum of the initial and target values
                         const animatedValue = (1 - easedProgress) * initialValue + easedProgress * targetValue;
                         component[attributeName] = animatedValue;
@@ -364,7 +376,7 @@ var ECS = (function () {
         }
     }
     
-
+    
     class MovementSystem extends System
     {
         constructor()
@@ -427,6 +439,25 @@ var ECS = (function () {
             }
         }
     }
+
+    
+    // >>> Prompt: instructions/ecs-follow.0001.txt
+    class FollowSystem extends System
+    {
+        update(deltaTime, components)
+        {
+            // For each entity with a Follow component
+            for (const [id, follow] of Object.entries(components.Follow)) {
+                // Get the followed entity's components
+                const followedComponents = components[follow.componentName][follow.entityId];
+                // Copy the specified attributes from the followed entity to the entity with the Follow component
+                for (const attribute of follow.attributes) {
+                    components[followedComponents.constructor.name][id][attribute] = followedComponents[attribute];
+                }
+            }
+        }
+    }
+    
     
     class RenderSystem extends System
     {
@@ -457,11 +488,11 @@ var ECS = (function () {
                     if(rotate) {
                         this.context.rotate(rotate.radians);
                     }
-
+                    
                     if(scale) {
                         this.context.scale(scale.x, scale.y);
                     }
-
+                    
                     this.context.drawImage(sprite.bitmap, -sprite.width / 2, -sprite.height / 2, sprite.width, sprite.height);
                 } else {
                     this.context.drawImage(sprite.bitmap, position.x, position.y);
@@ -555,20 +586,20 @@ var ECS = (function () {
                                     },
                                     "Scale": {
                                         "x": {
-                                            "target": 0.9,
+                                            "target": 0.7,
                                             "repeat": -1,
                                             "direction": 1,
                                             "reverseOnRepeat": true,
                                             "easing": "easeInOutCubic",
-                                            "speed": 0.00005,
+                                            "speed": 0.0005,
                                         },
                                         "y": {
-                                            "target": 0.9,
+                                            "target": 0.7,
                                             "repeat": -1,
                                             "direction": 1,
                                             "reverseOnRepeat": true,
                                             "easing": "easeInOutCubic",
-                                            "speed": 0.00005,
+                                            "speed": 0.0005,
                                         },
                                     },
                                 }
@@ -596,6 +627,46 @@ var ECS = (function () {
                                 "alpha": 1.0,
                             }
                         }
+                    },
+                    {
+                        "id": 3,
+                        "label": "Follow Star",
+                        "components": {
+                            "Follow": {
+                                "entityId": 2,
+                                "componentName": "Position",
+                                "attributes": ["x", "y"],
+                            },
+                            "Position": {
+                                "x": 0, // followed
+                                "y": 0  // followed
+                            },
+                            "Rotate": {
+                                "radians": 0,
+                            },
+                            "Scale": {
+                                "x": 1,
+                                "y": 1,
+                            },
+                            "Animation": {
+                                "attributes" : {
+                                    "Rotate": {
+                                        "radians": {
+                                            "target": Math.PI * 2,
+                                            "repeat": -1,
+                                            "direction": -1,
+                                            "reverseOnRepeat": false,
+                                            "easing": "linear",
+                                            "speed": 0.0003,
+                                        },
+                                    }
+                                }
+                            },
+                            "Sprite": {
+                                "bitmapName": "8-spiked-star",
+                                "alpha": 0.9,
+                            }
+                        }
                     }
                 ]
             };
@@ -604,6 +675,8 @@ var ECS = (function () {
         
         ecs.addSystem(new MovementSystem());
         ecs.addSystem(new AnimationSystem());
+        
+        ecs.addSystem(new FollowSystem());  // Note: Make sure this is the last System before rendering
         ecs.addSystem(new RenderSystem(context));
         
         // console.log(ecs.serialize());
