@@ -155,6 +155,55 @@ var Llemmings = (function () {
       return autoPlaying;
     }
 
+    function playSoundEffect(name)
+    {
+      if(!settings.soundEffects) {
+        return;
+      }
+
+      AudioSamples.playSample(name);
+    }
+
+    // >>> Prompt: instructions/main-loop.0002.txt
+    function togglePause()
+    {
+      isPaused = !isPaused;
+    }
+
+    function toggleSetting(setting)
+    {
+      settings[setting] = !settings[setting];
+      LlemmingsFCT.spawnCombatText("Sound effects " + (settings[setting] ? "on" : "off") );
+    }
+  
+    function setBackgroundBuffer()
+    {
+      background.drawImage(canvas, 0, 0);
+    }
+
+    function getOverallScore()
+    {
+      return persisted.levelScores.reduce((partialSum, a) => partialSum + a, 0);
+    }
+
+    function restartLevel(canvasElt)
+    {
+      const remember = {
+        __DEBUG__ : __DEBUG__
+      }
+
+      reset();
+      init(canvasElt, levelData, remember.__DEBUG__);
+      preStart();
+    }
+
+    function exitGame()
+    {
+      reset();
+      init(document.getElementById('canvas'), LlemmingsLevels[0], true);
+      preStart();
+    }
+
     // Create a new lemming and add it to the array of lemmings
     // HUMAN: This is just for easy testing for now.
     // HUMAN: This could be used to 'cheat' as this method will only be called
@@ -183,15 +232,6 @@ var Llemmings = (function () {
       }
     }
 
-    function playSoundEffect(name)
-    {
-      if(!settings.soundEffects) {
-        return;
-      }
-
-      AudioSamples.playSample(name);
-    }
-
     function createLemmings(amount)
     {
       for(let i = 0; i < amount; i++) {
@@ -216,23 +256,6 @@ var Llemmings = (function () {
     }
 
   
-    // >>> Prompt: instructions/main-loop.0002.txt
-    function togglePause()
-    {
-      isPaused = !isPaused;
-    }
-
-    function toggleSetting(setting)
-    {
-      settings[setting] = !settings[setting];
-      LlemmingsFCT.spawnCombatText("Sound effects " + (settings[setting] ? "on" : "off") );
-    }
-  
-    function setBackgroundBuffer()
-    {
-      background.drawImage(canvas, 0, 0);
-    }
-
     function fadeInCanvas()
     {
       if(canvasOpacity >= 1) {
@@ -257,11 +280,6 @@ var Llemmings = (function () {
       canvas.style.opacity = canvasOpacity;
     }    
     
-    function getOverallScore()
-    {
-      return persisted.levelScores.reduce((partialSum, a) => partialSum + a, 0);
-    }
-
     function levelCompleted()
     {
       console.log("Success! You beat the level");
@@ -428,25 +446,6 @@ var Llemmings = (function () {
         ctx
       );
     }
-
-    function restartLevel(canvasElt)
-    {
-      const remember = {
-        __DEBUG__ : __DEBUG__
-      }
-
-      reset();
-      init(canvasElt, levelData, remember.__DEBUG__);
-      preStart();
-    }
-
-    function exitGame()
-    {
-      reset();
-      init(document.getElementById('canvas'), LlemmingsLevels[0], true);
-      preStart();
-    }
-
 
 
     function forceDebugIfSet()
