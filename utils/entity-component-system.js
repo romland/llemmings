@@ -694,6 +694,7 @@ var ECS = (function () {
         // Systems
         MovementSystem : MovementSystem,
         RenderingSystem : RenderSystem,
+        FollowSystem : FollowSystem,
         AnimationSystem : AnimationSystem,
         
         // Components
@@ -704,5 +705,6 @@ var ECS = (function () {
         Rotate : Rotate,
         Scale : Scale,
         Animation : Animation,
+        Follow : Follow,
     }
 })();
