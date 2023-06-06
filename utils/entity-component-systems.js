@@ -310,16 +310,86 @@ var ECSystems = (function () {
                     animatedSprite.onAnimationRepeat(animatedSprite);
                 }
             }
-
+            
             return ret;
         }
-
     }
+    
+    
+    class ShakeSystem extends ECS.System {
+        constructor(ecs) {
+            super();
+            ecs.registerComponentType("Shake");
+        }
+
+        update(dt, components) {
+            for (const [id, shake] of Object.entries(components.Shake)) {
+                if (shake._stopped) {
+                    continue;
+                }
+
+                const position = components.Position[id];
+                const rotate = components.Rotate[id];
+                const scale = components.Scale[id];
+                
+                if(position && !shake._orgPosition) {
+                    shake._orgPosition = { x:position.x, y:position.y };
+                }
+
+                if(scale && !shake._orgScale) {
+                    shake._orgScale = { x:scale.x, y:scale.y };
+                }
+
+                if(rotate && shake._orgRotate === null) {
+                    shake._orgRotate = rotate.radians;
+                }
+
+                shake._timer += dt;
+                
+                if (shake._timer > shake.duration) {
+                    shake._stopped = true;
+                    shake._timer = 0;
+                    
+                    position.x = shake._orgPosition.x;
+                    position.y = shake._orgPosition.y;
+                    if(rotate) {
+                        rotate.radians = shake._orgRotate;
+                    }
+
+                    if(scale) {
+                        scale.x = shake._orgScale.x;
+                        scale.y = shake._orgScale.y;
+                    }
+                    continue;
+                }
+                
+                const offset = {
+                    x: (Math.random() * 2 - 1) * shake.intensity,
+                    y: (Math.random() * 2 - 1) * shake.intensity,
+                    r: (Math.random() * 2 - 1) * shake.intensity,
+                    sx: (Math.random() * 2 - 1) * shake.intensity,
+                    sy: (Math.random() * 2 - 1) * shake.intensity,
+                };
+                
+                position.x = shake._orgPosition.x + offset.x;
+                position.y = shake._orgPosition.y + offset.y;
+                if(rotate) {
+                    rotate.radians = shake._orgRotate + offset.r;
+                }
+                if(scale) {
+                    scale.x = shake._orgScale.x + offset.sx;
+                    scale.y = shake._orgScale.y + offset.sy;
+                }
+            }
+        }
+    }
+    
     
     return {
         MovementSystem,
         RenderSystem,
         FollowSystem,
         AnimationSystem,
+        ShakeSystem,
     };
 })();

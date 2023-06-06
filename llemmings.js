@@ -422,6 +422,7 @@ var Llemmings = (function () {
         levelData.finish.x + levelData.finish.radius - houseWidth, 
         levelData.finish.y + levelData.finish.radius - houseHeight + 3));
       ecs.addComponent(house, new ECS.Components.Sprite("house"));
+      ecs.addComponent(house, new ECS.Components.Shake(300, 3));
     }
 
 
@@ -628,7 +629,7 @@ var Llemmings = (function () {
           const lemming = lemmings[i];
           lemming.update();
           lemming.draw();
-          
+
           // HUMAN: There can be multiple lemmings selected, only the last one will be visible to us
           if (__DEBUG__) {
             if(lemming.isSelected) {
@@ -655,6 +656,7 @@ var Llemmings = (function () {
 
             // HUMAN TODO: Do some effect here (also sound?)
             Particles.createFirework(lemming.x, lemming.y);
+            ecs.entities[ecs.search("House")].components.Shake.reset();
           }
         }
         perfMonitor.end("lemmings-update");
@@ -803,6 +805,7 @@ var Llemmings = (function () {
 
       ecs.addSystem(new ECSystems.MovementSystem(ecs));
       ecs.addSystem(new ECSystems.AnimationSystem(ecs));
+      ecs.addSystem(new ECSystems.ShakeSystem(ecs));
       
       ecs.addSystem(new ECSystems.FollowSystem(ecs));  // Note: Make sure this is the last System before rendering
       ecs.addSystem(new ECSystems.RenderSystem(ecs, context));

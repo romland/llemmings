@@ -1,0 +1,67 @@
+Given an ECS in JS, below are components and easings already
+available.
+
+I need a new component and system that shakes or rumbles
+the position/size/rotation of an entity for a second or so,
+so that it looks like a brief earthquake.
+
+There should be a possiblity to restart/stop the shaking
+using some attribute of the Shake component.
+
+Components:
+  Position : Position,
+  Velocity : Velocity,
+  PathFollowing : PathFollowing,
+  Sprite : Sprite,
+  Rotate : Rotate,
+  Scale : Scale,
+  Animation : Animation,
+  Follow : Follow,
+  AnimatedSprite : AnimatedSprite,
+
+Easings:
+    easeInOutSine : easeInOutSine,
+    easeInOutCubic : easeInOutCubic,
+    easeInOutBounce : easeInOutBounce,
+    easeOutBounce : easeOutBounce,
+    easeInBack : easeInBack,
+    easeOutBack : easeOutBack,
+    easeInOutBack : easeInOutBack,
+    easeInElastic : easeInElastic,
+    easeOutElastic : easeOutElastic,
+    linear : linear,
+    lerp : lerp,
+    lerpAngle : lerpAngle,
+
+
+Modify a component this way:
+  const id = ecs.search("PathFollowing Star");
+  ecs.entities[id].components.Transform.rotation += 0.003;
+
+In a previous prompt you gave me this component, which is fine:
+    class Shake extends Component {
+        constructor(duration = 1, intensity = 10) {
+            super();
+            this.duration = duration;
+            this.intensity = intensity;
+            
+            this._timer = 0;
+            this._stopped = true;
+
+            this._orgPosition = {x:0, y:0};
+            this._orgRotate = 0;
+            this._orgScale = {x:1,y:1};
+        }
+    }
+
+A system is defined (e.g.) this way:
+  class MovementSystem extends ECS.System { update(dt, components) {} }
+
+In a system, get entity id and components like this:
+  for (const [id, shake] of Object.entries(components.Shake)) {
+
+IMPORTANT: A component should not call any functions in any Entity.
+
+When the shake is over, it should be restored to the original state (position, rotation, scale)
+
+This time I don't need an explanation, just give me the code.

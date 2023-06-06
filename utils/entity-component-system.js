@@ -84,7 +84,7 @@ var ECS = (function () {
             const ents = Object.values(this.entities);
             for(let i = 0; i < ents.length; i++) {
                 if(ents[i].label === label) {
-                    return i;
+                    return ents[i].id;
                 }
             }
             return null;
@@ -326,7 +326,29 @@ var ECS = (function () {
             this.attributes = attributes;
         }
     }
+    
+    class Shake extends Component {
+        constructor(duration = 1, intensity = 10) {
+            super();
+            this.duration = duration;
+            this.intensity = intensity;
 
+            this.reset();
+        }
+
+        reset()
+        {
+            if(this._stopped) {
+                // Only do if stopped to make sure we don't lose origin
+                this._orgPosition = null;
+                this._orgRotate = null;
+                this._orgScale = null;
+            }
+            this._timer = 0;
+            this._stopped = false;
+        }
+    }
+    
     
     return {
         // ECS
@@ -344,6 +366,7 @@ var ECS = (function () {
             Animation : Animation,
             Follow : Follow,
             AnimatedSprite : AnimatedSprite,
+            Shake : Shake,
         },
     }
 })();
