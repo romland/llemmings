@@ -72,8 +72,9 @@ var LlemmingsLevels = [
             showFCT : false,
         },
         "entities": [
+// ugh, we collide with ID's here due to some being created before leveldata is loaded?
             {
-                "id": 2,
+                "id": 100000 + 2,
                 "label": "PathFollowing Star",
                 "components": {
                     "Position": {
@@ -144,17 +145,17 @@ var LlemmingsLevels = [
                 }
             },
             {
-                "id": 3,
+                "id": 100000 + 3,
                 "label": "Follow Star",
                 "components": {
                     "Follow": {
                         "attributes": {
                             "Position": {
-                                "entityId": 2,
+                                "entityId": 100000 + 2,
                                 "attributes": ["x", "y"],
                             },
                             "Scale": {
-                                "entityId": 2,
+                                "entityId": 100000 + 2,
                                 "attributes": ["x", "y"],
                             },
                         }

@@ -413,18 +413,15 @@ var Llemmings = (function () {
       );
       ctx.restore();
 
-      // Draw house on top and left side of finish area's platform
+      // Draw the house on the platform at finish area
       const houseWidth = levelData.finish.radius;
       const houseHeight = levelData.finish.radius;
-      // Human: Bug. Why is it drawn slightly above the platform? (added + 3)
-      LlemmingsArt.drawSvgOnCanvas(
-        LlemmingsArt.getHouse(houseWidth, houseHeight),
-        levelData.finish.x + levelData.finish.radius - houseWidth,
-        levelData.finish.y + levelData.finish.radius - houseHeight + 3,
-        houseWidth,
-        houseHeight,
-        ctx
-      );
+      let house = ecs.createEntity("House");
+      // Human: Not entirely sure why I need to do +3 as offset there to get it on top of platform.
+      ecs.addComponent(house, new ECS.Components.Position(
+        levelData.finish.x + levelData.finish.radius - houseWidth, 
+        levelData.finish.y + levelData.finish.radius - houseHeight + 3));
+      ecs.addComponent(house, new ECS.Components.Sprite("house"));
     }
 
 
@@ -623,8 +620,6 @@ var Llemmings = (function () {
       if(playing) {
         perfMonitor.start("ecs-update");
         ecs.update(1000/60);
-        // ecs.entities[2].components.Transform.rotation += 0.003;
-        // ecs.entities[ecs.search("PathFollowing Star")].components.Transform.rotation += 0.003;
         perfMonitor.end("ecs-update");
 
         // Update and draw each lemming
@@ -797,16 +792,8 @@ var Llemmings = (function () {
       // HUMAN: Pre-create lemmings -- we need this early to determine level failure/success
       createLemmings(levelDataResources.lemmings);
 
-      // Human HACK: Wait a little for any images to be drawn before we set background buffer.
-      //             The _proper_ way to do this is set something up that actually waits
-      //             for all possible images to be drawn before setting the background and
-      //             after that start the update loop.
-      setTimeout( () => {
-        setBackgroundBuffer();
-
-        // Start the update loop
-        reqAnimFrameId = update();
-      }, 60);
+      setBackgroundBuffer();
+      reqAnimFrameId = update();
     }
 
 

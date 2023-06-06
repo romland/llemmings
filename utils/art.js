@@ -239,14 +239,21 @@ var LlemmingsArt = (function ()
 
     
     // >>> Prompt: instructions/svg-to-canvas.0001.txt
-    function drawSvgOnCanvas(svgString, x, y, width, height, context)
-    {
-        const dataUrl = 'data:image/svg+xml;base64,' + btoa(svgString);
+    async function drawSvgOnCanvas(svgString, x, y, width, height, context) {
+      const dataUrl = 'data:image/svg+xml;base64,' + btoa(svgString);
+    
+      const img = await loadImage(dataUrl);
+    
+      context.drawImage(img, x, y, width, height);
+    }
+    
+    function loadImage(url) {
+      return new Promise((resolve, reject) => {
         const img = new Image();
-        img.src = dataUrl;
-        img.onload = () => {
-          context.drawImage(img, x, y, width, height);
-        };
+        img.onload = () => resolve(img);
+        img.onerror = (e) => reject(e);
+        img.src = url;
+      });
     }
 
     /**
@@ -261,12 +268,12 @@ var LlemmingsArt = (function ()
       // NOTE: no await for generators!
 
       if(!getBitmap("hatch")) {
-        console.log("Creating animation for hatch");
+        console.log("Creating hatch (animation)");
         bitmaps["hatch"] = GameUtils.generateAnimationFrames(96, 32, 90, drawHatch);
       }
 
       if(!getBitmap("16-spiked-star")) {
-        console.log("Creating 16-spiked-star");
+        console.log("Creating 16-spiked-star (single frame)");
         const width = 100;
         const height = 100;
 
@@ -277,7 +284,7 @@ var LlemmingsArt = (function ()
       }
 
       if(!getBitmap("8-spiked-star")) {
-        console.log("Creating 8-spiked-star");
+        console.log("Creating 8-spiked-star (single frame)");
         const width = 100;
         const height = 100;
 
@@ -286,6 +293,19 @@ var LlemmingsArt = (function ()
         drawSpikes(tempContext, width / 2, height / 2, 8, 45, 8, `rgba(255, 255, 0, 1)`, true, true);
         bitmaps["8-spiked-star"] = extractBitmapFromContext(tempContext, 0, 0, width, height);
       }
+
+      if(!getBitmap("house")) {
+        console.log("Creating house (from SVG)");
+
+        const width = 50;
+        const height = 50;
+
+        const tempContext = document.createElement('canvas').getContext('2d');
+
+        await LlemmingsArt.drawSvgOnCanvas(getHouse(width, height), 0, 0, width, height, tempContext);
+        bitmaps["house"] = extractBitmapFromContext(tempContext, 0, 0, width, height);
+      }
+
 
 
       // ------
