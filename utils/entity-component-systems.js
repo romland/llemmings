@@ -216,6 +216,8 @@ var ECSystems = (function () {
         {
             super();
             this.context = context;
+            ecs.registerComponentType("Rotate");
+            ecs.registerComponentType("Scale");
             ecs.registerComponentType("Sprite");
             ecs.registerComponentType("AnimatedSprite");
         }
