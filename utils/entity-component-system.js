@@ -249,6 +249,61 @@ var ECS = (function () {
         get width()    { return this._bitmap.width; }
         get height()   { return this._bitmap.height; }
     }
+
+    /*
+    This is for the non-component code, but it remains largely the same
+    It is based on normal Sprite here, the nitty-gritty is in RenderSystem.
+
+    >>> Prompt: instructions/art-hatch.0001.txt
+    >>> Prompt: instructions/art-hatch.0002.txt
+    >>> Prompt: instructions/art-hatch.0003.txt
+    >>> Prompt: instructions/art-animation.0001.txt
+    >>> Prompt: instructions/art-animation.0002.txt
+    >>> Prompt: instructions/art-animation.0003.txt
+    */
+    class AnimatedSprite extends Renderable
+    {
+        /*
+        Example:
+            bitmapsName: "hatch",
+            easing: "easeOutBounce",
+            direction: 1,
+            repeat: false,
+            speed: 1,
+            alpha: 1,
+            onAnimationDone: undefined,
+            onAnimationRepeat: undefined,
+        */
+        constructor(bitmapName, easing = "linear", direction = 1, repeat = false, speed = 1, alpha = 1, onAnimationDone, onAnimationRepeat)
+        {
+            super();
+            this.bitmapName = bitmapName;
+            this.easing = easing;
+            this.direction = direction;
+            this.repeat = repeat;
+            this.speed = speed;
+            this.alpha = alpha;
+            this.onAnimationDone = onAnimationDone;
+            this.onAnimationRepeat = onAnimationRepeat;
+
+            this._currentFrame = 0;
+            this._done = false;
+
+            if(bitmapName) {
+                this.init();
+            }
+        }
+
+        init()
+        {
+            this._bitmaps = LlemmingsArt.getBitmap(this.bitmapName);
+        }
+
+        get bitmaps()   { return this._bitmaps; }
+        set bitmaps(bm) { this._bitmaps = bm; }
+        get width()    { return this._bitmaps[0].width; }
+        get height()   { return this._bitmaps[0].height; }
+    }
     
 
     // >>> Prompt: instructions/ecs-animation.0001.txt
@@ -288,6 +343,7 @@ var ECS = (function () {
             Scale : Scale,
             Animation : Animation,
             Follow : Follow,
+            AnimatedSprite : AnimatedSprite,
         },
     }
 })();

@@ -38,9 +38,6 @@ var Llemmings = (function () {
     let autoPlaying = null;  // set to true to automatically use a provided solution (if it exists)
     let levelDataResources = null;
 
-    // Sprites
-    const sprites = [];           // cleared between levels
-
     // Game settings
     // TODO: Store in local storage (like keybindings)
     let settings = {
@@ -396,9 +393,9 @@ var Llemmings = (function () {
         // clear start zone
         World.clearSquare(levelData.start.x, levelData.start.y, levelData.start.radius);
 
-        sprites.push(
-          new AnimatedSprite(ctx, levelData.start.x - 30, Math.max(0, levelData.start.y), LlemmingsArt.getBitmap("hatch"), { speed : 1, /* default settings */ })
-        );
+        let startHatch = ecs.createEntity("AnimSpriteTest");
+        ecs.addComponent(startHatch, new ECS.Components.Position(levelData.start.x - 30, Math.max(0, levelData.start.y)));
+        ecs.addComponent(startHatch, new ECS.Components.AnimatedSprite("hatch", "easeOutBounce"));
       }
 
       if(levelData.finish.clear) {
@@ -540,13 +537,8 @@ var Llemmings = (function () {
 
         if(ecs) {
           ecs.cleanUp();
+          ecs = null;
         }
-
-        for(let i = 0; i < sprites.length; i++) {
-          sprites[i].cleanUp();
-        }
-        // clear sprites array
-        sprites.length = 0;
 
         perfMonitor.cleanUp();
 
@@ -673,12 +665,6 @@ var Llemmings = (function () {
         perfMonitor.end("lemmings-update");
       }
 
-      perfMonitor.start("sprites-update");
-      for(let i = 0; i < sprites.length; i++) {
-        sprites[i].update();
-      }
-      perfMonitor.end("sprites-update");
-
       perfMonitor.start("particles-update");
       Particles.update();
       perfMonitor.end("particles-update");
@@ -749,6 +735,7 @@ var Llemmings = (function () {
       ctx = canvas.getContext('2d', { willReadFrequently: true, alpha: false });
 
       LlemmingsDebug.init({ctx});
+      initECS(levelData, ctx);
 
       if(!EDITOR_MODE) {
         GameUtils.adjustCanvasHeight();
@@ -810,8 +797,6 @@ var Llemmings = (function () {
       // HUMAN: Pre-create lemmings -- we need this early to determine level failure/success
       createLemmings(levelDataResources.lemmings);
 
-      initECS(levelData, ctx);
-
       // Human HACK: Wait a little for any images to be drawn before we set background buffer.
       //             The _proper_ way to do this is set something up that actually waits
       //             for all possible images to be drawn before setting the background and
@@ -838,25 +823,60 @@ var Llemmings = (function () {
       if(false) {
         // How to use ECS without JSON
         let entity1 = ecs.createEntity("Test 1");
-        ecs.addComponent(entity1, new Position(0, 0));
-        ecs.addComponent(entity1, new Velocity(1, 1));
+        ecs.addComponent(entity1, new ECS.Components.Position(0, 0));
+        ecs.addComponent(entity1, new ECS.Components.Velocity(1, 1));
         
         let entity2 = ecs.createEntity("Test 2");
-        ecs.addComponent(entity2, new Position(10, 10));
-        ecs.addComponent(entity2, new Velocity(-1, -1));
+        ecs.addComponent(entity2, new ECS.Components.Position(10, 10));
+        ecs.addComponent(entity2, new ECS.Components.Velocity(-1, -1));
         
         let path = [{"x": 5,"y": 5},{"x": 65,"y": 65},{"x": 130,"y": 45}];
         let entity3 = ecs.createEntity("PathFollowing Star");
-        ecs.addComponent(entity3, new Position(5, 5));
-        ecs.addComponent(entity3, new PathFollowing(path, 0.25));
-        ecs.addComponent(entity3, new Sprite("8-spiked-star"));
-        ecs.addComponent(entity3, new Scale(1, 1));
-        ecs.addComponent(entity3, new Rotate(0));
+        ecs.addComponent(entity3, new ECS.Components.Position(5, 5));
+        ecs.addComponent(entity3, new ECS.Components.PathFollowing(path, 0.25));
+        ecs.addComponent(entity3, new ECS.Components.Sprite("8-spiked-star"));
+        ecs.addComponent(entity3, new ECS.Components.Scale(1, 1));
+        ecs.addComponent(entity3, new ECS.Components.Rotate(0));
 
         // console.log(ecs.serialize());
-      } else {
-        ecs.deserialize(levelData.entities);
+      } else if(__DEBUG__ && true) {
+        // Test Animated AnimatedSprite
+        let testEnt = ecs.createEntity("AnimSpriteTest");
+        ecs.addComponent(testEnt, new ECS.Components.Position(5, 5));
+        ecs.addComponent(testEnt, new ECS.Components.AnimatedSprite(
+          "hatch",          // bitmap name
+          "easeOutBounce",  // easing
+          1,                // direction
+          true,             // repeat,
+          1,                // speed,
+          1,                // alpha
+          null,             // onAnimationDone callback
+          (settings) => {   // onAnimationRepeat callback
+            settings.direction = (settings.direction === 1 ? -1 : 1);
+          }
+        ));
+        let path = [{"x": 5,"y": 5},{"x": 65,"y": 65},{"x": 130,"y": 45}];
+        ecs.addComponent(testEnt, new ECS.Components.PathFollowing(path, 0.25));
+        ecs.addComponent(testEnt, new ECS.Components.Scale(1, 1));
+        ecs.addComponent(testEnt, new ECS.Components.Rotate(0));
+        ecs.addComponent(testEnt, new ECS.Components.Animation(
+          {
+            "Rotate": {
+                "radians": {
+                    "target": Math.PI * 2,
+                    "repeat": -1,
+                    "direction": 1,
+                    "reverseOnRepeat": false,
+                    "easing": "linear",
+                    "speed": 0.00110,
+                },
+            },
+          }
+        ));
       }
+
+      // Normal behaviour (just take everything from levelData)
+      ecs.deserialize(levelData.entities);
       
       return ecs;
     }

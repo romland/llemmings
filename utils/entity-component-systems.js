@@ -217,41 +217,106 @@ var ECSystems = (function () {
             super();
             this.context = context;
             ecs.registerComponentType("Sprite");
+            ecs.registerComponentType("AnimatedSprite");
         }
         
         update(dt, components)
         {
-            // Sprite and Transform
             // Note: At this moment, if there is no sprite on the Entity, Transform is ignored
+
+            // Sprite and Transform
             for (const [id, sprite] of Object.entries(components.Sprite)) {
                 const position = components.Position[id];
                 const rotate = components.Rotate ? components.Rotate[id] : undefined;
                 const scale = components.Scale ? components.Scale[id] : undefined;
-                
-                if(!position) {
-                    throw "Sprite requires Position component";
-                }
-                
-                this.context.save();
-                this.context.globalAlpha = sprite.alpha;
-                
-                if(rotate || scale) {
-                    this.context.translate(position.x + sprite.width/2, position.y + sprite.height/2);
-                    if(rotate) {
-                        this.context.rotate(rotate.radians);
-                    }
-                    
-                    if(scale) {
-                        this.context.scale(scale.x, scale.y);
-                    }
-                    
-                    this.context.drawImage(sprite.bitmap, -sprite.width / 2, -sprite.height / 2, sprite.width, sprite.height);
-                } else {
-                    this.context.drawImage(sprite.bitmap, position.x, position.y);
-                }
-                this.context.restore();
+
+                this.drawBitmap(sprite.bitmap, sprite, position, rotate, scale);
+            }
+
+            // AnimatedSprite and Transform
+            for (const [id, sprite] of Object.entries(components.AnimatedSprite)) {
+                const position = components.Position[id];
+                const rotate = components.Rotate ? components.Rotate[id] : undefined;
+                const scale = components.Scale ? components.Scale[id] : undefined;
+
+                this.drawBitmap(this.getAnimatedSpriteFrame(sprite), sprite, position, rotate, scale);
             }
         }
+
+        /**
+         * 
+         * @param {*} bitmap 
+         * @param {Sprite or AnimatedSprite} sprite 
+         * @param {*} position 
+         * @param {*} rotate 
+         * @param {*} scale 
+         */
+        drawBitmap(bitmap, sprite, position, rotate, scale)
+        {
+            if(!position) {
+                throw "Sprite requires Position component";
+            }
+            
+            this.context.save();
+            this.context.globalAlpha = sprite.alpha;
+            
+            if(rotate || scale) {
+                this.context.translate(position.x + sprite.width/2, position.y + sprite.height/2);
+                if(rotate) {
+                    this.context.rotate(rotate.radians);
+                }
+                
+                if(scale) {
+                    this.context.scale(scale.x, scale.y);
+                }
+                
+                this.context.drawImage(bitmap, -sprite.width / 2, -sprite.height / 2, sprite.width, sprite.height);
+            } else {
+                this.context.drawImage(bitmap, position.x, position.y);
+            }
+            this.context.restore();
+        }
+
+        /**
+         * 
+         * @param {Component} animatedSprite 
+         * @returns bitmap
+         */
+        getAnimatedSpriteFrame(animatedSprite)
+        {
+            if(animatedSprite._done) {
+                // If done, just draw last frame without fuss.
+                // TODO: Just realized this needs a bit more work for reverse direction (first frame).
+                return animatedSprite.bitmaps[animatedSprite.bitmaps.length - 1];
+            }
+
+            const progress = Easings[animatedSprite.easing](animatedSprite._currentFrame / animatedSprite.bitmaps.length);
+            
+            let index = Math.floor(progress * animatedSprite.bitmaps.length);
+            if(animatedSprite.direction !== 1) {
+                index = animatedSprite.bitmaps.length - index;
+            }
+            
+            const ret = animatedSprite.bitmaps[Math.round(Math.max(0, Math.min(index, animatedSprite.bitmaps.length - 1)))];
+            
+            animatedSprite._currentFrame += (animatedSprite.speed || 1);
+            if(animatedSprite._currentFrame >= animatedSprite.bitmaps.length) {
+                animatedSprite._currentFrame = 0;
+                if(!animatedSprite.repeat) {
+                    if(animatedSprite.onAnimationDone) {
+                        animatedSprite.onAnimationDone(animatedSprite);
+                    }
+                    animatedSprite._done = true;
+                    return ret;
+
+                } else if(animatedSprite.onAnimationRepeat) {
+                    animatedSprite.onAnimationRepeat(animatedSprite);
+                }
+            }
+
+            return ret;
+        }
+
     }
     
     return {
