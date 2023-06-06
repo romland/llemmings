@@ -193,16 +193,11 @@ var ECSystems = (function () {
       
         update(deltaTime, components) {
           for (const [id, follow] of Object.entries(components.Follow)) {
-            for (const [componentName, componentData] of Object.entries(
-              follow.attributes
-            )) {
-              const followedComponents = components[componentName][
-                componentData.entityId
-              ];
+            for (const [componentName, componentData] of Object.entries(follow.attributes)) {
+              const followedComponents = components[componentName][componentData.entityId];
+
               for (const attribute of componentData.attributes) {
-                components[followedComponents.constructor.name][id][
-                  attribute
-                ] = followedComponents[attribute];
+                components[followedComponents.constructor.name][id][attribute] = followedComponents[attribute];
               }
             }
           }
@@ -229,8 +224,8 @@ var ECSystems = (function () {
             // Sprite and Transform
             for (const [id, sprite] of Object.entries(components.Sprite)) {
                 const position = components.Position[id];
-                const rotate = components.Rotate ? components.Rotate[id] : undefined;
-                const scale = components.Scale ? components.Scale[id] : undefined;
+                const rotate = components.Rotate[id];
+                const scale = components.Scale[id];
 
                 this.drawBitmap(sprite.bitmap, sprite, position, rotate, scale);
             }
@@ -238,8 +233,8 @@ var ECSystems = (function () {
             // AnimatedSprite and Transform
             for (const [id, sprite] of Object.entries(components.AnimatedSprite)) {
                 const position = components.Position[id];
-                const rotate = components.Rotate ? components.Rotate[id] : undefined;
-                const scale = components.Scale ? components.Scale[id] : undefined;
+                const rotate = components.Rotate[id];
+                const scale = components.Scale[id];
 
                 this.drawBitmap(this.getAnimatedSpriteFrame(sprite), sprite, position, rotate, scale);
             }
