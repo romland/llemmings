@@ -72,6 +72,89 @@ var LlemmingsArt = (function ()
         context.fillRect(0, -5, 30, 5);
         context.restore();
     }
+
+    function drawOwl(context, width, height, currentFrameNum, totalFrameCount)
+    {
+        context.save();
+
+        // Draw the owl body
+        context.beginPath();
+        context.fillStyle = '#FFFFFF';
+        context.arc(100, 100, 50, 0, 2 * Math.PI);
+        context.fill();
+      
+        // Draw the owl eyes
+        context.beginPath();
+        context.fillStyle = '#000000';
+        context.arc(80, 80, 10, 0, 2 * Math.PI);
+        context.arc(120, 80, 10, 0, 2 * Math.PI);
+        context.fill();
+
+        // Draw the owl beak
+        context.beginPath();
+        context.fillStyle = '#FFA500';
+        context.moveTo(100, 100);
+        context.lineTo(110, 110);
+        context.lineTo(90, 110);
+        context.fill();
+
+        context.restore();
+
+        const angle = (currentFrameNum / totalFrameCount) * Math.PI / 2;
+
+        // Left wing
+        context.save();
+        // ... animate it
+        context.translate(70, 115);
+        context.rotate(angle - 0.5);
+        
+        context.beginPath();
+        context.fillStyle = '#909090';
+        context.moveTo(0, -15);
+        context.lineTo(-30, 5);
+        context.lineTo(0, 5);
+        context.lineTo(0, 0);
+        context.lineTo(-10, 0);
+        context.fill();
+        context.restore();
+
+        // Right wing
+        context.save();
+        // ... animate it
+        context.translate(130, 115);
+        context.scale(-1, 1);
+        context.rotate(angle - 0.5);
+        
+        context.beginPath();
+        context.fillStyle = '#909090';
+        context.moveTo(0, -15);
+        context.lineTo(-30, 5);
+        context.lineTo(0, 5);
+        context.lineTo(0, 0);
+        context.lineTo(-10, 0);
+        context.fill();
+        context.restore();
+        
+
+        // Left Foot (Human: was misplaced)
+        context.beginPath();
+        context.moveTo(100-20, 280-120);
+        context.lineTo(115-20, 260-120);
+        context.lineTo(80- 20, 260-120);
+        context.lineTo(100-20, 280-120);
+        context.fillStyle = "#FFC300";
+        context.fill();
+
+        // Right Foot (Human: was misplaced)
+        context.beginPath();
+        context.moveTo(200-77, 280-120);
+        context.lineTo(215-77, 260-120);
+        context.lineTo(180-77, 260-120);
+        context.lineTo(200-77, 280-120);
+        context.fillStyle = "#FFC300";
+        context.fill();
+
+    }
     
     // >>> Prompt: instructions/organics-bushes-grass-moss.0001.txt
     const leafColors = ["#8B4513", "#228B22", "#aabb00", "#ee7777"]; // Brown, Green, Yellow, Red
@@ -270,6 +353,11 @@ var LlemmingsArt = (function ()
       if(!getBitmap("hatch")) {
         console.log("Creating hatch (animation)");
         bitmaps["hatch"] = GameUtils.generateAnimationFrames(96, 32, 90, drawHatch);
+      }
+
+      if(!getBitmap("snowyowl")) {
+        console.log("Creating snowy owl (animation)");
+        bitmaps["snowyowl"] = GameUtils.generateAnimationFrames(32*6, 32*6, 90, drawOwl, false);
       }
 
       if(!getBitmap("16-spiked-star")) {

@@ -1,0 +1,5 @@
+Give me a very simple drawing of the shapes of a snowy owl on a canvas, make sure it has 
+wings (as separate shapes) on each side of its body.
+Give it two bird feet.
+
+Human: https://glebbahmutov.com/blog/images/how-to-draw-fp-owl/how-to-draw-an-owl.jpg

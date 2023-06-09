@@ -72,7 +72,6 @@ var LlemmingsLevels = [
             showFCT : false,
         },
         "entities": [
-// ugh, we collide with ID's here due to some being created before leveldata is loaded?
             {
                 "id": 100000 + 2,
                 "label": "PathFollowing Star",

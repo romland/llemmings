@@ -112,7 +112,7 @@ var GameUtils = (function () {
     // >>> Prompt: instructions/art-animation.0001.txt
     // >>> Prompt: instructions/art-animation.0002.txt
     // >>> Prompt: instructions/art-animation.0003.txt
-    async function generateAnimationFrames(width, height, frameCount = 90, drawFunc)
+    async function generateAnimationFrames(width, height, frameCount = 90, drawFunc, debug = false)
     {
         const frameImages = [];
         const canvas = document.createElement('canvas');
@@ -139,7 +139,22 @@ var GameUtils = (function () {
         }
         
         await Promise.all(framePromises);
-        
+
+        if(debug) {
+          for(let i = 0; i < frameImages.length; i++) {
+            const canvas = document.createElement('canvas');
+            canvas.setAttribute("class", "debugCanvas");
+            canvas.width = width;
+            canvas.height = height;
+            const context = canvas.getContext('2d');
+
+            context.drawImage(frameImages[i], 0, 0);
+
+            document.body.appendChild(canvas);
+          }
+          console.log("Appending")
+        }
+    
         return frameImages;
     }
 

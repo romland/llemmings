@@ -585,18 +585,18 @@ var Llemmings = (function () {
     // >>> Prompt: instructions/main-loop.0003.txt (throttling)
     // >>> Prompt: instructions/optimization-putImageData-prune.0001.txt
     function update() {
-      if(!background) {
+      if(!background || reqAnimFrameId === null) {
         return;
       }
       
-      if (isPaused) {
+      if (isPaused && reqAnimFrameId !== null) {
         reqAnimFrameId = requestAnimationFrame(update);
         return;
       }
 
       let currentTime = performance.now();
 
-      if (currentTime - lastFrameUpdate < frameInterval) {
+      if (currentTime - lastFrameUpdate < frameInterval && reqAnimFrameId !== null) {
         reqAnimFrameId = requestAnimationFrame(update);
         return;
       }
@@ -693,7 +693,9 @@ var Llemmings = (function () {
       perfMonitor.end("screens-update");
 
       // Schedule the next frame
-      reqAnimFrameId = requestAnimationFrame(update);
+      if(reqAnimFrameId !== null) {
+        reqAnimFrameId = requestAnimationFrame(update);
+      }
 
       perfMonitor.end("all-of-update");
     }
@@ -795,7 +797,7 @@ var Llemmings = (function () {
       createLemmings(levelDataResources.lemmings);
 
       setBackgroundBuffer();
-      reqAnimFrameId = update();
+      reqAnimFrameId = requestAnimationFrame(update);
     }
 
 
@@ -834,11 +836,11 @@ var Llemmings = (function () {
         let testEnt = ecs.createEntity("AnimSpriteTest");
         ecs.addComponent(testEnt, new ECS.Components.Position(5, 5));
         ecs.addComponent(testEnt, new ECS.Components.AnimatedSprite(
-          "hatch",          // bitmap name
-          "easeOutBounce",  // easing
+          "snowyowl",          // bitmap name
+          "easeInOutSine",  // easing
           1,                // direction
           true,             // repeat,
-          1,                // speed,
+          5,                // speed,
           1,                // alpha
           null,             // onAnimationDone callback
           (settings) => {   // onAnimationRepeat callback
@@ -847,22 +849,24 @@ var Llemmings = (function () {
         ));
         let path = [{"x": 5,"y": 5},{"x": 65,"y": 65},{"x": 130,"y": 45}];
         ecs.addComponent(testEnt, new ECS.Components.PathFollowing(path, 0.25));
-        ecs.addComponent(testEnt, new ECS.Components.Scale(1, 1));
+        ecs.addComponent(testEnt, new ECS.Components.Scale(0.35, 0.35));
         ecs.addComponent(testEnt, new ECS.Components.Rotate(0));
-        ecs.addComponent(testEnt, new ECS.Components.Animation(
-          {
-            "Rotate": {
-                "radians": {
-                    "target": Math.PI * 2,
-                    "repeat": -1,
-                    "direction": 1,
-                    "reverseOnRepeat": false,
-                    "easing": "linear",
-                    "speed": 0.00110,
-                },
-            },
-          }
-        ));
+        if(false) {
+          ecs.addComponent(testEnt, new ECS.Components.Animation(
+            {
+              "Rotate": {
+                  "radians": {
+                      "target": Math.PI * 2,
+                      "repeat": -1,
+                      "direction": 1,
+                      "reverseOnRepeat": false,
+                      "easing": "linear",
+                      "speed": 0.00110,
+                  },
+              },
+            }
+          ));
+        }
       }
 
       // Normal behaviour (just take everything from levelData)
