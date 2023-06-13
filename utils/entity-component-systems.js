@@ -91,7 +91,8 @@ var ECSystems = (function () {
             ecs.registerComponentType("PathFollowing");
         }
         
-        update(dt, components) {
+        update(dt, components)
+        {
             // Position and Velocity
             for (const [id, position] of Object.entries(components.Position)) {
                 const velocity = components.Velocity[id];
@@ -115,7 +116,9 @@ var ECSystems = (function () {
                     throw new Error('PathFollowing may not have Velocity component');
                 }
                 
-                const target = pathFollowing.path[pathFollowing.currentPoint];
+                const path = pathFollowing.path;
+
+                const target = path[pathFollowing._currentPoint];
                 
                 // Calculate distance to target
                 const dx = target.x - position.x;
@@ -125,10 +128,10 @@ var ECSystems = (function () {
                 // Check if target is reached
                 if (distance <= 1) {
                     // Reset to the beginning if the end of the path is reached
-                    if (pathFollowing.currentPoint >= pathFollowing.path.length - 1) {
-                        pathFollowing.currentPoint = 0;
+                    if (pathFollowing._currentPoint >= path.length - 1) {
+                        pathFollowing._currentPoint = 0;
                     } else {
-                        pathFollowing.currentPoint++;
+                        pathFollowing._currentPoint++;
                     }
                 }
                 

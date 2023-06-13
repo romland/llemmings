@@ -847,7 +847,10 @@ var Llemmings = (function () {
             settings.direction = (settings.direction === 1 ? -1 : 1);
           }
         ));
-        let path = [{"x": 5,"y": 5},{"x": 65,"y": 65},{"x": 130,"y": 45}];
+        let path = [
+          // {"x": 5,"y": 5},{"x": 35,"y": 15},{"x": 45,"y": 5},{"x": 65,"y": 65},{"x": 45,"y": 45},{"x": 130,"y": 45}
+          {"x": 5,"y": 5},{"x": 35,"y": 5},{"x": 35,"y": 35},{"x": 5,"y": 35},
+        ];
         ecs.addComponent(testEnt, new ECS.Components.PathFollowing(path, 0.25));
         ecs.addComponent(testEnt, new ECS.Components.Scale(0.35, 0.35));
         ecs.addComponent(testEnt, new ECS.Components.Rotate(0));

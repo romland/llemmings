@@ -188,11 +188,13 @@ var ECS = (function () {
     
     // >>> instructions/ecs-pathfollowing.0001.txt
     class PathFollowing extends Component {
-        constructor(path, speed = 1) {
+        constructor(path, speed = 1, smoothing = 10) {
             super();
             this.path = path;
             this.speed = speed;
-            this.currentPoint = 0;
+            this.smoothing = smoothing;
+
+            this._currentPoint = 0;
         }
     }
     
