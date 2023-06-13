@@ -602,6 +602,8 @@ var Llemming = (() => {
           ctx.arc(this.x + this.width / 2, this.y + this.height / 2, currentRadius, 0, 2 * Math.PI);
           ctx.stroke();
           ctx.restore();
+
+          this.drawArrow(ctx, 10);
         }
   
         // debug
@@ -616,7 +618,31 @@ var Llemming = (() => {
             }
         }
       }
-  
+
+      // >>> Prompt: instructions/lemming-selected-arrow.0001.txt
+      drawArrow(ctx, size) {
+        const arrowSize = size || 40;
+        ctx.beginPath();
+        ctx.strokeStyle = '#FFFFFF';
+        ctx.lineWidth = 4;
+        if (this.velX > 0) {
+          // moving right
+          ctx.moveTo(this.x, this.y - (this.height / 2));
+          ctx.lineTo(this.x + arrowSize, this.y - (this.height / 2));
+          ctx.lineTo(this.x + (arrowSize / 2), this.y - (this.height / 2) - (arrowSize / 2));
+          ctx.moveTo(this.x + arrowSize, this.y - (this.height / 2));
+          ctx.lineTo(this.x + (arrowSize / 2), this.y - (this.height / 2) + (arrowSize / 2));
+        } else if (this.velX < 0) {
+          // moving left
+          ctx.moveTo(this.x + this.width, this.y - (this.height / 2));
+          ctx.lineTo(this.x + this.width - arrowSize, this.y - (this.height / 2));
+          ctx.lineTo(this.x + this.width - (arrowSize / 2), this.y - (this.height / 2) - (arrowSize / 2));
+          ctx.moveTo(this.x + this.width - arrowSize, this.y - (this.height / 2));
+          ctx.lineTo(this.x + this.width - (arrowSize / 2), this.y - (this.height / 2) + (arrowSize / 2));
+        }
+        ctx.stroke();
+      }
+
       update() {
         if(!this.isSpawned) {
           return;

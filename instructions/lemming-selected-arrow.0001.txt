@@ -1,0 +1,23 @@
+This is a sprite in a javascript game using 2d canvas:
+    class Lemming
+    {
+      constructor(x, y) {
+        this.age = 0;
+        this.width = 10;
+        this.height = 20;
+        this.x = x;
+        this.y = y;
+        this.velX = 0;
+        this.velY = 0;
+      }
+    }
+
+above this sprite, I want to paint a white large arrow (configurable size) 
+indicating which direction along x it is currently moving. Attribute velX 
+can be positive for right, and negative for left.
+
+Get attributes of the sprite using 'this' and 'ctx' for canvas context.
+
+And sheesh, an arrow looks like this: -> or <-
+
+This time, give me only the code, I don't need an explanation.
