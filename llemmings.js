@@ -853,18 +853,18 @@ var Llemmings = (function () {
         ];
         ecs.addComponent(testEnt, new ECS.Components.PathFollowing(path, 0.25));
         ecs.addComponent(testEnt, new ECS.Components.Scale(0.35, 0.35));
-        ecs.addComponent(testEnt, new ECS.Components.Rotate(0));
-        if(false) {
+        ecs.addComponent(testEnt, new ECS.Components.Rotate(-(Math.PI / 8)));
+        if(true) {
           ecs.addComponent(testEnt, new ECS.Components.Animation(
             {
               "Rotate": {
                   "radians": {
-                      "target": Math.PI * 2,
+                      "target": Math.PI / 8,
                       "repeat": -1,
                       "direction": 1,
-                      "reverseOnRepeat": false,
-                      "easing": "linear",
-                      "speed": 0.00110,
+                      "reverseOnRepeat": true,
+                      "easing": "easeInOutSine",
+                      "speed": 0.0005,
                   },
               },
             }
