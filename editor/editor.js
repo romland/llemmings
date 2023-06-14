@@ -862,7 +862,7 @@ var LevelEditor = (function () {
           lvl = prompt("Level to open (0-" + (LlemmingsLevels.length - 1) + ":");
         }
 
-        await Llemmings.generateSprites();
+        await LlemmingsArt.generateBitmaps();
 
         reset();
         Llemmings.reset();
