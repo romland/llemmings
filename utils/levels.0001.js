@@ -308,10 +308,196 @@ var LlemmingsLevels = [
             ],
 
         }
-
     },
+    // ==============================================
+    // 
+    //
     {
         "level": 1,
+        "name": "One upon a time",
+        "seed": 1686734397339,
+        "disableGame": false,
+        "autoPlay": false,
+        "unlimitedResources": false,
+        "gradients": [
+            {
+                "type": "linear",
+                "x0": 0,
+                "y0": 0,
+                "x1": 0,
+                "y1": 600,
+                "stops": [
+                    {
+                        "offset": 0,
+                        "color": "black"
+                    },
+                    {
+                        "offset": 1,
+                        "color": "#000066"
+                    }
+                ]
+            }
+        ],
+        "shapes": [
+            {
+                "type": "rectangle",
+                "filled": true,
+                "color": "rgb(0,119,190)",
+                "lineWidth": 1,
+                "x1": 0,
+                "y1": 530,
+                "x2": 800,
+                "y2": 600
+            },
+            {
+                "type": "rectangle",
+                "filled": true,
+                "color": "rgb(74,46,0)",
+                "lineWidth": 1,
+                "x1": 103,
+                "y1": 115,
+                "x2": 37,
+                "y2": 78
+            },
+            {
+                "type": "triangle",
+                "filled": true,
+                "color": "rgb(74,46,0)",
+                "lineWidth": 1,
+                "x1": 794,
+                "y1": 283,
+                "x2": 751,
+                "y2": 427,
+                "x3": 837,
+                "y3": 427
+            }
+        ],
+        "decorations": [
+            {
+                "type": "organics",
+                "location": [
+                    "top"
+                ]
+            }
+        ],
+        "spawnInterval": 1500,
+        "resources": {
+            "lemmings": 8,
+            "time": 240000,
+            "Climber": 0,
+            "Floater": 0,
+            "Bomber": 5,
+            "Blocker": 2,
+            "Builder": 5,
+            "Basher": 0,
+            "Miner": 0,
+            "Digger": 0
+        },
+        "ui": {
+            "showScore": true,
+            "showActions": true,
+            "showObjective": true,
+            "showStartGame": false,
+            "showSettings": false,
+            "showFCT": true
+        },
+        "solution": {
+            "1": [
+                {
+                    "x": 441,
+                    "y": 423,
+                    "r": 3,
+                    "conditions": [
+                        "velX > 0",
+                        "age > 910"
+                    ],
+                    "action": "Builder"
+                },
+                {
+                    "x": 507,
+                    "y": 389,
+                    "r": 3,
+                    "conditions": [
+                        "velX > 0",
+                        "age > 1976"
+                    ],
+                    "action": "Builder"
+                },
+                {
+                    "x": 573,
+                    "y": 355,
+                    "r": 3,
+                    "conditions": [
+                        "velX > 0",
+                        "age > 3381"
+                    ],
+                    "action": "Builder"
+                },
+                {
+                    "x": 637,
+                    "y": 322,
+                    "r": 3,
+                    "conditions": [
+                        "velX > 0",
+                        "age > 5111"
+                    ],
+                    "action": "Builder"
+                },
+                {
+                    "x": 698,
+                    "y": 291,
+                    "r": 3,
+                    "conditions": [
+                        "velX > 0",
+                        "age > 7158"
+                    ],
+                    "action": "Builder"
+                }
+            ],
+            "2": [
+                {
+                    "x": 200,
+                    "y": 187,
+                    "r": 3,
+                    "conditions": [
+                        "velX > 0",
+                        "age > 307"
+                    ],
+                    "action": "Blocker"
+                },
+                {
+                    "x": 200,
+                    "y": 189,
+                    "r": 3,
+                    "conditions": [
+                        "age > 7585"
+                    ],
+                    "action": "Bomber"
+                }
+            ]
+        },
+        "goal": {
+            "survivors": 6
+        },
+        "entities": [],
+        "start": {
+            "x": 60,
+            "y": -20,
+            "radius": 50,
+            "clear": false
+        },
+        "finish": {
+            "x": 750,
+            "y": 470,
+            "radius": 50,
+            "clear": true
+        }
+    },
+    // ==============================================
+    // 
+    //
+    {
+        "level": 2,
         "name": "El-el-em-ing",
         "seed": 129,
         "autoPlay": false,
@@ -343,16 +529,6 @@ var LlemmingsLevels = [
             }
         ],
         "shapes": [
-            {
-                "type": "rectangle",
-                "filled": true,
-                "color": "rgb(0, 119, 190)",
-                "lineWidth": 1,
-                "x1": 0,
-                "y1": 530,
-                "x2": 800,
-                "y2": 600
-            },
             {
                 "type": "rectangle",
                 "filled": true,
