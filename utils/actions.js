@@ -1,13 +1,14 @@
 "use strict";
 var Actions = (function ()
 {
-    let lemmings, levelData, levelDataResources;
+    let lemmings, levelData, levelDataResources, recording;
 
     function init(sharedVars)
     {
         lemmings = sharedVars.lemmings;
         levelData = sharedVars.levelData;
         levelDataResources = sharedVars.levelDataResources;
+        recording = {};
     }
 
 
@@ -51,6 +52,35 @@ var Actions = (function ()
       }
       LlemmingsFCT.spawnCombatText(text);
     }
+
+    function recordAction(action, lem)
+    {
+      const lx = Math.round(lem.x + (lem.width/2));
+      const ly = Math.round(lem.y + lem.height);
+      const conditions = [];
+
+      if(lem.velX !== 0) {
+        conditions.push(
+          "velX " + (lem.velX > 0 ? "> 0" : "< 0")
+        );
+      }
+
+      conditions.push(
+        "age > " + (lem.age - 30)
+      );
+
+      if(!recording[lem.id]) {
+        recording[lem.id] = [];
+      }
+
+      recording[lem.id].push({
+        x: lx, y: ly, r: 3,
+        conditions : conditions,
+        action : action
+      });
+
+      console.log("Recording for level", levelData.level, ":", recording);
+    }
   
     // >>> Prompt: instructions/actions.0001.txt
     function applyAction(action)
@@ -88,6 +118,10 @@ var Actions = (function ()
 
       if(countSpan) {
         countSpan.innerText = levelDataResources[action];
+      }
+
+      if(!Llemmings.isAutoPlaying()) {
+        recordAction(action, selectedLemming);
       }
 
       switch (action) {
