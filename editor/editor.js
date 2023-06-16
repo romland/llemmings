@@ -848,7 +848,7 @@ var LevelEditor = (function () {
 
     async function createNewLevel()
     {
-        await Llemmings.generateSprites();
+        await LlemmingsArt.generateBitmaps();
         
         reset();
         Llemmings.reset();

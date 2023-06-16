@@ -1,0 +1,79 @@
+This is a recursive function that generates a CRUD.
+When it encounters an array it will allow adding/removing elements in the array.
+
+Make it so that objects and arrays and all individual array elements are collapsable and expandable.
+When an item is collapsed, show a sensible label.
+The expand/collapse button should be above the input fields, also move the add/remove 
+buttons to above the input fields. Use arrow symbols for expand/collapse.
+
+By default, objects and arrays should be collapsed.
+
+function dive(obj, path, opts, lvl = 0)
+{
+    if(typeof obj === "string") {
+        obj = [ obj ]
+    }
+
+    for (let key in obj) {
+        const lbl = document.createElement('label');
+        lbl.textContent = key;
+        lbl.style.marginLeft = `${20 * lvl}px`;
+        path.append(lbl);
+        const id = path.id + '.' + key;
+        
+        if (key === 'type' && opts) {
+            // ignore
+        } else if (key.toLowerCase().includes('color')) {
+            // ignore
+        } else if (typeof obj[key] === 'string') {
+            // ignore
+        } else if (typeof obj[key] === 'number') {
+            // ignore
+        } else if (typeof obj[key] === 'boolean') {
+            // ignore
+        } else if (Array.isArray(obj[key])) {
+            const arrContainer = document.createElement('div');
+            arrContainer.id = id;
+            path.appendChild(arrContainer);
+            const updateArr = (container) => {
+                container.innerHTML = '';
+                obj[key].forEach((item, idx) => {
+                    const itemPath = document.createElement('div');
+                    itemPath.id = container.id + `[${idx}]`;
+                    container.appendChild(itemPath);
+                    dive(item, itemPath, opts?.[key], lvl + 1);
+                });
+
+                const addButton = document.createElement('button');
+                addButton.textContent = '+ ' + (singularis[key] || key);
+                addButton.style.marginLeft = `${20 * lvl}px`;
+                
+                addButton.addEventListener('click', () => {
+                    obj[key].push(JSON.parse(JSON.stringify(obj[key][0])));
+                    updateArr(container);
+                });
+                
+                container.appendChild(addButton);
+            };
+            
+            updateArr(arrContainer);
+            
+            if (obj[key].length > 0) {
+                const removeButton = document.createElement('button');
+                removeButton.textContent = '- ' + (singularis[key] || key);
+                removeButton.style.marginLeft = `${20 * lvl}px`;
+
+                removeButton.addEventListener('click', () => {
+                    obj[key].pop();
+                    updateArr(arrContainer);
+                });
+                path.appendChild(removeButton);
+            }
+        } else if (typeof obj[key] === 'object') {
+            const newObjPath = document.createElement('div');
+            newObjPath.id = id;
+            path.appendChild(newObjPath);
+            dive(obj[key], newObjPath, opts, lvl + 1);
+        }
+    }
+}

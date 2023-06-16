@@ -4,6 +4,14 @@
 */
 var CRUD = (function ()
 {
+    const singularis = {
+        "gradients" : "gradient",
+        "stops" : "stop",
+        "shapes" : "shape",
+        "decorations": "decoration",
+        "attributes" : "attribute",
+        "entities" : "entity",
+    };
     function inpCreator(id, val, type, lvl, hdlr)
     {
         const inp = document.createElement('input');
@@ -19,6 +27,8 @@ var CRUD = (function ()
         return inp;
     }
 
+    // >>> Prompt: editor/instructions/crud.0001.txt
+    // >>> Prompt: editor/instructions/crud-expand-collapse.0001.txt    
     function dive(obj, path, opts, lvl = 0)
     {
         // HUMAN: This is such stupid code. A string is also for-in-able, which means
@@ -78,51 +88,99 @@ var CRUD = (function ()
                 });
                 path.appendChild(boolCb);
             } else if (Array.isArray(obj[key])) {
-                const arrContainer = document.createElement('div');
-                arrContainer.id = id;
+                const arrContainer = createCollapsibleContainer(
+                  key,
+                  obj[key],
+                  opts,
+                  lvl
+                );
                 path.appendChild(arrContainer);
-                const updateArr = (container) => {
-                    container.innerHTML = '';
-                    obj[key].forEach((item, idx) => {
-                        const itemPath = document.createElement('div');
-                        itemPath.id = container.id + `[${idx}]`;
-                        container.appendChild(itemPath);
-                        dive(item, itemPath, opts?.[key], lvl + 1);
-                    });
-
-                    const addButton = document.createElement('button');
-                    addButton.textContent = '+ ' + key;
-                    addButton.style.marginLeft = `${20 * lvl}px`;
-                    
-                    addButton.addEventListener('click', () => {
-                        obj[key].push(JSON.parse(JSON.stringify(obj[key][0])));
-                        updateArr(container);
-                    });
-                    
-                    container.appendChild(addButton);
-                };
-                
-                updateArr(arrContainer);
-                
+          
+                // Create the add button
+                const addButton = document.createElement("button");
+                addButton.textContent = "+ " + (singularis[key] || key);
+                addButton.style.marginLeft = `${20 * lvl}px`;
+                addButton.addEventListener("click", () => {
+                  obj[key].push(JSON.parse(JSON.stringify(obj[key][0])));
+                  const itemPath = document.createElement("div");
+                  const idx = obj[key].length - 1;
+                  itemPath.id = arrContainer.id + `[${idx}]`;
+                  const newItemContainer = createCollapsibleContainer(
+                    idx,
+                    obj[key][idx],
+                    opts?.[key],
+                    lvl + 1
+                  );
+                  itemPath.appendChild(newItemContainer);
+                  contentContainer.appendChild(itemPath);
+                });
+                arrContainer.prepend(addButton); // Add the add button above the items
+          
+                // Create the remove button
                 if (obj[key].length > 0) {
-                    const removeButton = document.createElement('button');
-                    removeButton.textContent = '- ' + key;
-                    removeButton.style.marginLeft = `${20 * lvl}px`;
-
-                    removeButton.addEventListener('click', () => {
-                        obj[key].pop();
-                        updateArr(arrContainer);
-                    });
-                    path.appendChild(removeButton);
+                  const removeButton = document.createElement("button");
+                  removeButton.textContent = "- " + (singularis[key] || key);
+                  removeButton.style.marginLeft = `${20 * lvl}px`;
+                  removeButton.addEventListener("click", () => {
+                    obj[key].pop();
+                    contentContainer.removeChild(
+                      contentContainer.lastElementChild || null
+                    );
+                  });
+                  arrContainer.prepend(removeButton); // Add the remove button above the items
                 }
-            } else if (typeof obj[key] === 'object') {
-                const newObjPath = document.createElement('div');
-                newObjPath.id = id;
-                path.appendChild(newObjPath);
-                dive(obj[key], newObjPath, opts, lvl + 1);
+              } else if (typeof obj[key] === "object") {
+                const newObjContainer = createCollapsibleContainer(
+                  key,
+                  obj[key],
+                  opts,
+                  lvl
+                );
+                path.appendChild(newObjContainer);
             }
         }
     }
+
+    // >>> Prompt: editor/instructions/crud-expand-collapse.0001.txt    
+    function createToggleButton(expanded) {
+        const button = document.createElement("button");
+        button.className = "toggle-button";
+        button.textContent = expanded ? "▼" : "▶";
+        return button;
+    }
+    
+    // >>> Prompt: editor/instructions/crud-expand-collapse.0001.txt    
+    // Define a function to create a collapsible container for an item
+    function createCollapsibleContainer(key, item, opts, lvl) {
+        const container = document.createElement("div");
+        
+        // Create the expand/collapse button
+        const toggleButton = createToggleButton(false);
+        toggleButton.addEventListener("click", () => {
+            const expanded = toggleButton.textContent === "▼";
+            toggleButton.textContent = expanded ? "▶" : "▼";
+            contentContainer.style.display = expanded ? "none" : "block";
+        });
+        container.appendChild(toggleButton);
+        
+        // Create the label
+        const label = document.createElement("label");
+        label.textContent = key;
+        label.style.marginLeft = `${20 * lvl}px`;
+        container.appendChild(label);
+        
+        // Create the content container
+        const contentContainer = document.createElement("div");
+        contentContainer.style.marginLeft = `${20 * lvl}px`;
+        contentContainer.style.display = "none";
+        container.appendChild(contentContainer);
+        
+        // Recursively dive into the item
+        dive(item, contentContainer, opts?.[key], lvl + 1);
+        
+        return container;
+    }
+      
     
     function create(data, options, elt, saveCB)
     {
