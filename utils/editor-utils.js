@@ -1,7 +1,7 @@
 var EditorUtils = (function () {
     /*
     >>> Prompt: editor/instructions/point-reduction.0001.txt
-
+    
     To simplify/reduce the number of points in drawn coordinates, we can use a technique
     called Douglas-Peucker algorithm. This algorithm removes points that don’t contribute
     to the overall shape of the line or polygon.
@@ -20,7 +20,7 @@ var EditorUtils = (function () {
                 dmax = d;
             }
         }
-
+        
         // If max distance is greater than tolerance, recursively simplify
         if (dmax > tolerance) {
             // Recursive call
@@ -28,14 +28,14 @@ var EditorUtils = (function () {
             const right = points.slice(index);
             const resultsLeft = douglasPeucker(left, tolerance);
             const resultsRight = douglasPeucker(right, tolerance);
-
+            
             // Build the result list
             return resultsLeft.slice(0, resultsLeft.length - 1).concat(resultsRight);
         } else {
             return [points[0], points[end]];
         }
     }
-
+    
     // Function that calculates the perpendicular distance from a point to a line
     function perpendicularDistance(point, start, end) {
         const { x: startX, y: startY } = start;
@@ -45,8 +45,32 @@ var EditorUtils = (function () {
         const denominator = Math.sqrt(Math.pow((endY - startY), 2) + Math.pow((endX - startX), 2));
         return numerator / denominator;
     }
-
+    
+    // >>> Prompt: editor/instructions/deep-merge.0001.txt
+    function deepMerge(target, ...sources) {
+        if (!sources.length) return target;
+        const source = sources.shift();
+        if (isMergeableObject(target) && isMergeableObject(source)) {
+            Object.keys(source).forEach(key => {
+                if (isMergeableObject(source[key])) {
+                    if (!target[key]) Object.assign(target, { [key]: {} });
+                    deepMerge(target[key], source[key]);
+                } else {
+                    Object.assign(target, { [key]: source[key] });
+                }
+            });
+        }
+        return deepMerge(target, ...sources);
+    }
+    
+    // >>> Prompt: editor/instructions/deep-merge.0001.txt
+    function isMergeableObject(val) {
+        const isObject = val && typeof val === 'object';
+        return isObject && !Array.isArray(val);
+    }    
+    
     return {
         douglasPeucker : douglasPeucker,
+        deepMerge : deepMerge,
     }
 })();

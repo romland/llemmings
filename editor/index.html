@@ -65,6 +65,10 @@
         position: absolute;
         top: 120px; 
       }
+
+      .crud-label {
+        font-size: 20px;
+      }
     </style>
   </head>
   
@@ -114,7 +118,7 @@
     <script>
       document.fonts.ready.then(function () {
         // Only do this _once_ per page-load:
-        LevelEditor.initEditor();
+        LevelEditor.initEditor(0);
 
         // Do this for every level to be loaded
         // LevelEditor.initLevel(0);

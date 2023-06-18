@@ -795,11 +795,12 @@ var LevelEditor = (function () {
 
       // Set which level to load (or null to create new)!
       if(lvl === null) {
-        levelData = defaultLevelData;
+        levelData = {};
         levelData.level = LlemmingsLevels.length;
         levelData.seed = Date.now();
+        levelData = EditorUtils.deepMerge(levelData, defaultLevelData);
       } else {
-        levelData = { ...defaultLevelData, ...LlemmingsLevels[lvl] };
+        levelData = EditorUtils.deepMerge({}, defaultLevelData, LlemmingsLevels[lvl]);
       }
 
       const levelDataCrudOpts = {
@@ -810,7 +811,7 @@ var LevelEditor = (function () {
           type: ['organics']
         }
       };
-    
+
       CRUD.create(levelData, levelDataCrudOpts, document.getElementById("levelData"), (evt, data) => {
         console.log("Saved:", data);
         
@@ -823,6 +824,7 @@ var LevelEditor = (function () {
             console.log('Error in copying stringified data to clipboard: ', err);
           });
 
+        alert("Level saved to clipboard. Paste it into the levels array.");
         levelData = data;
         renderLevel();
       });
