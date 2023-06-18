@@ -118,10 +118,9 @@
     <script>
       document.fonts.ready.then(function () {
         // Only do this _once_ per page-load:
-        LevelEditor.initEditor(0);
+        LevelEditor.initEditor();
 
         // Do this for every level to be loaded
-        // LevelEditor.initLevel(0);
         LevelEditor.openLevel(0);
       });
     </script>
