@@ -45,10 +45,10 @@ var CRUD = (function ()
             const lbl = document.createElement('label');
             lbl.textContent = key;
             lbl.style.marginLeft = `${20 * lvl}px`;
-            path.append(lbl);
             const id = path.id + '.' + key;
             
             if (key === 'type' && opts) {
+                path.append(lbl);
                 const sel = document.createElement('select');
                 opts["type"].forEach((o) => {
                     const opt = document.createElement('option');
@@ -64,16 +64,19 @@ var CRUD = (function ()
                 });
                 path.appendChild(sel);
             } else if (key.toLowerCase().includes('color')) {
+                path.append(lbl);
                 const colorInp = inpCreator(id, obj[key], 'color', lvl, (e) => {
                     obj[key] = e.target.value;
                 });
                 path.appendChild(colorInp);
             } else if (typeof obj[key] === 'string') {
+                path.append(lbl);
                 const strInp = inpCreator(id, obj[key], 'text', lvl, (e) => {
                     obj[key] = e.target.value;
                 });
                 path.appendChild(strInp);
             } else if (typeof obj[key] === 'number') {
+                path.append(lbl);
                 const numInp = inpCreator(id, obj[key], 'number', lvl, (e) => {
                     obj[key] = parseFloat(e.target.value);
                 });
@@ -86,59 +89,65 @@ var CRUD = (function ()
                 boolCb.addEventListener('change', (e) => {
                     obj[key] = e.target.checked;
                 });
+
+                path.append(document.createElement('br'));
                 path.appendChild(boolCb);
+                lbl.style.display = "inline-block";
+                path.append(lbl);
             } else if (Array.isArray(obj[key])) {
-                const arrContainer = createCollapsibleContainer(
-                  key,
-                  obj[key],
-                  opts,
-                  lvl
-                );
+                // path.append(lbl);
+
+                const arrContainer = createCollapsibleContainer(key, obj[key], opts, lvl);
                 path.appendChild(arrContainer);
           
                 // Create the add button
-                const addButton = document.createElement("button");
-                addButton.textContent = "+ " + (singularis[key] || key);
-                addButton.style.marginLeft = `${20 * lvl}px`;
-                addButton.addEventListener("click", () => {
-                  obj[key].push(JSON.parse(JSON.stringify(obj[key][0])));
-                  const itemPath = document.createElement("div");
-                  const idx = obj[key].length - 1;
-                  itemPath.id = arrContainer.id + `[${idx}]`;
-                  const newItemContainer = createCollapsibleContainer(
-                    idx,
-                    obj[key][idx],
-                    opts?.[key],
-                    lvl + 1
-                  );
-                  itemPath.appendChild(newItemContainer);
-                  contentContainer.appendChild(itemPath);
-                });
-                arrContainer.prepend(addButton); // Add the add button above the items
+                addAddButton(key, lvl, obj, arrContainer, opts); // Add the add button above the items
           
                 // Create the remove button
-                if (obj[key].length > 0) {
-                  const removeButton = document.createElement("button");
-                  removeButton.textContent = "- " + (singularis[key] || key);
-                  removeButton.style.marginLeft = `${20 * lvl}px`;
-                  removeButton.addEventListener("click", () => {
-                    obj[key].pop();
-                    contentContainer.removeChild(
-                      contentContainer.lastElementChild || null
-                    );
-                  });
-                  arrContainer.prepend(removeButton); // Add the remove button above the items
-                }
+                addRemoveButton(obj, key, lvl, arrContainer); // Add the remove button above the items
               } else if (typeof obj[key] === "object") {
-                const newObjContainer = createCollapsibleContainer(
-                  key,
-                  obj[key],
-                  opts,
-                  lvl
-                );
+                const newObjContainer = createCollapsibleContainer(key, obj[key], opts, lvl, true);
                 path.appendChild(newObjContainer);
             }
         }
+    }
+
+    function addAddButton(key, lvl, obj, arrContainer, opts) {
+        const addButton = document.createElement("button");
+        addButton.textContent = "+ " + (singularis[key] || key);
+        addButton.style.marginLeft = `${20 * lvl}px`;
+        addButton.addEventListener("click", () => {
+            obj[key].push(JSON.parse(JSON.stringify(obj[key][0])));
+            const itemPath = document.createElement("div");
+            const idx = obj[key].length - 1;
+            itemPath.id = arrContainer.id + `[${idx}]`;
+            const newItemContainer = createCollapsibleContainer(
+                idx,
+                obj[key][idx],
+                opts?.[key],
+                lvl + 1,
+                false
+            );
+            itemPath.appendChild(newItemContainer);
+            contentContainer.appendChild(itemPath);
+        });
+        arrContainer.prepend(addButton);
+    }
+
+    function addRemoveButton(obj, key, lvl, arrContainer) {
+        const removeButton = document.createElement("button");
+        if (obj[key].length === 0) {
+            removeButton.disabled = true;
+        }
+        removeButton.textContent = "- " + (singularis[key] || key);
+        removeButton.style.marginLeft = `${20 * lvl}px`;
+        removeButton.addEventListener("click", () => {
+            obj[key].pop();
+            contentContainer.removeChild(
+                contentContainer.lastElementChild || null
+            );
+        });
+        arrContainer.prepend(removeButton);
     }
 
     // >>> Prompt: editor/instructions/crud-expand-collapse.0001.txt    
@@ -151,7 +160,7 @@ var CRUD = (function ()
     
     // >>> Prompt: editor/instructions/crud-expand-collapse.0001.txt    
     // Define a function to create a collapsible container for an item
-    function createCollapsibleContainer(key, item, opts, lvl) {
+    function createCollapsibleContainer(key, item, opts, lvl, addLabel = true) {
         const container = document.createElement("div");
         
         // Create the expand/collapse button
@@ -164,10 +173,14 @@ var CRUD = (function ()
         container.appendChild(toggleButton);
         
         // Create the label
-        const label = document.createElement("label");
-        label.textContent = key;
-        label.style.marginLeft = `${20 * lvl}px`;
-        container.appendChild(label);
+        if(addLabel) {
+            const label = document.createElement("label");
+            label.textContent = key;
+            label.style.marginLeft = `${20 * lvl}px`;
+            if(lvl === 0)
+                label.setAttribute("class", "crud-label");
+            container.appendChild(label);
+        }
         
         // Create the content container
         const contentContainer = document.createElement("div");
