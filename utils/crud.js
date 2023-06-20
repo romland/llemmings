@@ -12,6 +12,8 @@ var CRUD = (function ()
         "attributes" : "attribute",
         "entities" : "entity",
     };
+    const indent = 10;
+
     function inpCreator(id, val, type, lvl, hdlr)
     {
         const inp = document.createElement('input');
@@ -44,7 +46,7 @@ var CRUD = (function ()
         for (let key in obj) {
             const lbl = document.createElement('label');
             lbl.textContent = key;
-            lbl.style.marginLeft = `${20 * lvl}px`;
+            lbl.style.marginLeft = `${indent * lvl}px`;
             const id = path.id + '.' + key;
             
             if (key === 'type' && opts) {
@@ -57,7 +59,7 @@ var CRUD = (function ()
                     sel.appendChild(opt);
                 });
                 sel.id = id;
-                sel.style.marginLeft = lvl * 20 + "px";
+                sel.style.marginLeft = lvl * indent + "px";
                 sel.value = obj[key];
                 sel.addEventListener('change', (e) => {
                     obj[key] = e.target.value;
@@ -95,16 +97,12 @@ var CRUD = (function ()
                 lbl.style.display = "inline-block";
                 path.append(lbl);
             } else if (Array.isArray(obj[key])) {
-                // path.append(lbl);
-
                 const arrContainer = createCollapsibleContainer(key, obj[key], opts, lvl);
                 path.appendChild(arrContainer);
           
-                // Create the add button
-                addAddButton(key, lvl, obj, arrContainer, opts); // Add the add button above the items
-          
-                // Create the remove button
-                addRemoveButton(obj, key, lvl, arrContainer); // Add the remove button above the items
+                addAddButton(key, lvl, obj, arrContainer, opts);
+                addRemoveButton(obj, key, lvl, arrContainer);
+
               } else if (typeof obj[key] === "object") {
                 const newObjContainer = createCollapsibleContainer(key, obj[key], opts, lvl, true);
                 path.appendChild(newObjContainer);
@@ -115,7 +113,7 @@ var CRUD = (function ()
     function addAddButton(key, lvl, obj, arrContainer, opts) {
         const addButton = document.createElement("button");
         addButton.textContent = "+ " + (singularis[key] || key);
-        addButton.style.marginLeft = `${20 * lvl}px`;
+        // addButton.style.marginLeft = `${indent * lvl}px`;
         addButton.addEventListener("click", () => {
             obj[key].push(JSON.parse(JSON.stringify(obj[key][0])));
             const itemPath = document.createElement("div");
@@ -140,7 +138,7 @@ var CRUD = (function ()
             removeButton.disabled = true;
         }
         removeButton.textContent = "- " + (singularis[key] || key);
-        removeButton.style.marginLeft = `${20 * lvl}px`;
+        // removeButton.style.marginLeft = `${indent * lvl}px`;
         removeButton.addEventListener("click", () => {
             obj[key].pop();
             contentContainer.removeChild(
@@ -165,26 +163,31 @@ var CRUD = (function ()
         
         // Create the expand/collapse button
         const toggleButton = createToggleButton(false);
+
         toggleButton.addEventListener("click", () => {
             const expanded = toggleButton.textContent === "▼";
             toggleButton.textContent = expanded ? "▶" : "▼";
             contentContainer.style.display = expanded ? "none" : "block";
         });
-        container.appendChild(toggleButton);
         
         // Create the label
         if(addLabel) {
             const label = document.createElement("label");
             label.textContent = key;
-            label.style.marginLeft = `${20 * lvl}px`;
-            if(lvl === 0)
+            label.style.marginLeft = `${indent * lvl}px`;
+            if(lvl === 0) {
                 label.setAttribute("class", "crud-label");
+            }
+            toggleButton.style.float = "right";
+            label.appendChild(toggleButton);
             container.appendChild(label);
+        } else {
+            container.appendChild(toggleButton);
         }
         
         // Create the content container
         const contentContainer = document.createElement("div");
-        contentContainer.style.marginLeft = `${20 * lvl}px`;
+        contentContainer.style.marginLeft = `${indent * lvl}px`;
         contentContainer.style.display = "none";
         container.appendChild(contentContainer);
         
