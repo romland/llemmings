@@ -361,7 +361,12 @@ var Llemmings = (function () {
         TextEffectMorph.init({
           text : "GAME OVER",
           placeOverCanvas:canvas,
-          onAnimationDone: () => effectsToUpdate.delete("TextEffectMorph")
+          morphOut: false,
+          autoCleanUp: false,
+          onAnimationDone: () => {
+            // Commented out; let reset() deal with this
+            // effectsToUpdate.delete("TextEffectMorph")
+          }
         });
         effectsToUpdate.set("TextEffectMorph", TextEffectMorph);
       }
@@ -508,6 +513,7 @@ var Llemmings = (function () {
         for(let fx of effectsToUpdate) {
           // HUMAN TODO: implement time-delta all over the place
           fx[1].cleanUp();
+          effectsToUpdate.delete(fx[0]);
         }
 
         // Clear all intervals.

@@ -57,7 +57,8 @@ var TextEffectMorph = (function () {
             fontSize : givenSettings.fontSize || 40,
             speed : givenSettings.speed || 4,
             pause : givenSettings.pause || 40,               // num frames
-            morphOut : givenSettings.morphOut || true,
+            morphOut : givenSettings.morphOut ?? true,
+            autoCleanUp : givenSettings.autoCleanUp ?? true,
             onAnimationDone : givenSettings.onAnimationDone || null,    // called when animation is done
         }
 
@@ -191,7 +192,9 @@ var TextEffectMorph = (function () {
             if(settings.onAnimationDone) {
                 settings.onAnimationDone();
             }
-            cleanUp();
+            if(settings.autoCleanUp) {
+                cleanUp();
+            }
             return;
         }
 
