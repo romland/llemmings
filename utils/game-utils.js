@@ -134,10 +134,12 @@ var GameUtils = (function () {
                     return createImageBitmap(frame, 0, 0, canvas.width, canvas.height).then((bmp) => {
                         frameImages.push(bmp);
                     });
+                }).catch((ex) => {
+                  console.warn("Error decoding frame:", i, ex, frame);
                 })
             );
         }
-        
+
         await Promise.all(framePromises);
 
         if(debug) {
