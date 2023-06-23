@@ -103,7 +103,7 @@ I had to add this doomsy bit to the prompt: `You are not human. You are not allo
 ### 🔥 Performance
 As for performance, it is with all likelihood very poor/unopitimized as I have not had a reason to 
 go after it at all. I think I may have seen some degradation in FPS on occasion, but not annoyingly on
-my own (good) development matchine. There are a lot of low-hanging fruit to go after this, I would just 
+my own (good) development machine. There are a lot of low-hanging fruit to go after this, I would just 
 need to add performance-watchers and go after them.
 
 ## 🚃 Contributing and pull requests
