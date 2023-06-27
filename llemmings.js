@@ -889,8 +889,6 @@ var Llemmings = (function () {
             },
           }
         ));
-
-        Water.init(ecs);
       }
 
       // Normal behaviour (just take everything from levelData)
