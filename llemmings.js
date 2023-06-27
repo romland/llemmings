@@ -397,10 +397,6 @@ var Llemmings = (function () {
       } else if(levelData.start.clear) {
         // clear start zone
         World.clearSquare(levelData.start.x, levelData.start.y, levelData.start.radius);
-
-        let startHatch = ecs.createEntity("AnimSpriteTest");
-        ecs.addComponent(startHatch, new ECS.Components.Position(levelData.start.x - 30, Math.max(0, levelData.start.y)));
-        ecs.addComponent(startHatch, new ECS.Components.AnimatedSprite("hatch", "easeOutBounce"));
       }
 
       if(levelData.finish.clear) {
@@ -417,19 +413,27 @@ var Llemmings = (function () {
           10
       );
       ctx.restore();
+    }
 
-      // Draw the house on the platform at finish area
+    function createStartHatch()
+    {
+      let startHatch = ecs.createEntity("AnimSpriteTest");
+      ecs.addComponent(startHatch, new ECS.Components.Position(levelData.start.x - 30, Math.max(0, levelData.start.y)));
+      ecs.addComponent(startHatch, new ECS.Components.AnimatedSprite("hatch", "easeOutBounce"));
+    }
+
+    function createFinishHouse()
+    {
       const houseWidth = levelData.finish.radius;
       const houseHeight = levelData.finish.radius;
       let house = ecs.createEntity("House");
       // Human: Not entirely sure why I need to do +3 as offset there to get it on top of platform.
       ecs.addComponent(house, new ECS.Components.Position(
-        levelData.finish.x + levelData.finish.radius - houseWidth, 
+        levelData.finish.x + levelData.finish.radius - houseWidth,
         levelData.finish.y + levelData.finish.radius - houseHeight + 3));
       ecs.addComponent(house, new ECS.Components.Sprite("house"));
       ecs.addComponent(house, new ECS.Components.Shake(300, 3));
     }
-
 
     function forceDebugIfSet()
     {
@@ -740,7 +744,6 @@ var Llemmings = (function () {
       ctx = canvas.getContext('2d', { willReadFrequently: true, alpha: false });
 
       LlemmingsDebug.init({ctx});
-      initECS(levelData, ctx);
 
       if(!EDITOR_MODE) {
         GameUtils.adjustCanvasHeight();
@@ -777,7 +780,9 @@ var Llemmings = (function () {
       World.setGradients(ctx, levelData.gradients);
       World.backupGradients(levelData.gradients);     // needed for when we blow stuff up or dig
 
-      LlemmingsArt.renderDecorations(ctx, levelData);
+      initECS(levelData, ctx);
+
+      LlemmingsArt.renderDecorations(ctx, levelData, ecs);
       World.renderDirtTexture();
       World.renderRockTexture();
       World.renderWaterTexture();
@@ -785,6 +790,10 @@ var Llemmings = (function () {
       if(!canvasEventsListening) {
         startCanvasEventListeners();
       }
+
+      // need to be after ECS init
+      createStartHatch()
+      createFinishHouse();
 
       LlemmingsFCT.init(canvas);
       effectsToUpdate.set("FloatingCombatText", LlemmingsFCT);
@@ -853,29 +862,35 @@ var Llemmings = (function () {
             settings.direction = (settings.direction === 1 ? -1 : 1);
           }
         ));
+
+        // Make sprite move along a path
         let path = [
           // {"x": 5,"y": 5},{"x": 35,"y": 15},{"x": 45,"y": 5},{"x": 65,"y": 65},{"x": 45,"y": 45},{"x": 130,"y": 45}
           {"x": 5,"y": 5},{"x": 35,"y": 5},{"x": 35,"y": 35},{"x": 5,"y": 35},
         ];
         ecs.addComponent(testEnt, new ECS.Components.PathFollowing(path, 0.25));
+
         ecs.addComponent(testEnt, new ECS.Components.Scale(0.35, 0.35));
+
+        // Set start rotation to negative wobble-amount
         ecs.addComponent(testEnt, new ECS.Components.Rotate(-(Math.PI / 8)));
-        if(true) {
-          ecs.addComponent(testEnt, new ECS.Components.Animation(
-            {
-              "Rotate": {
-                  "radians": {
-                      "target": Math.PI / 8,
-                      "repeat": -1,
-                      "direction": 1,
-                      "reverseOnRepeat": true,
-                      "easing": "easeInOutSine",
-                      "speed": 0.0005,
-                  },
-              },
-            }
-          ));
-        }
+        // Animate so that it wobbles
+        ecs.addComponent(testEnt, new ECS.Components.Animation(
+          {
+            "Rotate": {
+                "radians": {
+                    "target": Math.PI / 8,
+                    "repeat": -1,
+                    "direction": 1,
+                    "reverseOnRepeat": true,
+                    "easing": "easeInOutSine",
+                    "speed": 0.0005,
+                },
+            },
+          }
+        ));
+
+        Water.init(ecs);
       }
 
       // Normal behaviour (just take everything from levelData)
@@ -995,7 +1010,7 @@ var Llemmings = (function () {
           console.warn("Overriding level to modify settings due to __DEBUG__");
 
           // THIS IS WHERE YOU SET HARDCODED LEVEL TO TEST!
-          ld = LlemmingsLevels[1];
+          ld = LlemmingsLevels[2];
           /*
           ld.autoPlay = true;
   

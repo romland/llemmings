@@ -526,9 +526,25 @@ var LlemmingsLevels = [
                 "location": [
                     "top"
                 ]
+            },
+            {
+                "type": "water",
+                "location": [
+                    "bottom",
+                ]
             }
         ],
         "shapes": [
+            {
+                "type": "rectangle",
+                "filled": true,
+                "color": "rgb(0,119,190)",
+                "lineWidth": 1,
+                "x1": 0,
+                "y1": 530,
+                "x2": 800,
+                "y2": 600
+            },
             {
                 "type": "rectangle",
                 "filled": true,

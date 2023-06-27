@@ -317,6 +317,12 @@ var ECS = (function () {
             this._initialVals = {};
             this.attributes = attributes;
         }
+
+        reset()
+        {
+            this._elapsedTime = 0;
+            this._initialVals = {};
+        }
     }
     
 

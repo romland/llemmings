@@ -1,0 +1,36 @@
+This took a while to get right, mostly due to what I believe is some Chrome
+when we're generating the animation. Works in Firefox and Safari, but fails in
+Chrome.
+
+>>> Prompt:
+In the same vein as the snippet below, I want a function that generates a frame of 
+an animation that depicts a bubble popping. It should grow slowly and then 'explode'
+in a pop where a few particles fly off it and then disappear (either through fading
+or scaling). The bubble should not be filled.
+
+The arguments to the function must remain the same and in the same order, infer anything
+else (e.g. center is width/2, height/2, max-radius is hardcoded, etc). 
+
+There seems to be a bug in Chrome with the arc() function, make sure radius is an int and does not
+exceed the size of the canvas.
+
+function drawHatch(context, width, height, currentFrameNum, totalFrameCount)
+{
+    // calculate angle of rotation for each door (Human: 1.34 is just because i want it slightly more than 90 degrees)
+    const angle = (currentFrameNum / totalFrameCount * 1.34) * Math.PI / 2;
+
+    context.save();
+    context.translate(16, 5);
+    context.rotate(angle);
+    context.fillRect(0, -5, 30, 5);
+    context.restore();
+
+    context.save();
+    context.translate(76, 5);
+    context.scale(-1, 1);   // mirror
+    context.rotate(angle);
+    context.fillRect(0, -5, 30, 5);
+    context.restore();
+}
+
+Feel free to use a global variable for the particles.

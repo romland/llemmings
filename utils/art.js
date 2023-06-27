@@ -52,6 +52,66 @@ var LlemmingsArt = (function ()
       </svg>`;
     }
 
+    // >>> Prompt: instructions/art-waterbubble.0001.txt
+    let bubblePopParticles = [];
+    function drawBubblePop(context, width, height, currentFrameNum, totalFrameCount) {
+      const center = [width / 2, height / 2];
+      const maxRadius = Math.min(center[0], center[1]) - 10;
+      
+      const radius = maxRadius * currentFrameNum / totalFrameCount;
+      const bubbleColor = 'rgba(255, 255, 255, 0.4)';
+      const particleColor = 'rgba(255, 255, 255, 0.7)';
+      
+      // Draw bubble
+      if(bubblePopParticles.length === 0) {
+        context.save();
+        context.beginPath();
+        context.strokeStyle = bubbleColor;
+        context.arc(center[0], center[1], radius, 0, 2 * Math.PI);
+        context.stroke();
+        context.restore();
+      }
+      
+      // Generate particles
+      if(currentFrameNum === Math.floor(totalFrameCount * 0.7)){
+        bubblePopParticles = [];
+        const numParticles = 15;
+        const particleRadius = maxRadius / 20;
+        for(let i = 0; i < numParticles; i++){
+          const angle = Math.random() * 2 * Math.PI;
+          const speed = Math.random() * 10;
+          bubblePopParticles.push({
+            x: center[0],
+            y: center[1],
+            vx: Math.cos(angle) * speed * 5,
+            vy: Math.sin(angle) * speed * 5,
+            radius: particleRadius,
+            life: totalFrameCount * 0.3,
+            color: particleColor
+          });
+        }
+      }
+      
+      // Draw particles
+      bubblePopParticles.forEach( (particle, index) => {
+        particle.x += particle.vx;
+        particle.y += particle.vy;
+        // particle.vy += 0.1;
+        particle.life--;
+        
+        context.save();
+        context.beginPath();
+        context.fillStyle = particle.color;
+        context.arc(particle.x, particle.y, particle.radius, 0, 2 * Math.PI);
+        context.fill();
+        context.restore();
+        
+        if(particle.life <= 0){
+          bubblePopParticles.splice(index, 1);
+        }
+      });
+    }
+    
     // >>> Prompt: art-hatch.0001.txt
     // >>> Prompt: art-hatch.0002.txt
     function drawHatch(context, width, height, currentFrameNum, totalFrameCount)
@@ -254,13 +314,17 @@ var LlemmingsArt = (function ()
       }
     }
 
-    function renderDecorations(ctx, levelData)
+    function renderDecorations(ctx, levelData, ecs)
     {
       for(let i = 0; i < levelData.decorations.length; i++) {
         for(let j = 0; j < levelData.decorations[i].location.length; j++) {
           switch(levelData.decorations[i].type) {
             case "organics" :
               drawEdgeVegetation(ctx, levelData.decorations[i].location[j]);
+              break;
+            case "water" :
+//TODO: need ecs!
+              Water.init(ecs);
               break;
             default :
               throw "unknown decoration " + levelData.decorations[i].type;
@@ -358,6 +422,11 @@ var LlemmingsArt = (function ()
       if(!getBitmap("snowyowl")) {
         console.log("Creating snowy owl (animation)");
         bitmaps["snowyowl"] = GameUtils.generateAnimationFrames(32*6, 32*6, 90, drawOwl, false);
+      }
+
+      if(!getBitmap("bubblepop")) {
+        console.log("Creating bubble pop (animation)");
+        bitmaps["bubblepop"] = GameUtils.generateAnimationFrames(32*2, 32*2, 60, drawBubblePop, false);
       }
 
       if(!getBitmap("16-spiked-star")) {
