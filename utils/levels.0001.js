@@ -61,12 +61,6 @@ var LlemmingsLevels = [
                 "location": [
                     "bottom", "top"
                 ]
-            },
-            {
-                "type": "water",
-                "location": [
-                    "bottom",
-                ]
             }
         ],
         "ui" : {
@@ -383,6 +377,12 @@ var LlemmingsLevels = [
                 "type": "organics",
                 "location": [
                     "top"
+                ]
+            },
+            {
+                "type": "water",
+                "location": [
+                    "bottom",
                 ]
             }
         ],
